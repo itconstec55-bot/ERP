@@ -1,7 +1,7 @@
 import pytest
 from django.contrib.auth.models import User
 
-from access_control.models import Role, Screen, ScreenAccessMixin, UserRoleAssignment
+from access_control.models import Role, Screen, UserRoleAssignment, UserScreenPermission
 
 
 @pytest.mark.django_db
@@ -28,13 +28,23 @@ class TestScreen:
 @pytest.mark.django_db
 class TestScreenAccess:
     def test_default_permissions(self):
-        access = ScreenAccessMixin()
+        screen = Screen.objects.create(code='test.screen', name='شاشة اختبار', module='اختبار')
+        access = UserScreenPermission.objects.create(
+            user=User.objects.create_user('spu', 'spu@t.com', 'x1234567'), screen=screen
+        )
         assert access.can_view is False
         assert access.can_add is False
         assert access.can_delete is False
 
     def test_grant_permissions(self):
-        access = ScreenAccessMixin.objects.create(can_view=True, can_add=True, can_edit=True)
+        screen = Screen.objects.create(code='test.screen2', name='شاشة اختبار 2', module='اختبار')
+        access = UserScreenPermission.objects.create(
+            user=User.objects.create_user('spu2', 'spu2@t.com', 'x1234567'),
+            screen=screen,
+            can_view=True,
+            can_add=True,
+            can_edit=True,
+        )
         assert access.can_view is True
         assert access.can_add is True
         assert access.can_edit is True
@@ -45,6 +55,5 @@ class TestUserRoleAssignment:
     def test_assign_role(self):
         user = User.objects.create_user('u1', 'u1@test.com', 'pass')
         role = Role.objects.create(name='مشرف', code='supervisor')
-        assignment = UserRoleAssignment.objects.create(user=user, role=role, grant_type='allow')
+        assignment = UserRoleAssignment.objects.create(user=user, role=role)
         assert assignment.pk is not None
-        assert assignment.is_active is True

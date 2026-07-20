@@ -310,9 +310,14 @@ class TestObjectLevelPermissions(TestCase):
     """صلاحيات على مستوى الكائن: تصفية حسب الفرع ومنع الوصول لفرع آخر."""
 
     def setUp(self):
+        from django.core.cache import cache
+
         from common.models import UserProfile
         from company.models import Company, CompanyBranch
         from sales.models import SalesInvoice
+
+        # مسح كاش صلاحيات الوصول (access_control.resolver) لتجنب التلوث من اختبارات أخرى
+        cache.clear()
 
         company = Company.objects.create(name='شركة تجريبية', currency='ج.م')
         self.branch_a = CompanyBranch.objects.create(company=company, name='الفرع أ', is_default=True)
