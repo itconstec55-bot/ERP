@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 
 from django.db import models
 
@@ -12,7 +13,7 @@ class CreditNote(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     note_type = models.CharField(max_length=20, choices=TYPE_CHOICES, verbose_name='النوع')
     note_number = models.CharField(max_length=50, unique=True, verbose_name='رقم الإشعار')
-    date = models.DateField(verbose_name='التاريخ')
+    date = models.DateField(verbose_name='التاريخ', default=date.today)
     customer = models.ForeignKey(
         'sales.Customer', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='العميل'
     )
