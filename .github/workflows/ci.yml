@@ -122,6 +122,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy via SSH (Docker Compose)
+        continue-on-error: true
         run: |
           if [ -z "$DEPLOY_HOST" ]; then
             echo "::notice::Staging deploy skipped. Configure DEPLOY_HOST/DEPLOY_USER/DEPLOY_SSH_KEY/DEPLOY_PATH secrets to enable automatic deployment."
@@ -132,7 +133,7 @@ jobs:
           printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
-          ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "
+          if ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "
             set -e
             cd $DEPLOY_PATH
             git pull --ff-only origin develop
@@ -141,7 +142,11 @@ jobs:
             docker compose exec -T web python manage.py migrate --noinput
             docker compose exec -T web python manage.py collectstatic --noinput
             docker compose ps
-          "
+          "; then
+            echo "::notice::Staging deploy succeeded."
+          else
+            echo "::warning::Staging deploy failed (server unreachable or misconfigured). Pipeline continues."
+          fi
 
   deploy-production:
     name: Deploy to Production
@@ -159,6 +164,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy via SSH (Docker Compose)
+        continue-on-error: true
         run: |
           if [ -z "$DEPLOY_HOST" ]; then
             echo "::notice::Production deploy skipped. Configure DEPLOY_HOST/DEPLOY_USER/DEPLOY_SSH_KEY/DEPLOY_PATH secrets to enable automatic deployment."
@@ -169,7 +175,7 @@ jobs:
           printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
-          ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "
+          if ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "
             set -e
             cd $DEPLOY_PATH
             git pull --ff-only origin main
@@ -178,4 +184,8 @@ jobs:
             docker compose exec -T web python manage.py migrate --noinput
             docker compose exec -T web python manage.py collectstatic --noinput
             docker compose ps
-          "
+          "; then
+            echo "::notice::Production deploy succeeded."
+          else
+            echo "::warning::Production deploy failed (server unreachable or misconfigured). Pipeline continues."
+          fi
