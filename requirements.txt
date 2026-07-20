@@ -16,6 +16,7 @@ python-dotenv>=1.0
 whitenoise>=6.5
 waitress>=2.1
 djangorestframework>=3.14
+drf-spectacular>=0.27
 django-filter>=23.0
 pyotp>=2.9
 qrcode>=7.4
