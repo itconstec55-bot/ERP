@@ -1,12 +1,14 @@
-from common.permissions import screen_permission_required
-from django.views.decorators.http import require_POST
-from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Sum, Q
+from django.db.models import Sum
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
 from common.exceptions import AccountingError
-from .models import Cheque
+from common.permissions import screen_permission_required
+
 from .forms import ChequeForm
+from .models import Cheque
 
 
 @screen_permission_required('cheques.cheque', 'view')
@@ -101,21 +103,30 @@ def cheque_delete(request, pk):
 
 @screen_permission_required('cheques.cheque', 'view')
 def cheque_dashboard(request):
-    from decimal import Decimal
     from datetime import date
+    from decimal import Decimal
+
     today = date.today()
 
-    received_pending = Cheque.objects.filter(cheque_type='received', status__in=['pending', 'deposited']).aggregate(total=Sum('amount'))['total'] or Decimal('0')
-    issued_pending = Cheque.objects.filter(cheque_type='issued', status='pending').aggregate(total=Sum('amount'))['total'] or Decimal('0')
+    received_pending = Cheque.objects.filter(cheque_type='received', status__in=['pending', 'deposited']).aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0')
+    issued_pending = Cheque.objects.filter(cheque_type='issued', status='pending').aggregate(total=Sum('amount'))[
+        'total'
+    ] or Decimal('0')
     overdue = Cheque.objects.filter(cheque_type='received', status='pending', due_date__lt=today)
     total_overdue = overdue.aggregate(total=Sum('amount'))['total'] or Decimal('0')
     recent_cheques = Cheque.objects.select_related('customer', 'supplier').all()[:10]
 
-    return render(request, 'cheques/cheque_dashboard.html', {
-        'received_pending': received_pending,
-        'issued_pending': issued_pending,
-        'total_overdue': total_overdue,
-        'overdue_count': overdue.count(),
-        'recent_cheques': recent_cheques,
-        'today': today,
-    })
+    return render(
+        request,
+        'cheques/cheque_dashboard.html',
+        {
+            'received_pending': received_pending,
+            'issued_pending': issued_pending,
+            'total_overdue': total_overdue,
+            'overdue_count': overdue.count(),
+            'recent_cheques': recent_cheques,
+            'today': today,
+        },
+    )

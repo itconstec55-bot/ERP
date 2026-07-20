@@ -1,5 +1,7 @@
 import logging
+
 from django.core.cache import cache
+
 from .models import Company
 
 logger = logging.getLogger('accounting')

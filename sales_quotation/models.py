@@ -1,11 +1,13 @@
-from decimal import Decimal
-from django.db import models
-from django.contrib.auth.models import User
 import uuid
-from sales.models import Customer
-from purchases.models import Product
-from common.models import SequenceNumber
+from decimal import Decimal
+
+from django.contrib.auth.models import User
+from django.db import models
+
 from common.decimal_utils import quantize_10, safe_mul
+from common.models import SequenceNumber
+from purchases.models import Product
+from sales.models import Customer
 
 
 class SalesQuotation(models.Model):
@@ -23,14 +25,18 @@ class SalesQuotation(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, verbose_name='العميل')
     date = models.DateField(verbose_name='التاريخ')
     valid_until = models.DateField(verbose_name='صالح حتى')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft', db_index=True, verbose_name='الحالة')
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='draft', db_index=True, verbose_name='الحالة'
+    )
     payment_terms = models.CharField(max_length=200, blank=True, verbose_name='شروط الدفع')
     delivery_terms = models.CharField(max_length=200, blank=True, verbose_name='شروط التسليم')
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
     subtotal = models.DecimalField(max_digits=30, decimal_places=10, default=0, verbose_name='الإجمالي قبل الضريبة')
     vat_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0, verbose_name='الضريبة')
     total_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0, verbose_name='الإجمالي')
-    converted_invoice = models.ForeignKey('sales.SalesInvoice', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='الفاتورة المحولة')
+    converted_invoice = models.ForeignKey(
+        'sales.SalesInvoice', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='الفاتورة المحولة'
+    )
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -50,6 +56,7 @@ class SalesQuotation(models.Model):
 
     def calculate_totals(self):
         from decimal import Decimal
+
         self.subtotal = sum(quantize_10(line.line_total) for line in self.lines.all())
         if self.subtotal > 0:
             self.vat_amount = quantize_10(self.subtotal * Decimal('0.14'))

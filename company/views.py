@@ -1,16 +1,19 @@
 import json
-from django.contrib.auth.decorators import login_required
-from common.permissions import screen_permission_required
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods, require_POST
-from django.db import transaction, IntegrityError
-from .models import Company, CompanyBranch
-from .forms import CompanyForm, CompanyBranchForm
-from accounts.models import AccountType
-from purchases.models import Product, ProductCategory, UnitOfMeasure
 import logging
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError, transaction
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_http_methods, require_POST
+
+from accounts.models import AccountType
+from common.permissions import screen_permission_required
+from purchases.models import Product, ProductCategory, UnitOfMeasure
+
+from .forms import CompanyBranchForm, CompanyForm
+from .models import Company, CompanyBranch
 
 logger = logging.getLogger('accounting')
 
@@ -30,11 +33,7 @@ def company_settings(request):
 
     branches = CompanyBranch.objects.filter(company=company)
 
-    context = {
-        'form': form,
-        'company': company,
-        'branches': branches,
-    }
+    context = {'form': form, 'company': company, 'branches': branches}
     return render(request, 'company/company_settings.html', context)
 
 
@@ -81,6 +80,7 @@ def branch_delete(request, pk):
 
 # ==================== إعدادات الإدارة (Admin Settings) ====================
 
+
 @login_required
 @screen_permission_required('accounts.account', 'edit')
 def admin_settings_dashboard(request):
@@ -89,7 +89,7 @@ def admin_settings_dashboard(request):
     products = Product.objects.select_related('category', 'unit_of_measure').all().order_by('code')
     categories = ProductCategory.objects.all().order_by('code')
     units = UnitOfMeasure.objects.all().order_by('code')
-    
+
     context = {
         'account_types': account_types,
         'products': products,
@@ -102,7 +102,7 @@ def admin_settings_dashboard(request):
 
 @login_required
 @screen_permission_required('accounts.account', 'edit')
-@require_http_methods(["POST"])
+@require_http_methods(['POST'])
 def account_type_create(request):
     """إنشاء نوع حساب جديد"""
     try:
@@ -115,31 +115,33 @@ def account_type_create(request):
                 description=data.get('description', '').strip(),
                 is_active=data.get('is_active', True),
             )
-        return JsonResponse({
-            'success': True,
-            'message': 'تم إنشاء نوع الحساب بنجاح',
-            'data': {
-                'id': str(account_type.id),
-                'code': account_type.code,
-                'name': account_type.name,
-                'account_type': account_type.account_type,
-                'account_type_display': account_type.get_account_type_display(),
-                'description': account_type.description,
-                'is_active': account_type.is_active,
-                'created_at': account_type.created_at.isoformat(),
+        return JsonResponse(
+            {
+                'success': True,
+                'message': 'تم إنشاء نوع الحساب بنجاح',
+                'data': {
+                    'id': str(account_type.id),
+                    'code': account_type.code,
+                    'name': account_type.name,
+                    'account_type': account_type.account_type,
+                    'account_type_display': account_type.get_account_type_display(),
+                    'description': account_type.description,
+                    'is_active': account_type.is_active,
+                    'created_at': account_type.created_at.isoformat(),
+                },
             }
-        })
+        )
     except IntegrityError:
         logger.exception('API operation failed (IntegrityError)')
         return JsonResponse({'success': False, 'message': 'تعارض في البيانات: الكود مكرر أو قيد غير صالح'}, status=400)
-    except Exception as e:
+    except Exception:
         logger.exception('API operation failed')
         return JsonResponse({'success': False, 'message': 'خطأ في العملية'}, status=400)
 
 
 @login_required
 @screen_permission_required('accounts.account', 'edit')
-@require_http_methods(["POST", "PATCH"])
+@require_http_methods(['POST', 'PATCH'])
 def account_type_update(request, pk):
     """تحديث نوع حساب"""
     account_type = get_object_or_404(AccountType, pk=pk)
@@ -152,54 +154,55 @@ def account_type_update(request, pk):
             account_type.description = data.get('description', account_type.description).strip()
             account_type.is_active = data.get('is_active', account_type.is_active)
             account_type.save()
-        return JsonResponse({
-            'success': True,
-            'message': 'تم تحديث نوع الحساب بنجاح',
-            'data': {
-                'id': str(account_type.id),
-                'code': account_type.code,
-                'name': account_type.name,
-                'account_type': account_type.account_type,
-                'account_type_display': account_type.get_account_type_display(),
-                'description': account_type.description,
-                'is_active': account_type.is_active,
-                'updated_at': account_type.updated_at.isoformat(),
+        return JsonResponse(
+            {
+                'success': True,
+                'message': 'تم تحديث نوع الحساب بنجاح',
+                'data': {
+                    'id': str(account_type.id),
+                    'code': account_type.code,
+                    'name': account_type.name,
+                    'account_type': account_type.account_type,
+                    'account_type_display': account_type.get_account_type_display(),
+                    'description': account_type.description,
+                    'is_active': account_type.is_active,
+                    'updated_at': account_type.updated_at.isoformat(),
+                },
             }
-        })
+        )
     except IntegrityError:
         logger.exception('API operation failed (IntegrityError)')
         return JsonResponse({'success': False, 'message': 'تعارض في البيانات: الكود مكرر أو قيد غير صالح'}, status=400)
-    except Exception as e:
+    except Exception:
         logger.exception('API operation failed')
         return JsonResponse({'success': False, 'message': 'خطأ في العملية'}, status=400)
 
 
 @login_required
 @screen_permission_required('accounts.account', 'delete')
-@require_http_methods(["POST"])
+@require_http_methods(['POST'])
 def account_type_delete(request, pk):
     """حذف نوع حساب"""
     account_type = get_object_or_404(AccountType, pk=pk)
     try:
         # التح من وجود حسابات مرتبطية
         if account_type.accounts.exists():
-            return JsonResponse({
-                'success': False, 
-                'message': 'لا يمكن الحذف: يوجد حسابات مرتبطية بهذا النوع'
-            }, status=400)
+            return JsonResponse(
+                {'success': False, 'message': 'لا يمكن الحذف: يوجد حسابات مرتبطية بهذا النوع'}, status=400
+            )
         account_type.delete()
         return JsonResponse({'success': True, 'message': 'تم حذف نوع الحساب بنجاح'})
     except IntegrityError:
         logger.exception('API operation failed (IntegrityError)')
         return JsonResponse({'success': False, 'message': 'تعارض في البيانات: الكود مكرر أو قيد غير صالح'}, status=400)
-    except Exception as e:
+    except Exception:
         logger.exception('API operation failed')
         return JsonResponse({'success': False, 'message': 'خطأ في العملية'}, status=400)
 
 
 @login_required
 @screen_permission_required('purchases.product', 'edit')
-@require_http_methods(["POST"])
+@require_http_methods(['POST'])
 def product_create(request):
     """إنشاء منتج جديد"""
     try:
@@ -208,11 +211,11 @@ def product_create(request):
             category = None
             if data.get('category_id'):
                 category = get_object_or_404(ProductCategory, pk=data['category_id'])
-            
+
             unit = None
             if data.get('unit_id'):
                 unit = get_object_or_404(UnitOfMeasure, pk=data['unit_id'])
-            
+
             product = Product.objects.create(
                 code=data.get('code', '').strip().upper(),
                 name=data.get('name', '').strip(),
@@ -227,33 +230,35 @@ def product_create(request):
                 vat_rate=data.get('vat_rate', 14),
                 is_active=data.get('is_active', True),
             )
-        return JsonResponse({
-            'success': True,
-            'message': 'تم إنشاء المنتج بنجاح',
-            'data': {
-                'id': str(product.id),
-                'code': product.code,
-                'name': product.name,
-                'category': product.category.name if product.category else '',
-                'unit': product.unit,
-                'purchase_price': float(product.purchase_price),
-                'selling_price': float(product.selling_price),
-                'current_stock': float(product.current_stock),
-                'is_active': product.is_active,
-                'created_at': product.created_at.isoformat(),
+        return JsonResponse(
+            {
+                'success': True,
+                'message': 'تم إنشاء المنتج بنجاح',
+                'data': {
+                    'id': str(product.id),
+                    'code': product.code,
+                    'name': product.name,
+                    'category': product.category.name if product.category else '',
+                    'unit': product.unit,
+                    'purchase_price': float(product.purchase_price),
+                    'selling_price': float(product.selling_price),
+                    'current_stock': float(product.current_stock),
+                    'is_active': product.is_active,
+                    'created_at': product.created_at.isoformat(),
+                },
             }
-        })
+        )
     except IntegrityError:
         logger.exception('API operation failed (IntegrityError)')
         return JsonResponse({'success': False, 'message': 'تعارض في البيانات: الكود مكرر أو قيد غير صالح'}, status=400)
-    except Exception as e:
+    except Exception:
         logger.exception('API operation failed')
         return JsonResponse({'success': False, 'message': 'خطأ في العملية'}, status=400)
 
 
 @login_required
 @screen_permission_required('purchases.product', 'edit')
-@require_http_methods(["POST"])
+@require_http_methods(['POST'])
 def product_update(request, pk):
     """تحديث منتج"""
     product = get_object_or_404(Product, pk=pk)
@@ -264,12 +269,12 @@ def product_update(request, pk):
                 product.category = get_object_or_404(ProductCategory, pk=data['category_id'])
             else:
                 product.category = None
-                
+
             if data.get('unit_id'):
                 product.unit_of_measure = get_object_or_404(UnitOfMeasure, pk=data['unit_id'])
             else:
                 product.unit_of_measure = None
-            
+
             product.code = data.get('code', product.code).strip().upper()
             product.name = data.get('name', product.name).strip()
             product.unit = data.get('unit', product.unit).strip()
@@ -281,33 +286,35 @@ def product_update(request, pk):
             product.vat_rate = data.get('vat_rate', product.vat_rate)
             product.is_active = data.get('is_active', product.is_active)
             product.save()
-        return JsonResponse({
-            'success': True,
-            'message': 'تم تحديث المنتج بنجاح',
-            'data': {
-                'id': str(product.id),
-                'code': product.code,
-                'name': product.name,
-                'category': product.category.name if product.category else '',
-                'unit': product.unit,
-                'purchase_price': float(product.purchase_price),
-                'selling_price': float(product.selling_price),
-                'current_stock': float(product.current_stock),
-                'is_active': product.is_active,
-                'updated_at': product.updated_at.isoformat(),
+        return JsonResponse(
+            {
+                'success': True,
+                'message': 'تم تحديث المنتج بنجاح',
+                'data': {
+                    'id': str(product.id),
+                    'code': product.code,
+                    'name': product.name,
+                    'category': product.category.name if product.category else '',
+                    'unit': product.unit,
+                    'purchase_price': float(product.purchase_price),
+                    'selling_price': float(product.selling_price),
+                    'current_stock': float(product.current_stock),
+                    'is_active': product.is_active,
+                    'updated_at': product.updated_at.isoformat(),
+                },
             }
-        })
+        )
     except IntegrityError:
         logger.exception('API operation failed (IntegrityError)')
         return JsonResponse({'success': False, 'message': 'تعارض في البيانات: الكود مكرر أو قيد غير صالح'}, status=400)
-    except Exception as e:
+    except Exception:
         logger.exception('API operation failed')
         return JsonResponse({'success': False, 'message': 'خطأ في العملية'}, status=400)
 
 
 @login_required
 @screen_permission_required('purchases.product', 'delete')
-@require_http_methods(["POST"])
+@require_http_methods(['POST'])
 def product_delete(request, pk):
     """حذف منتج"""
     product = get_object_or_404(Product, pk=pk)
@@ -317,14 +324,14 @@ def product_delete(request, pk):
     except IntegrityError:
         logger.exception('API operation failed (IntegrityError)')
         return JsonResponse({'success': False, 'message': 'تعارض في البيانات: الكود مكرر أو قيد غير صالح'}, status=400)
-    except Exception as e:
+    except Exception:
         logger.exception('API operation failed')
         return JsonResponse({'success': False, 'message': 'خطأ في العملية'}, status=400)
 
 
 @login_required
 @screen_permission_required('purchases.product', 'edit')
-@require_http_methods(["POST"])
+@require_http_methods(['POST'])
 def category_create(request):
     """إنشاء تصنيف منتج"""
     try:
@@ -335,28 +342,30 @@ def category_create(request):
             description=data.get('description', '').strip(),
             is_active=data.get('is_active', True),
         )
-        return JsonResponse({
-            'success': True,
-            'message': 'تم إنشاء التصنيف بنجاح',
-            'data': {
-                'id': str(category.id),
-                'code': category.code,
-                'name': category.name,
-                'description': category.description,
-                'is_active': category.is_active,
+        return JsonResponse(
+            {
+                'success': True,
+                'message': 'تم إنشاء التصنيف بنجاح',
+                'data': {
+                    'id': str(category.id),
+                    'code': category.code,
+                    'name': category.name,
+                    'description': category.description,
+                    'is_active': category.is_active,
+                },
             }
-        })
+        )
     except IntegrityError:
         logger.exception('API operation failed (IntegrityError)')
         return JsonResponse({'success': False, 'message': 'تعارض في البيانات: الكود مكرر أو قيد غير صالح'}, status=400)
-    except Exception as e:
+    except Exception:
         logger.exception('API operation failed')
         return JsonResponse({'success': False, 'message': 'خطأ في العملية'}, status=400)
 
 
 @login_required
 @screen_permission_required('purchases.product', 'edit')
-@require_http_methods(["POST"])
+@require_http_methods(['POST'])
 def category_update(request, pk):
     """تحديث تصنيف منتج"""
     category = get_object_or_404(ProductCategory, pk=pk)
@@ -367,50 +376,51 @@ def category_update(request, pk):
         category.description = data.get('description', category.description).strip()
         category.is_active = data.get('is_active', category.is_active)
         category.save()
-        return JsonResponse({
-            'success': True,
-            'message': 'تم تحديث التصنيف بنجاح',
-            'data': {
-                'id': str(category.id),
-                'code': category.code,
-                'name': category.name,
-                'description': category.description,
-                'is_active': category.is_active,
+        return JsonResponse(
+            {
+                'success': True,
+                'message': 'تم تحديث التصنيف بنجاح',
+                'data': {
+                    'id': str(category.id),
+                    'code': category.code,
+                    'name': category.name,
+                    'description': category.description,
+                    'is_active': category.is_active,
+                },
             }
-        })
+        )
     except IntegrityError:
         logger.exception('API operation failed (IntegrityError)')
         return JsonResponse({'success': False, 'message': 'تعارض في البيانات: الكود مكرر أو قيد غير صالح'}, status=400)
-    except Exception as e:
+    except Exception:
         logger.exception('API operation failed')
         return JsonResponse({'success': False, 'message': 'خطأ في العملية'}, status=400)
 
 
 @login_required
 @screen_permission_required('purchases.product', 'delete')
-@require_http_methods(["POST"])
+@require_http_methods(['POST'])
 def category_delete(request, pk):
     """حذف تصنيف منتج"""
     category = get_object_or_404(ProductCategory, pk=pk)
     try:
         if category.product_set.exists():
-            return JsonResponse({
-                'success': False, 
-                'message': 'لا يمكن الحذف: يوجد منتجات مرتبطية بهذا التصنيف'
-            }, status=400)
+            return JsonResponse(
+                {'success': False, 'message': 'لا يمكن الحذف: يوجد منتجات مرتبطية بهذا التصنيف'}, status=400
+            )
         category.delete()
         return JsonResponse({'success': True, 'message': 'تم حذف التصنيف بنجاح'})
     except IntegrityError:
         logger.exception('API operation failed (IntegrityError)')
         return JsonResponse({'success': False, 'message': 'تعارض في البيانات: الكود مكرر أو قيد غير صالح'}, status=400)
-    except Exception as e:
+    except Exception:
         logger.exception('API operation failed')
         return JsonResponse({'success': False, 'message': 'خطأ في العملية'}, status=400)
 
 
 @login_required
 @screen_permission_required('purchases.product', 'edit')
-@require_http_methods(["POST"])
+@require_http_methods(['POST'])
 def unit_create(request):
     """إنشاء وحدة قياس"""
     try:
@@ -421,28 +431,30 @@ def unit_create(request):
             symbol=data.get('symbol', '').strip(),
             is_active=data.get('is_active', True),
         )
-        return JsonResponse({
-            'success': True,
-            'message': 'تم إنشاء الوحدة بنجاح',
-            'data': {
-                'id': str(unit.id),
-                'code': unit.code,
-                'name': unit.name,
-                'symbol': unit.symbol,
-                'is_active': unit.is_active,
+        return JsonResponse(
+            {
+                'success': True,
+                'message': 'تم إنشاء الوحدة بنجاح',
+                'data': {
+                    'id': str(unit.id),
+                    'code': unit.code,
+                    'name': unit.name,
+                    'symbol': unit.symbol,
+                    'is_active': unit.is_active,
+                },
             }
-        })
+        )
     except IntegrityError:
         logger.exception('API operation failed (IntegrityError)')
         return JsonResponse({'success': False, 'message': 'تعارض في البيانات: الكود مكرر أو قيد غير صالح'}, status=400)
-    except Exception as e:
+    except Exception:
         logger.exception('API operation failed')
         return JsonResponse({'success': False, 'message': 'خطأ في العملية'}, status=400)
 
 
 @login_required
 @screen_permission_required('purchases.product', 'edit')
-@require_http_methods(["POST"])
+@require_http_methods(['POST'])
 def unit_update(request, pk):
     """تحديث وحدة قياس"""
     unit = get_object_or_404(UnitOfMeasure, pk=pk)
@@ -453,42 +465,43 @@ def unit_update(request, pk):
         unit.symbol = data.get('symbol', unit.symbol).strip()
         unit.is_active = data.get('is_active', unit.is_active)
         unit.save()
-        return JsonResponse({
-            'success': True,
-            'message': 'تم تحديث الوحدة بنجاح',
-            'data': {
-                'id': str(unit.id),
-                'code': unit.code,
-                'name': unit.name,
-                'symbol': unit.symbol,
-                'is_active': unit.is_active,
+        return JsonResponse(
+            {
+                'success': True,
+                'message': 'تم تحديث الوحدة بنجاح',
+                'data': {
+                    'id': str(unit.id),
+                    'code': unit.code,
+                    'name': unit.name,
+                    'symbol': unit.symbol,
+                    'is_active': unit.is_active,
+                },
             }
-        })
+        )
     except IntegrityError:
         logger.exception('API operation failed (IntegrityError)')
         return JsonResponse({'success': False, 'message': 'تعارض في البيانات: الكود مكرر أو قيد غير صالح'}, status=400)
-    except Exception as e:
+    except Exception:
         logger.exception('API operation failed')
         return JsonResponse({'success': False, 'message': 'خطأ في العملية'}, status=400)
 
 
 @login_required
 @screen_permission_required('purchases.product', 'delete')
-@require_http_methods(["POST"])
+@require_http_methods(['POST'])
 def unit_delete(request, pk):
     """حذف وحدة قياس"""
     unit = get_object_or_404(UnitOfMeasure, pk=pk)
     try:
         if unit.products.exists():
-            return JsonResponse({
-                'success': False, 
-                'message': 'لا يمكن الحذف: يوجد منتجات مرتبطية بهذه الوحدة'
-            }, status=400)
+            return JsonResponse(
+                {'success': False, 'message': 'لا يمكن الحذف: يوجد منتجات مرتبطية بهذه الوحدة'}, status=400
+            )
         unit.delete()
         return JsonResponse({'success': True, 'message': 'تم حذف الوحدة بنجاح'})
     except IntegrityError:
         logger.exception('API operation failed (IntegrityError)')
         return JsonResponse({'success': False, 'message': 'تعارض في البيانات: الكود مكرر أو قيد غير صالح'}, status=400)
-    except Exception as e:
+    except Exception:
         logger.exception('API operation failed')
         return JsonResponse({'success': False, 'message': 'خطأ في العملية'}, status=400)

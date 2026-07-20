@@ -1,11 +1,12 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.views.decorators.http import require_POST
 from django.db.models import Sum
-from .models import CostCenter, Budget
-from .forms import CostCenterForm, BudgetForm
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
 from common.permissions import screen_permission_required
+
+from .forms import BudgetForm, CostCenterForm
+from .models import Budget, CostCenter
 
 
 @screen_permission_required('budget.budget', 'view')
@@ -73,14 +74,17 @@ def budget_list(request):
         budgets = budgets.filter(year=year)
     total_budgeted = budgets.aggregate(t=Sum('budgeted_amount'))['t'] or 0
     total_actual = budgets.aggregate(t=Sum('actual_amount'))['t'] or 0
-    return render(request, 'budget/budget_list.html', {
-        'budgets': budgets, 'total_budgeted': total_budgeted, 'total_actual': total_actual,
-    })
+    return render(
+        request,
+        'budget/budget_list.html',
+        {'budgets': budgets, 'total_budgeted': total_budgeted, 'total_actual': total_actual},
+    )
 
 
 @screen_permission_required('budget.budget', 'add')
 def budget_create(request):
     from accounts.models import Account
+
     accounts = Account.objects.filter(is_active=True)
     cost_centers = CostCenter.objects.filter(is_active=True)
 
@@ -93,13 +97,13 @@ def budget_create(request):
         for field, errs in form.errors.items():
             for err in errs:
                 messages.error(request, f'{form.fields[field].label if field in form.fields else field}: {err}')
-        return render(request, 'budget/budget_form.html', {
-            'accounts': accounts, 'cost_centers': cost_centers, 'form': form,
-        })
+        return render(
+            request, 'budget/budget_form.html', {'accounts': accounts, 'cost_centers': cost_centers, 'form': form}
+        )
 
-    return render(request, 'budget/budget_form.html', {
-        'accounts': accounts, 'cost_centers': cost_centers, 'form': BudgetForm(),
-    })
+    return render(
+        request, 'budget/budget_form.html', {'accounts': accounts, 'cost_centers': cost_centers, 'form': BudgetForm()}
+    )
 
 
 @screen_permission_required('budget.budget', 'view')
@@ -111,6 +115,7 @@ def budget_detail(request, pk):
 @screen_permission_required('budget.budget', 'edit')
 def budget_edit(request, pk):
     from accounts.models import Account
+
     budget = get_object_or_404(Budget, pk=pk)
     accounts = Account.objects.filter(is_active=True)
     cost_centers = CostCenter.objects.filter(is_active=True)
@@ -123,9 +128,11 @@ def budget_edit(request, pk):
             return redirect('budget:budget_detail', pk=pk)
     else:
         form = BudgetForm(instance=budget)
-    return render(request, 'budget/budget_form.html', {
-        'accounts': accounts, 'cost_centers': cost_centers, 'form': form, 'budget': budget,
-    })
+    return render(
+        request,
+        'budget/budget_form.html',
+        {'accounts': accounts, 'cost_centers': cost_centers, 'form': form, 'budget': budget},
+    )
 
 
 @require_POST
@@ -140,13 +147,16 @@ def budget_delete(request, pk):
 @screen_permission_required('budget.budget', 'view')
 def budget_report(request):
     """تقرير الموازنة الشامل — يقارن الفعلي بالمخطط لكل الحسابات."""
-    from accounts.models import Account, JournalEntryLine
-    from django.db.models import Sum, Q
     from decimal import Decimal
+
+    from django.db.models import Sum
+
+    from accounts.models import JournalEntryLine
 
     year = request.GET.get('year', '')
     if not year:
         from django.utils import timezone
+
         year = timezone.now().year
     else:
         year = int(year)
@@ -155,10 +165,7 @@ def budget_report(request):
 
     report_data = []
     for budget in budgets:
-        actual = JournalEntryLine.objects.filter(
-            account=budget.account,
-            journal_entry__date__year=year,
-        )
+        actual = JournalEntryLine.objects.filter(account=budget.account, journal_entry__date__year=year)
         if budget.month:
             actual = actual.filter(journal_entry__date__month=budget.month)
         if budget.cost_center:
@@ -187,10 +194,14 @@ def budget_report(request):
         else:
             b.pct = 0
 
-    return render(request, 'budget/budget_report.html', {
-        'report_data': report_data,
-        'year': year,
-        'total_budgeted': total_budgeted,
-        'total_actual': total_actual,
-        'exec_pct': exec_pct,
-    })
+    return render(
+        request,
+        'budget/budget_report.html',
+        {
+            'report_data': report_data,
+            'year': year,
+            'total_budgeted': total_budgeted,
+            'total_actual': total_actual,
+            'exec_pct': exec_pct,
+        },
+    )

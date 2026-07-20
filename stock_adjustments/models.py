@@ -1,19 +1,13 @@
-from django.db import models
-from django.contrib.auth.models import User
-from decimal import Decimal
 import uuid
+from decimal import Decimal
+
+from django.contrib.auth.models import User
+from django.db import models
 
 
 class StockAdjustment(models.Model):
-    TYPE_CHOICES = [
-        ('addition', 'إضافة'),
-        ('deduction', 'خصم'),
-        ('count', 'جرد فعلي'),
-    ]
-    STATUS_CHOICES = [
-        ('draft', 'مسودة'),
-        ('approved', 'معتمد'),
-    ]
+    TYPE_CHOICES = [('addition', 'إضافة'), ('deduction', 'خصم'), ('count', 'جرد فعلي')]
+    STATUS_CHOICES = [('draft', 'مسودة'), ('approved', 'معتمد')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     adjustment_number = models.CharField(max_length=50, unique=True, verbose_name='رقم الجرد')
@@ -38,6 +32,7 @@ class StockAdjustment(models.Model):
         if self.status == 'approved':
             return
         from django.db import transaction
+
         with transaction.atomic():
             for line in self.lines.select_related('product').all():
                 wp, created = self.warehouse.products.get_or_create(
@@ -47,9 +42,7 @@ class StockAdjustment(models.Model):
                     wp.quantity += line.quantity
                 elif self.adjustment_type == 'deduction':
                     if wp.quantity < line.quantity:
-                        raise ValueError(
-                            f'لا يوجد مخزون كافٍ للمنتج {line.product} (المتاح {wp.quantity})'
-                        )
+                        raise ValueError(f'لا يوجد مخزون كافٍ للمنتج {line.product} (المتاح {wp.quantity})')
                     wp.quantity -= line.quantity
                 elif self.adjustment_type == 'count':
                     wp.quantity = line.quantity

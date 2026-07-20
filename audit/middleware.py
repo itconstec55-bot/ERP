@@ -1,4 +1,4 @@
-from .context import set_current_user, clear_current_user
+from .context import clear_current_user, set_current_user
 
 
 class AuditMiddleware:

@@ -1,6 +1,8 @@
 from django import forms
-from sales.models import Customer
+
 from purchases.models import Product
+from sales.models import Customer
+
 from .models import SalesOrder, SalesOrderLine
 
 
@@ -50,10 +52,5 @@ class SalesOrderLineForm(forms.ModelForm):
 
 
 SalesOrderLineFormSet = forms.inlineformset_factory(
-    SalesOrder, SalesOrderLine,
-    form=SalesOrderLineForm,
-    extra=3,
-    can_delete=True,
-    min_num=1,
-    validate_min=True,
+    SalesOrder, SalesOrderLine, form=SalesOrderLineForm, extra=3, can_delete=True, min_num=1, validate_min=True
 )

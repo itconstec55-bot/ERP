@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import AccountType, Account, JournalEntry, JournalEntryLine
+
+from .models import Account, AccountType, JournalEntry, JournalEntryLine
 
 
 class AccountTypeAdmin(admin.ModelAdmin):
@@ -22,7 +23,16 @@ class JournalEntryLineInline(admin.TabularInline):
 
 
 class JournalEntryAdmin(admin.ModelAdmin):
-    list_display = ('entry_number', 'entry_type', 'date', 'description', 'total_debit', 'total_credit', 'is_posted', 'is_reversed')
+    list_display = (
+        'entry_number',
+        'entry_type',
+        'date',
+        'description',
+        'total_debit',
+        'total_credit',
+        'is_posted',
+        'is_reversed',
+    )
     list_filter = ('entry_type', 'is_posted', 'is_reversed', 'date')
     search_fields = ('entry_number', 'description')
     inlines = [JournalEntryLineInline]
@@ -31,6 +41,7 @@ class JournalEntryAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.is_posted:
             from django.contrib import messages
+
             messages.error(request, 'لا يمكن تعديل قيد مرحّل. قم بعكسه أولاً إن لزم.')
             return
         if not change:

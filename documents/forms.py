@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import DocumentType, DocumentTemplate, Document, DocumentFlow, DocumentAttachment
+
+from .models import Document, DocumentAttachment, DocumentFlow, DocumentTemplate, DocumentType
 
 
 class DocumentTypeForm(forms.ModelForm):
@@ -13,17 +14,27 @@ class DocumentTemplateForm(forms.ModelForm):
     class Meta:
         model = DocumentTemplate
         fields = ['name', 'document_type', 'content', 'is_default', 'is_active']
-        widgets = {
-            'content': forms.Textarea(attrs={'rows': 6}),
-        }
+        widgets = {'content': forms.Textarea(attrs={'rows': 6})}
 
 
 class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
-        fields = ['document_type', 'title', 'description', 'date', 'due_date',
-                  'status', 'priority', 'department', 'assigned_to',
-                  'account', 'reference_amount', 'reference_number', 'notes']
+        fields = [
+            'document_type',
+            'title',
+            'description',
+            'date',
+            'due_date',
+            'status',
+            'priority',
+            'department',
+            'assigned_to',
+            'account',
+            'reference_amount',
+            'reference_number',
+            'notes',
+        ]
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'due_date': forms.DateInput(attrs={'type': 'date'}),
@@ -42,9 +53,7 @@ class DocumentFlowForm(forms.ModelForm):
     class Meta:
         model = DocumentFlow
         fields = ['action', 'comment']
-        widgets = {
-            'comment': forms.Textarea(attrs={'rows': 3}),
-        }
+        widgets = {'comment': forms.Textarea(attrs={'rows': 3})}
 
 
 ALLOWED_UPLOAD_TYPES = {
@@ -65,9 +74,7 @@ class DocumentAttachmentForm(forms.ModelForm):
     class Meta:
         model = DocumentAttachment
         fields = ['file', 'name', 'description']
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 2}),
-        }
+        widgets = {'description': forms.Textarea(attrs={'rows': 2})}
 
     def clean_file(self):
         f = self.cleaned_data.get('file')

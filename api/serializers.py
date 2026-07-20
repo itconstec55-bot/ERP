@@ -1,32 +1,49 @@
-from rest_framework import serializers
 from django.contrib.auth.models import User
-from accounts.models import AccountType, Account, JournalEntry, JournalEntryLine
-from purchases.models import Supplier, Product, ProductCategory, UnitOfMeasure, PurchaseInvoice, PurchaseInvoiceLine, CatalogSettings
-from sales.models import Customer, SalesInvoice, SalesInvoiceLine
-from treasury.models import Bank, Safe, BankTransaction, SafeTransaction
-from hr.models import Department, Employee, Attendance, Salary
-from assets.models import AssetCategory, Asset, DepreciationEntry
-from warehouses.models import Warehouse, WarehouseProduct, StockMovement
-from company.models import Company, CompanyBranch
-from budget.models import CostCenter, Budget
-from currency.models import Currency, ExchangeRateHistory
-from documents.models import DocumentType, DocumentTemplate, Document, DocumentFlow, DocumentAttachment
+from rest_framework import serializers
+
+from accounts.models import Account, AccountType, JournalEntry, JournalEntryLine
+from assets.models import Asset, AssetCategory, DepreciationEntry
 from audit.models import AuditLog
+from budget.models import Budget, CostCenter
 from cheques.models import Cheque
+from company.models import Company, CompanyBranch
+from contractors.models import (
+    CertificateItem,
+    Contract,
+    ContractItem,
+    Contractor,
+    ContractorPayment,
+    InterimCertificate,
+)
 from credit_notes.models import CreditNote
-from sales_returns.models import SalesReturn, SalesReturnLine
-from purchase_returns.models import PurchaseReturn, PurchaseReturnLine
+from currency.models import Currency, ExchangeRateHistory
+from documents.models import Document, DocumentAttachment, DocumentFlow, DocumentTemplate, DocumentType
+from goods_received.models import GoodsReceivedLine, GoodsReceivedNote
+from hr.models import Attendance, Department, Employee, Salary
+from notifications.models import NotificationCategory, NotificationLog, NotificationTemplate
 from payment_receipts.models import PaymentReceipt
+from purchase_orders.models import PurchaseOrder, PurchaseOrderLine
+from purchase_returns.models import PurchaseReturn, PurchaseReturnLine
+from purchases.models import (
+    CatalogSettings,
+    Product,
+    ProductCategory,
+    PurchaseInvoice,
+    PurchaseInvoiceLine,
+    Supplier,
+    UnitOfMeasure,
+)
+from recurring.models import RecurringJournal, RecurringJournalLine
+from requisitions.models import Requisition, RequisitionLine
+from rfq.models import RFQ, Quotation, QuotationLine, RFQLine
+from sales.models import Customer, SalesInvoice, SalesInvoiceLine
+from sales_orders.models import SalesOrder, SalesOrderLine
+from sales_returns.models import SalesReturn, SalesReturnLine
 from stock_adjustments.models import StockAdjustment, StockAdjustmentLine
 from tax_invoices.models import ETAConnection, TaxInvoice
-from purchase_orders.models import PurchaseOrder, PurchaseOrderLine
-from sales_orders.models import SalesOrder, SalesOrderLine
-from goods_received.models import GoodsReceivedNote, GoodsReceivedLine
-from requisitions.models import Requisition, RequisitionLine
-from rfq.models import RFQ, RFQLine, Quotation, QuotationLine
-from contractors.models import Contractor, Contract, ContractItem, InterimCertificate, CertificateItem, ContractorPayment
-from recurring.models import RecurringJournal, RecurringJournalLine
-from notifications.models import NotificationCategory, NotificationTemplate, NotificationLog
+from treasury.models import Bank, BankTransaction, Safe, SafeTransaction
+from warehouses.models import StockMovement, Warehouse, WarehouseProduct
+
 
 class UserBriefSerializer(serializers.ModelSerializer):
     class Meta:
@@ -124,7 +141,18 @@ class PurchaseInvoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseInvoice
         fields = '__all__'
-        read_only_fields = ['id', 'subtotal', 'vat_amount', 'withholding_tax_amount', 'total_amount', 'remaining_amount', 'journal_entry', 'created_at', 'updated_at', 'created_by']
+        read_only_fields = [
+            'id',
+            'subtotal',
+            'vat_amount',
+            'withholding_tax_amount',
+            'total_amount',
+            'remaining_amount',
+            'journal_entry',
+            'created_at',
+            'updated_at',
+            'created_by',
+        ]
 
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -154,7 +182,20 @@ class SalesInvoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesInvoice
         fields = '__all__'
-        read_only_fields = ['id', 'subtotal', 'vat_amount', 'withholding_tax_amount', 'total_amount', 'remaining_amount', 'cost_of_goods', 'gross_profit', 'journal_entry', 'created_at', 'updated_at', 'created_by']
+        read_only_fields = [
+            'id',
+            'subtotal',
+            'vat_amount',
+            'withholding_tax_amount',
+            'total_amount',
+            'remaining_amount',
+            'cost_of_goods',
+            'gross_profit',
+            'journal_entry',
+            'created_at',
+            'updated_at',
+            'created_by',
+        ]
 
 
 class BankSerializer(serializers.ModelSerializer):
@@ -254,7 +295,14 @@ class AssetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asset
         fields = '__all__'
-        read_only_fields = ['id', 'accumulated_depreciation', 'net_book_value', 'journal_entry', 'created_at', 'updated_at']
+        read_only_fields = [
+            'id',
+            'accumulated_depreciation',
+            'net_book_value',
+            'journal_entry',
+            'created_at',
+            'updated_at',
+        ]
 
 
 class DepreciationEntrySerializer(serializers.ModelSerializer):

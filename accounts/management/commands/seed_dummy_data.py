@@ -23,9 +23,10 @@ Usage:
     # List available profiles:
     python manage.py seed_dummy_data --list-profiles
 """
+
 from django.core.management.base import BaseCommand
 
-from common.dummy_generator import DummyDataGenerator, PROFILES
+from common.dummy_generator import PROFILES, DummyDataGenerator
 
 
 class Command(BaseCommand):
@@ -33,7 +34,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--profile', type=str, default='medium',
+            '--profile',
+            type=str,
+            default='medium',
             choices=list(PROFILES.keys()),
             help='ملف البيانات (tiny/small/medium/large/huge)',
         )
@@ -63,13 +66,15 @@ class Command(BaseCommand):
             self.stdout.write(self.style.HTTP_INFO('  الملفات المتاحة:'))
             self.stdout.write('')
             for name, config in PROFILES.items():
-                self.stdout.write(f'  {name:10s} | '
-                                  f'موردين: {config["suppliers"]:3d} | '
-                                  f'عملاء: {config["customers"]:3d} | '
-                                  f'منتجات: {config["products"]:3d} | '
-                                  f'فواتير شراء: {config["purchase_invoices"]:3d} | '
-                                  f'فواتير بيع: {config["sales_invoices"]:3d} | '
-                                  f'موظفين: {config["employees"]:3d}')
+                self.stdout.write(
+                    f'  {name:10s} | '
+                    f'موردين: {config["suppliers"]:3d} | '
+                    f'عملاء: {config["customers"]:3d} | '
+                    f'منتجات: {config["products"]:3d} | '
+                    f'فواتير شراء: {config["purchase_invoices"]:3d} | '
+                    f'فواتير بيع: {config["sales_invoices"]:3d} | '
+                    f'موظفين: {config["employees"]:3d}'
+                )
             self.stdout.write('')
             return
 

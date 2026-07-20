@@ -1,14 +1,23 @@
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.core.paginator import Paginator
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from common.permissions import screen_permission_required
-from common.excel_utils import export_to_excel, import_from_excel
-from .models import Employee, Department, Attendance, Salary, Contract, LeaveType, LeaveRequest
-from .forms import EmployeeForm, DepartmentForm, AttendanceForm, SalaryForm, ContractForm, LeaveTypeForm, LeaveRequestForm
 import logging
+
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
+from common.excel_utils import export_to_excel, import_from_excel
+from common.permissions import screen_permission_required
+
+from .forms import (
+    AttendanceForm,
+    ContractForm,
+    DepartmentForm,
+    EmployeeForm,
+    LeaveRequestForm,
+    LeaveTypeForm,
+    SalaryForm,
+)
+from .models import Attendance, Contract, Department, Employee, LeaveRequest, LeaveType, Salary
 
 logger = logging.getLogger('accounting')
 
@@ -20,10 +29,7 @@ def employee_list(request):
     if department:
         employees = employees.filter(department_id=department)
     departments = Department.objects.filter(is_active=True)
-    return render(request, 'hr/employee_list.html', {
-        'employees': employees,
-        'departments': departments,
-    })
+    return render(request, 'hr/employee_list.html', {'employees': employees, 'departments': departments})
 
 
 @screen_permission_required('hr.employee', 'add')
@@ -44,11 +50,9 @@ def employee_detail(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     attendances = Attendance.objects.filter(employee=employee).order_by('-date')[:30]
     salaries = Salary.objects.filter(employee=employee).order_by('-year', '-month')[:12]
-    return render(request, 'hr/employee_detail.html', {
-        'employee': employee,
-        'attendances': attendances,
-        'salaries': salaries,
-    })
+    return render(
+        request, 'hr/employee_detail.html', {'employee': employee, 'attendances': attendances, 'salaries': salaries}
+    )
 
 
 @screen_permission_required('hr.employee', 'edit')
@@ -121,7 +125,7 @@ def salary_post(request, pk):
         salary.is_paid = True
         salary.save(update_fields=['is_paid'])
         messages.success(request, 'تم ترحيل قيد الرواتب بنجاح')
-    except Exception as e:
+    except Exception:
         messages.error(request, 'حدث خطأ أثناء الترحيل. تأكد من صحة البيانات وحاول مرة أخرى.')
         logger.exception('Posting failed for Salary %s', pk)
     return redirect('hr:salary_list')
@@ -150,10 +154,7 @@ def department_create(request):
 def department_detail(request, pk):
     department = get_object_or_404(Department, pk=pk)
     employees = Employee.objects.filter(department=department, status='active')
-    return render(request, 'hr/department_detail.html', {
-        'department': department,
-        'employees': employees,
-    })
+    return render(request, 'hr/department_detail.html', {'department': department, 'employees': employees})
 
 
 @screen_permission_required('hr.employee', 'edit')
@@ -197,27 +198,35 @@ def attendance_detail(request, pk):
 @screen_permission_required('hr.employee', 'export')
 def export_employees(request):
     employees = Employee.objects.filter(status='active').select_related('department')
-    return export_to_excel(employees, [
-        {'field': 'employee_number', 'header': 'رقم الموظف', 'width': 15},
-        {'field': lambda e: f'{e.first_name} {e.last_name}', 'header': 'الاسم الكامل', 'width': 25},
-        {'field': 'department', 'header': 'القسم', 'width': 20},
-        {'field': 'position', 'header': 'المنصب', 'width': 20},
-        {'field': 'salary', 'header': 'الراتب', 'width': 15},
-        {'field': 'status', 'header': 'الحالة', 'width': 12},
-    ], filename="employees")
+    return export_to_excel(
+        employees,
+        [
+            {'field': 'employee_number', 'header': 'رقم الموظف', 'width': 15},
+            {'field': lambda e: f'{e.first_name} {e.last_name}', 'header': 'الاسم الكامل', 'width': 25},
+            {'field': 'department', 'header': 'القسم', 'width': 20},
+            {'field': 'position', 'header': 'المنصب', 'width': 20},
+            {'field': 'salary', 'header': 'الراتب', 'width': 15},
+            {'field': 'status', 'header': 'الحالة', 'width': 12},
+        ],
+        filename='employees',
+    )
 
 
 @screen_permission_required('hr.employee', 'export')
 def export_salaries(request):
     salaries = Salary.objects.select_related('employee').all()
-    return export_to_excel(salaries, [
-        {'field': 'employee', 'header': 'الموظف', 'width': 25},
-        {'field': 'month', 'header': 'الشهر', 'width': 10},
-        {'field': 'year', 'header': 'السنة', 'width': 10},
-        {'field': 'basic_salary', 'header': 'الراتب الأساسي', 'width': 18},
-        {'field': 'net_salary', 'header': 'الراتب الصافي', 'width': 18},
-        {'field': 'is_paid', 'header': 'مدفوع', 'width': 10},
-    ], filename="salaries")
+    return export_to_excel(
+        salaries,
+        [
+            {'field': 'employee', 'header': 'الموظف', 'width': 25},
+            {'field': 'month', 'header': 'الشهر', 'width': 10},
+            {'field': 'year', 'header': 'السنة', 'width': 10},
+            {'field': 'basic_salary', 'header': 'الراتب الأساسي', 'width': 18},
+            {'field': 'net_salary', 'header': 'الراتب الصافي', 'width': 18},
+            {'field': 'is_paid', 'header': 'مدفوع', 'width': 10},
+        ],
+        filename='salaries',
+    )
 
 
 @screen_permission_required('hr.employee', 'add')
@@ -232,18 +241,23 @@ def import_employees(request):
         import uuid
         from datetime import date
         from decimal import Decimal
+
         from django.db import transaction
-        rows = import_from_excel(file, [
-            {'field': 'employee_number', 'header': 'رقم الموظف'},
-            {'field': 'full_name', 'header': 'الاسم الكامل'},
-            {'field': 'department', 'header': 'القسم'},
-            {'field': 'position', 'header': 'المنصب'},
-            {'field': 'salary', 'header': 'الراتب', 'type': 'decimal'},
-            {'field': 'status', 'header': 'الحالة'},
-            {'field': 'national_id', 'header': 'رقم الهوية'},
-            {'field': 'gender', 'header': 'الجنس'},
-            {'field': 'hire_date', 'header': 'تاريخ التعيين', 'type': 'date'},
-        ])
+
+        rows = import_from_excel(
+            file,
+            [
+                {'field': 'employee_number', 'header': 'رقم الموظف'},
+                {'field': 'full_name', 'header': 'الاسم الكامل'},
+                {'field': 'department', 'header': 'القسم'},
+                {'field': 'position', 'header': 'المنصب'},
+                {'field': 'salary', 'header': 'الراتب', 'type': 'decimal'},
+                {'field': 'status', 'header': 'الحالة'},
+                {'field': 'national_id', 'header': 'رقم الهوية'},
+                {'field': 'gender', 'header': 'الجنس'},
+                {'field': 'hire_date', 'header': 'تاريخ التعيين', 'type': 'date'},
+            ],
+        )
         dept_lookup = {d.name: d for d in Department.objects.all()}
         created = 0
         with transaction.atomic():
@@ -269,7 +283,7 @@ def import_employees(request):
                 )
                 created += 1
         messages.success(request, f'تم استيراد {created} موظف بنجاح')
-    except Exception as e:
+    except Exception:
         messages.error(request, 'حدث خطأ أثناء الاستيراد. تأكد من صحة بيانات الملف وحاول مرة أخرى.')
         logger.exception('Import failed')
     return redirect('hr:employee_list')

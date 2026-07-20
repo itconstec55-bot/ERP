@@ -1,6 +1,14 @@
 from django.contrib import admin
-from .models import (Supplier, Product, ProductCategory, UnitOfMeasure,
-                     CatalogSettings, PurchaseInvoice, PurchaseInvoiceLine)
+
+from .models import (
+    CatalogSettings,
+    Product,
+    ProductCategory,
+    PurchaseInvoice,
+    PurchaseInvoiceLine,
+    Supplier,
+    UnitOfMeasure,
+)
 
 
 class PurchaseInvoiceLineInline(admin.TabularInline):
@@ -32,8 +40,14 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(CatalogSettings)
 class CatalogSettingsAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'default_unit', 'default_category',
-                    'enforce_unit', 'enforce_category', 'allow_decimal_quantity')
+    list_display = (
+        '__str__',
+        'default_unit',
+        'default_category',
+        'enforce_unit',
+        'enforce_category',
+        'allow_decimal_quantity',
+    )
 
     def has_add_permission(self, request):
         return not CatalogSettings.objects.exists()
@@ -44,8 +58,16 @@ class CatalogSettingsAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'category', 'unit_of_measure', 'purchase_price',
-                    'selling_price', 'current_stock', 'is_active')
+    list_display = (
+        'code',
+        'name',
+        'category',
+        'unit_of_measure',
+        'purchase_price',
+        'selling_price',
+        'current_stock',
+        'is_active',
+    )
     list_filter = ('category', 'unit_of_measure', 'is_active')
     search_fields = ('code', 'name', 'barcode')
 

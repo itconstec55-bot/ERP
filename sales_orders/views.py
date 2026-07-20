@@ -1,16 +1,18 @@
-from django.shortcuts import render, get_object_or_404, redirect
+import logging
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-import logging
 
-from common.permissions import get_user_profile, screen_permission_required
-from sales.models import Customer, SalesInvoice, SalesInvoiceLine
-from purchases.models import Product
 from common.models import SequenceNumber
-from .models import SalesOrder, SalesOrderLine
+from common.permissions import get_user_profile, screen_permission_required
+from purchases.models import Product
+from sales.models import Customer, SalesInvoice, SalesInvoiceLine
+
 from .forms import SalesOrderForm, SalesOrderLineFormSet
+from .models import SalesOrder
 
 logger = logging.getLogger('accounting')
 
@@ -27,11 +29,11 @@ def so_list(request):
     paginator = Paginator(orders, 25)
     page = request.GET.get('page')
     orders_page = paginator.get_page(page)
-    return render(request, 'sales_orders/so_list.html', {
-        'orders': orders_page,
-        'status_filter': status,
-        'customers': Customer.objects.filter(is_active=True),
-    })
+    return render(
+        request,
+        'sales_orders/so_list.html',
+        {'orders': orders_page, 'status_filter': status, 'customers': Customer.objects.filter(is_active=True)},
+    )
 
 
 @screen_permission_required('sales_orders.salesorder', 'add')
@@ -52,22 +54,18 @@ def so_create(request):
         form = SalesOrderForm()
         formset = SalesOrderLineFormSet()
     products = Product.objects.filter(is_active=True)
-    return render(request, 'sales_orders/so_form.html', {
-        'form': form,
-        'formset': formset,
-        'products': products,
-        'title': 'إنشاء أمر بيع جديد',
-    })
+    return render(
+        request,
+        'sales_orders/so_form.html',
+        {'form': form, 'formset': formset, 'products': products, 'title': 'إنشاء أمر بيع جديد'},
+    )
 
 
 @screen_permission_required('sales_orders.salesorder', 'view')
 def so_detail(request, pk):
     order = get_object_or_404(SalesOrder.objects.select_related('customer'), pk=pk)
     lines = order.lines.select_related('product').all()
-    return render(request, 'sales_orders/so_detail.html', {
-        'order': order,
-        'lines': lines,
-    })
+    return render(request, 'sales_orders/so_detail.html', {'order': order, 'lines': lines})
 
 
 @screen_permission_required('sales_orders.salesorder', 'edit')
@@ -89,13 +87,17 @@ def so_edit(request, pk):
         form = SalesOrderForm(instance=order)
         formset = SalesOrderLineFormSet(instance=order)
     products = Product.objects.filter(is_active=True)
-    return render(request, 'sales_orders/so_form.html', {
-        'form': form,
-        'formset': formset,
-        'products': products,
-        'order': order,
-        'title': f'تعديل أمر البيع {order.order_number}',
-    })
+    return render(
+        request,
+        'sales_orders/so_form.html',
+        {
+            'form': form,
+            'formset': formset,
+            'products': products,
+            'order': order,
+            'title': f'تعديل أمر البيع {order.order_number}',
+        },
+    )
 
 
 @require_POST

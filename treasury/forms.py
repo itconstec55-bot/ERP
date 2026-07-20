@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Bank, Safe, BankTransaction, SafeTransaction
+
+from .models import Bank, BankTransaction, Safe, SafeTransaction
 
 
 def _validate_non_negative(value, field_name):
@@ -12,20 +13,15 @@ def _validate_non_negative(value, field_name):
 class BankForm(forms.ModelForm):
     class Meta:
         model = Bank
-        fields = ['name', 'branch', 'account_number', 'iban', 'swift_code',
-                  'account', 'notes']
-        widgets = {
-            'notes': forms.Textarea(attrs={'rows': 3}),
-        }
+        fields = ['name', 'branch', 'account_number', 'iban', 'swift_code', 'account', 'notes']
+        widgets = {'notes': forms.Textarea(attrs={'rows': 3})}
 
 
 class SafeForm(forms.ModelForm):
     class Meta:
         model = Safe
         fields = ['name', 'responsible_person', 'account', 'maximum_limit', 'notes']
-        widgets = {
-            'notes': forms.Textarea(attrs={'rows': 3}),
-        }
+        widgets = {'notes': forms.Textarea(attrs={'rows': 3})}
 
     def clean_maximum_limit(self):
         return _validate_non_negative(self.cleaned_data.get('maximum_limit'), 'الحد الأقصى')
@@ -34,12 +30,16 @@ class SafeForm(forms.ModelForm):
 class BankTransactionForm(forms.ModelForm):
     class Meta:
         model = BankTransaction
-        fields = ['transaction_type', 'date', 'amount', 'reference_number',
-                  'check_number', 'description', 'counterparty_account']
-        widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 3}),
-        }
+        fields = [
+            'transaction_type',
+            'date',
+            'amount',
+            'reference_number',
+            'check_number',
+            'description',
+            'counterparty_account',
+        ]
+        widgets = {'date': forms.DateInput(attrs={'type': 'date'}), 'description': forms.Textarea(attrs={'rows': 3})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -58,10 +58,7 @@ class SafeTransactionForm(forms.ModelForm):
     class Meta:
         model = SafeTransaction
         fields = ['transaction_type', 'date', 'amount', 'description', 'counterparty_account']
-        widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 3}),
-        }
+        widgets = {'date': forms.DateInput(attrs={'type': 'date'}), 'description': forms.Textarea(attrs={'rows': 3})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

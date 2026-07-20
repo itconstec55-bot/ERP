@@ -1,6 +1,7 @@
 import uuid
-from django.db import models
+
 from django.conf import settings
+from django.db import models
 
 
 class AuditLog(models.Model):
@@ -20,7 +21,9 @@ class AuditLog(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, db_index=True, verbose_name='المستخدم')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, db_index=True, verbose_name='المستخدم'
+    )
     action = models.CharField(max_length=20, choices=ACTION_CHOICES, db_index=True, verbose_name='الإجراء')
     model_name = models.CharField(max_length=100, db_index=True, verbose_name='النموذج')
     object_id = models.CharField(max_length=100, blank=True, verbose_name='معرف السجل')
@@ -34,9 +37,7 @@ class AuditLog(models.Model):
         verbose_name = 'سجل تدقيق'
         verbose_name_plural = 'سجلات التدقيق'
         ordering = ['-timestamp']
-        indexes = [
-            models.Index(fields=['model_name', 'action'], name='audit_model_action_idx'),
-        ]
+        indexes = [models.Index(fields=['model_name', 'action'], name='audit_model_action_idx')]
 
     def __str__(self):
         return f'{self.get_action_display()} - {self.model_name} ({self.timestamp})'
@@ -44,6 +45,7 @@ class AuditLog(models.Model):
 
 def log_action(user, action, model_name, object_id='', object_repr='', changes=None, request=None):
     from .context import get_current_user
+
     if user is None and request is not None:
         user = request.user if getattr(request, 'user', None) and request.user.is_authenticated else None
     if user is None:

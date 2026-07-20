@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Backup, BackupSettings, FactoryResetRequest
 
 
@@ -17,8 +18,16 @@ class BackupSettingsAdmin(admin.ModelAdmin):
 @admin.register(FactoryResetRequest)
 class FactoryResetRequestAdmin(admin.ModelAdmin):
     """للاطلاع/المساءلة فقط — لا يُنشأ ولا يُعدَّل من هنا (المنطق عبر طبقة الخدمة)."""
-    list_display = ['requested_at', 'reset_scope', 'status', 'requested_by',
-                    'reviewed_by', 'executed_by', 'executed_at']
+
+    list_display = [
+        'requested_at',
+        'reset_scope',
+        'status',
+        'requested_by',
+        'reviewed_by',
+        'executed_by',
+        'executed_at',
+    ]
     list_filter = ['status', 'reset_scope']
     search_fields = ['reason', 'result_notes']
     readonly_fields = [f.name for f in FactoryResetRequest._meta.fields]

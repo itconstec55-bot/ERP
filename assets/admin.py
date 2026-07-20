@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Asset, AssetCategory, DepreciationEntry
 
 
@@ -10,8 +11,15 @@ class AssetCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Asset)
 class AssetAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'category', 'purchase_price', 'accumulated_depreciation',
-                    'net_book_value', 'status')
+    list_display = (
+        'code',
+        'name',
+        'category',
+        'purchase_price',
+        'accumulated_depreciation',
+        'net_book_value',
+        'status',
+    )
     list_filter = ('category', 'status', 'depreciation_method')
     search_fields = ('code', 'name')
 

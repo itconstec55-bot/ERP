@@ -1,6 +1,7 @@
 import uuid
-from django.db import models
+
 from django.core.exceptions import ValidationError
+from django.db import models
 
 
 class Currency(models.Model):
@@ -8,7 +9,9 @@ class Currency(models.Model):
     code = models.CharField(max_length=10, unique=True, verbose_name='الكود')
     name = models.CharField(max_length=100, verbose_name='الاسم')
     symbol = models.CharField(max_length=10, verbose_name='الرمز')
-    exchange_rate_to_egp = models.DecimalField(max_digits=15, decimal_places=6, default=1, verbose_name='سعر الصرف إلى ج.م')
+    exchange_rate_to_egp = models.DecimalField(
+        max_digits=15, decimal_places=6, default=1, verbose_name='سعر الصرف إلى ج.م'
+    )
     is_base = models.BooleanField(default=False, verbose_name='العملة الأساسية')
     is_active = models.BooleanField(default=True, verbose_name='نشط')
     updated_at = models.DateTimeField(auto_now=True)
@@ -27,7 +30,9 @@ class Currency(models.Model):
             if self.pk:
                 existing = existing.exclude(pk=self.pk)
             if existing.exists():
-                raise ValidationError(f'العملة الأساسية الحالية هي "{existing.first().name}". لا يمكن تعيين عملة أساسية أخرى.')
+                raise ValidationError(
+                    f'العملة الأساسية الحالية هي "{existing.first().name}". لا يمكن تعيين عملة أساسية أخرى.'
+                )
 
     def save(self, *args, **kwargs):
         self.full_clean()

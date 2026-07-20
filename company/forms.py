@@ -1,23 +1,47 @@
 from django import forms
-from .models import Company, CompanyBranch
+
 from accounts.models import Account
+
+from .models import Company, CompanyBranch
 
 
 class CompanyForm(forms.ModelForm):
     class Meta:
         model = Company
         fields = [
-            'name', 'name_en', 'address', 'city', 'country',
-            'phone', 'mobile', 'fax', 'email', 'website',
-            'tax_number', 'commercial_register', 'company_number',
-            'logo', 'currency', 'currency_code', 'vat_rate',
-            'fiscal_year_start', 'fiscal_year_end',
-            'bank_name', 'bank_account_number', 'bank_iban', 'bank_swift',
+            'name',
+            'name_en',
+            'address',
+            'city',
+            'country',
+            'phone',
+            'mobile',
+            'fax',
+            'email',
+            'website',
+            'tax_number',
+            'commercial_register',
+            'company_number',
+            'logo',
+            'currency',
+            'currency_code',
+            'vat_rate',
+            'fiscal_year_start',
+            'fiscal_year_end',
+            'bank_name',
+            'bank_account_number',
+            'bank_iban',
+            'bank_swift',
             'registration_notes',
             # حسابات محاسبية
-            'purchases_account', 'vat_account', 'withholding_tax_account',
-            'supplier_account', 'customer_account', 'sales_revenue_account',
-            'cogs_account', 'inventory_account',
+            'purchases_account',
+            'vat_account',
+            'withholding_tax_account',
+            'supplier_account',
+            'customer_account',
+            'sales_revenue_account',
+            'cogs_account',
+            'inventory_account',
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -60,9 +84,14 @@ class CompanyForm(forms.ModelForm):
         # فلترة الحسابات النشطة فقط
         active_accounts = Account.objects.filter(is_active=True).order_by('code')
         for field_name in [
-            'purchases_account', 'vat_account', 'withholding_tax_account',
-            'supplier_account', 'customer_account', 'sales_revenue_account',
-            'cogs_account', 'inventory_account'
+            'purchases_account',
+            'vat_account',
+            'withholding_tax_account',
+            'supplier_account',
+            'customer_account',
+            'sales_revenue_account',
+            'cogs_account',
+            'inventory_account',
         ]:
             self.fields[field_name].queryset = active_accounts
             self.fields[field_name].required = False

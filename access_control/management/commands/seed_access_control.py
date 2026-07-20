@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from access_control.models import Role, Screen, RoleScreenPermission
+from access_control.models import Role, RoleScreenPermission, Screen
 
 SCREENS = [
     ('accounts.account', 'دليل الحسابات', 'الحسابات', 10),
@@ -47,28 +47,44 @@ OPERATE = {'view': True, 'add': True, 'edit': True, 'print': True, 'export': Tru
 
 ROLES = {
     'admin': ('مدير النظام', {'*': ALL}),
-    'accountant': ('محاسب', {
-        'accounts.account': OPERATE, 'accounts.journalentry': OPERATE,
-        'treasury.safe': OPERATE, 'treasury.bank': OPERATE,
-        'reports.report': READ, 'budget.budget': READ,
-        'credit_notes.creditnote': OPERATE,
-        'payment_receipts.paymentreceipt': OPERATE,
-        'cheques.cheque': OPERATE, 'assets.asset': OPERATE,
-    }),
-    'warehouse_keeper': ('أمين مخزن', {
-        'warehouses.warehouse': READ, 'warehouses.stockmovement': OPERATE,
-        'purchases.product': READ, 'requisitions.requisition': OPERATE,
-        'goods_received.grn': OPERATE,
-        'purchase_returns.purchasereturn': OPERATE,
-        'stock_adjustments.adjustment': OPERATE,
-    }),
-    'sales': ('مبيعات', {
-        'sales.customer': OPERATE, 'sales.invoice': OPERATE,
-        'reports.report': READ,
-        'sales_orders.salesorder': OPERATE,
-        'sales_returns.salesreturn': OPERATE,
-        'tax_invoices.taxinvoice': OPERATE,
-    }),
+    'accountant': (
+        'محاسب',
+        {
+            'accounts.account': OPERATE,
+            'accounts.journalentry': OPERATE,
+            'treasury.safe': OPERATE,
+            'treasury.bank': OPERATE,
+            'reports.report': READ,
+            'budget.budget': READ,
+            'credit_notes.creditnote': OPERATE,
+            'payment_receipts.paymentreceipt': OPERATE,
+            'cheques.cheque': OPERATE,
+            'assets.asset': OPERATE,
+        },
+    ),
+    'warehouse_keeper': (
+        'أمين مخزن',
+        {
+            'warehouses.warehouse': READ,
+            'warehouses.stockmovement': OPERATE,
+            'purchases.product': READ,
+            'requisitions.requisition': OPERATE,
+            'goods_received.grn': OPERATE,
+            'purchase_returns.purchasereturn': OPERATE,
+            'stock_adjustments.adjustment': OPERATE,
+        },
+    ),
+    'sales': (
+        'مبيعات',
+        {
+            'sales.customer': OPERATE,
+            'sales.invoice': OPERATE,
+            'reports.report': READ,
+            'sales_orders.salesorder': OPERATE,
+            'sales_returns.salesreturn': OPERATE,
+            'tax_invoices.taxinvoice': OPERATE,
+        },
+    ),
     'viewer': ('مشاهدة فقط', {'*': READ}),
 }
 
@@ -81,16 +97,14 @@ class Command(BaseCommand):
         screen_map = {}
         for code, name, module, order in SCREENS:
             screen, _ = Screen.objects.update_or_create(
-                code=code,
-                defaults={'name': name, 'module': module, 'order': order, 'is_active': True},
+                code=code, defaults={'name': name, 'module': module, 'order': order, 'is_active': True}
             )
             screen_map[code] = screen
         self.stdout.write(self.style.SUCCESS(f'Screens seeded: {len(screen_map)}'))
 
         for code, (name, perms) in ROLES.items():
             role, _ = Role.objects.update_or_create(
-                code=code,
-                defaults={'name': name, 'is_system': True, 'is_active': True},
+                code=code, defaults={'name': name, 'is_system': True, 'is_active': True}
             )
             if '*' in perms:
                 flags = perms['*']
@@ -106,7 +120,8 @@ class Command(BaseCommand):
     @staticmethod
     def _set(role, screen, flags):
         RoleScreenPermission.objects.update_or_create(
-            role=role, screen=screen,
+            role=role,
+            screen=screen,
             defaults={
                 'grant_type': 'allow',
                 'can_view': flags.get('view', False),

@@ -1,8 +1,6 @@
 from django.contrib import admin
-from .models import (
-    Contractor, Contract, ContractItem, InterimCertificate,
-    CertificateItem, ContractorPayment
-)
+
+from .models import CertificateItem, Contract, ContractItem, Contractor, ContractorPayment, InterimCertificate
 
 
 class ContractItemInline(admin.TabularInline):
@@ -24,7 +22,16 @@ class ContractAdmin(admin.ModelAdmin):
     list_display = ['contract_number', 'title', 'contractor', 'contract_amount', 'completion_percentage', 'status']
     list_filter = ['status', 'contract_type']
     search_fields = ['contract_number', 'title', 'contractor__name']
-    readonly_fields = ['contract_number', 'vat_amount', 'total_with_vat', 'total_certified', 'total_paid', 'total_retained', 'created_at', 'updated_at']
+    readonly_fields = [
+        'contract_number',
+        'vat_amount',
+        'total_with_vat',
+        'total_certified',
+        'total_paid',
+        'total_retained',
+        'created_at',
+        'updated_at',
+    ]
     inlines = [ContractItemInline]
 
 
@@ -39,7 +46,17 @@ class InterimCertificateAdmin(admin.ModelAdmin):
     list_display = ['certificate_number', 'contract', 'period_number', 'gross_amount', 'net_amount', 'status']
     list_filter = ['status']
     search_fields = ['certificate_number', 'contract__contract_number']
-    readonly_fields = ['certificate_number', 'gross_amount', 'retention_amount', 'advance_deduction', 'vat_amount', 'net_amount', 'is_posted', 'created_at', 'updated_at']
+    readonly_fields = [
+        'certificate_number',
+        'gross_amount',
+        'retention_amount',
+        'advance_deduction',
+        'vat_amount',
+        'net_amount',
+        'is_posted',
+        'created_at',
+        'updated_at',
+    ]
     inlines = [CertificateItemInline]
 
 

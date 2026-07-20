@@ -1,12 +1,11 @@
 import logging
-from decimal import Decimal
-from django.db import models, transaction
-from django.contrib.auth.models import User
-from django.utils import timezone
-from django.core.exceptions import ValidationError
 import uuid
+from decimal import Decimal
 
-from common.validators import validate_balanced_entry
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.db import models, transaction
+from django.utils import timezone
 
 logger = logging.getLogger('accounting')
 
@@ -42,15 +41,16 @@ class Account(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=20, unique=True, verbose_name='كود الحساب')
     name = models.CharField(max_length=200, verbose_name='اسم الحساب')
-    account_type = models.ForeignKey(AccountType, on_delete=models.PROTECT, verbose_name='نوع الحساب', related_name='accounts')
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True,
-                               related_name='children', verbose_name='الحساب الأب')
+    account_type = models.ForeignKey(
+        AccountType, on_delete=models.PROTECT, verbose_name='نوع الحساب', related_name='accounts'
+    )
+    parent = models.ForeignKey(
+        'self', on_delete=models.CASCADE, null=True, blank=True, related_name='children', verbose_name='الحساب الأب'
+    )
     description = models.TextField(blank=True, null=True, verbose_name='الوصف')
     is_active = models.BooleanField(default=True, verbose_name='نشط')
-    opening_balance = models.DecimalField(max_digits=20, decimal_places=10, default=0,
-                                          verbose_name='الرصيد الافتتاحي')
-    current_balance = models.DecimalField(max_digits=20, decimal_places=10, default=0,
-                                          verbose_name='الرصيد الحالي')
+    opening_balance = models.DecimalField(max_digits=20, decimal_places=10, default=0, verbose_name='الرصيد الافتتاحي')
+    current_balance = models.DecimalField(max_digits=20, decimal_places=10, default=0, verbose_name='الرصيد الحالي')
     is_bank = models.BooleanField(default=False, verbose_name='حساب بنكي')
     is_safe = models.BooleanField(default=False, verbose_name='حساب خزينة')
     tax_account = models.BooleanField(default=False, verbose_name='حساب ضريبي')
@@ -207,8 +207,9 @@ class JournalEntry(models.Model):
 
 class JournalEntryLine(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    journal_entry = models.ForeignKey(JournalEntry, on_delete=models.CASCADE,
-                                       related_name='lines', verbose_name='القيد المحاسبي')
+    journal_entry = models.ForeignKey(
+        JournalEntry, on_delete=models.CASCADE, related_name='lines', verbose_name='القيد المحاسبي'
+    )
     account = models.ForeignKey(Account, on_delete=models.PROTECT, verbose_name='الحساب')
     debit = models.DecimalField(max_digits=20, decimal_places=10, default=0, verbose_name='مدين')
     credit = models.DecimalField(max_digits=20, decimal_places=10, default=0, verbose_name='دائن')
@@ -225,15 +226,11 @@ class JournalEntryLine(models.Model):
         ]
         constraints = [
             models.CheckConstraint(
-                check=(
-                    models.Q(debit__gt=0, credit=0) |
-                    models.Q(debit=0, credit__gt=0)
-                ),
+                check=(models.Q(debit__gt=0, credit=0) | models.Q(debit=0, credit__gt=0)),
                 name='jel_debit_or_credit_exclusive',
             ),
             models.CheckConstraint(
-                check=models.Q(debit__gte=0) & models.Q(credit__gte=0),
-                name='jel_non_negative_amounts',
+                check=models.Q(debit__gte=0) & models.Q(credit__gte=0), name='jel_non_negative_amounts'
             ),
         ]
 
@@ -253,11 +250,11 @@ class JournalEntryLine(models.Model):
         self.full_clean()
         super().save(*args, **kwargs)
         # تحديث إجماليات القيد الأب بشكل فعال (استعلام واحد بدلاً من اثنين)
-        from django.db.models import Sum, Value
+        from django.db.models import Sum
         from django.db.models.functions import Coalesce
+
         totals = self.journal_entry.lines.aggregate(
-            total_debit=Coalesce(Sum('debit'), Decimal('0')),
-            total_credit=Coalesce(Sum('credit'), Decimal('0')),
+            total_debit=Coalesce(Sum('debit'), Decimal('0')), total_credit=Coalesce(Sum('credit'), Decimal('0'))
         )
         self.journal_entry.total_debit = totals['total_debit']
         self.journal_entry.total_credit = totals['total_credit']

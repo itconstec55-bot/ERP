@@ -7,9 +7,10 @@ class AuditConfig(AppConfig):
     verbose_name = 'سجل التدقيق'
 
     def ready(self):
-        from django.db.models.signals import post_save, post_delete
-        from .models import log_action
+        from django.db.models.signals import post_delete, post_save
+
         from .context import get_current_user
+        from .models import log_action
 
         AUDITED = [
             'accounts.journalentry',
@@ -61,29 +62,18 @@ class AuditConfig(AppConfig):
             if label.lower() not in AUDITED:
                 return
             action = 'create' if created else 'update'
-            log_action(
-                get_current_user(),
-                action,
-                label,
-                object_id=instance.pk,
-                object_repr=str(instance)[:200],
-            )
+            log_action(get_current_user(), action, label, object_id=instance.pk, object_repr=str(instance)[:200])
 
         def _post_delete(sender, instance, **kwargs):
             label = _get_label(instance)
             if label.lower() not in AUDITED:
                 return
-            log_action(
-                get_current_user(),
-                'delete',
-                label,
-                object_id=instance.pk,
-                object_repr=str(instance)[:200],
-            )
+            log_action(get_current_user(), 'delete', label, object_id=instance.pk, object_repr=str(instance)[:200])
 
         for label in AUDITED:
             app, model = label.split('.')
             from django.apps import apps as django_apps
+
             try:
                 model_cls = django_apps.get_model(app, model)
             except LookupError:

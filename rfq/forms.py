@@ -1,6 +1,8 @@
 from django import forms
+
 from purchases.models import Product, Supplier
-from .models import RFQ, RFQLine, Quotation, QuotationLine
+
+from .models import RFQ, Quotation, QuotationLine, RFQLine
 
 
 class RFQForm(forms.ModelForm):
@@ -49,12 +51,7 @@ class RFQLineForm(forms.ModelForm):
 
 
 RFQLineFormSet = forms.inlineformset_factory(
-    RFQ, RFQLine,
-    form=RFQLineForm,
-    extra=3,
-    can_delete=True,
-    min_num=1,
-    validate_min=True,
+    RFQ, RFQLine, form=RFQLineForm, extra=3, can_delete=True, min_num=1, validate_min=True
 )
 
 
@@ -80,9 +77,7 @@ class QuotationLineForm(forms.ModelForm):
     class Meta:
         model = QuotationLine
         fields = ['rfq_line', 'product', 'quantity', 'unit_price', 'discount', 'delivery_days']
-        widgets = {
-            'delivery_days': forms.NumberInput(attrs={'min': 0}),
-        }
+        widgets = {'delivery_days': forms.NumberInput(attrs={'min': 0})}
 
     def __init__(self, *args, rfq=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -107,10 +102,5 @@ class QuotationLineForm(forms.ModelForm):
 
 
 QuotationLineFormSet = forms.inlineformset_factory(
-    Quotation, QuotationLine,
-    form=QuotationLineForm,
-    extra=3,
-    can_delete=True,
-    min_num=1,
-    validate_min=True,
+    Quotation, QuotationLine, form=QuotationLineForm, extra=3, can_delete=True, min_num=1, validate_min=True
 )

@@ -1,8 +1,9 @@
 import uuid
-from django.db import models
-from django.core.exceptions import ValidationError
-from django.utils import timezone
 from decimal import Decimal
+
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils import timezone
 
 
 class ConcreteMixDesign(models.Model):
@@ -10,14 +11,21 @@ class ConcreteMixDesign(models.Model):
     تصميم خلطة الخرسانة - يحدد النسب والمكونات الأساسية
     مثل: C25/30, C30/37, etc.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField('كود الخلطة', max_length=50, unique=True)
     name = models.CharField('اسم الخلطة', max_length=200)
     strength_class = models.CharField('فئة القوة', max_length=50, help_text='مثال: C25/30, C30/37')
-    slump_cm = models.DecimalField('الانهيار (سم)', max_digits=6, decimal_places=2, help_text='قيمة الانهيار بالسنتيمتر')
+    slump_cm = models.DecimalField(
+        'الانهيار (سم)', max_digits=6, decimal_places=2, help_text='قيمة الانهيار بالسنتيمتر'
+    )
     max_aggregate_mm = models.DecimalField('حجم أقصى للركام (مم)', max_digits=6, decimal_places=2, default=20)
-    water_cement_ratio = models.DecimalField('نسبة الماء/الأسمنت', max_digits=5, decimal_places=3, help_text='نسبة وسطرة الماء للأسمنت')
-    target_strength_mpa = models.DecimalField('قوة الهدف (ميجاباسكال)', max_digits=8, decimal_places=2, help_text='قوة الضغط المطلوبة بعد 28 يوم')
+    water_cement_ratio = models.DecimalField(
+        'نسبة الماء/الأسمنت', max_digits=5, decimal_places=3, help_text='نسبة وسطرة الماء للأسمنت'
+    )
+    target_strength_mpa = models.DecimalField(
+        'قوة الهدف (ميجاباسكال)', max_digits=8, decimal_places=2, help_text='قوة الضغط المطلوبة بعد 28 يوم'
+    )
     description = models.TextField('الوصف', blank=True)
     is_active = models.BooleanField('نشط', default=True)
     cost_per_m3 = models.DecimalField('التكلفة للمتر المكعب', max_digits=15, decimal_places=6, default=0)
@@ -25,9 +33,12 @@ class ConcreteMixDesign(models.Model):
     created_at = models.DateTimeField('تاريخ الإنشاء', auto_now_add=True)
     updated_at = models.DateTimeField('تاريخ التعديل', auto_now=True)
     product = models.ForeignKey(
-        'purchases.Product', on_delete=models.SET_NULL, null=True, blank=True,
+        'purchases.Product',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         verbose_name='المنتج المقابل في المخزون',
-        help_text='يُستخدم عند إنشاء فاتورة مبيعات تلقائية لتسليم الخرسانة'
+        help_text='يُستخدم عند إنشاء فاتورة مبيعات تلقائية لتسليم الخرسانة',
     )
 
     class Meta:
@@ -44,6 +55,7 @@ class ConcreteMixDesign(models.Model):
 
     def calculate_cost(self):
         from decimal import Decimal
+
         total = Decimal('0')
         for comp in self.components.select_related('product').all():
             if comp.product and comp.product.purchase_price:
@@ -57,6 +69,7 @@ class MixComponent(models.Model):
     """
     مكونات الخلطة - نسب المواد لكل متر مكعب
     """
+
     COMPONENT_TYPES = [
         ('cement', 'أسمنت'),
         ('fine_aggregate', 'ركام ناعم (رمل)'),
@@ -70,14 +83,19 @@ class MixComponent(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    mix_design = models.ForeignKey(ConcreteMixDesign, on_delete=models.CASCADE, related_name='components', verbose_name='تصميم الخلطة')
+    mix_design = models.ForeignKey(
+        ConcreteMixDesign, on_delete=models.CASCADE, related_name='components', verbose_name='تصميم الخلطة'
+    )
     component_type = models.CharField('نوع المكون', max_length=20, choices=COMPONENT_TYPES)
     name = models.CharField('اسم المكون', max_length=200)
     quantity_kg = models.DecimalField('الكمية (كجم/م³)', max_digits=10, decimal_places=3)
     product = models.ForeignKey(
-        'purchases.Product', on_delete=models.SET_NULL, null=True, blank=True,
+        'purchases.Product',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         verbose_name='المنتج المقابل',
-        help_text='المنتج في نظام المخزون المقابل لهذا المكون'
+        help_text='المنتج في نظام المخزون المقابل لهذا المكون',
     )
     order = models.PositiveIntegerField('ترتيب العرض', default=0)
 
@@ -101,6 +119,7 @@ class CustomerRequest(models.Model):
     """
     طلب العميل - أول مرحلة في دورة الطلب
     """
+
     STATUS_CHOICES = [
         ('new', 'جديد'),
         ('confirmed', 'مؤكد'),
@@ -111,9 +130,7 @@ class CustomerRequest(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     request_number = models.CharField('رقم الطلب', max_length=50, unique=True)
-    customer = models.ForeignKey(
-        'sales.Customer', on_delete=models.PROTECT, verbose_name='العميل'
-    )
+    customer = models.ForeignKey('sales.Customer', on_delete=models.PROTECT, verbose_name='العميل')
     project_name = models.CharField('اسم المشروع', max_length=300)
     site_address = models.TextField('عنوان الموقع')
     contact_person = models.CharField('جهة الاتصال', max_length=200, blank=True)
@@ -122,9 +139,7 @@ class CustomerRequest(models.Model):
     notes = models.TextField('ملاحظات', blank=True)
     created_at = models.DateTimeField('تاريخ الإنشاء', auto_now_add=True)
     updated_at = models.DateTimeField('تاريخ التعديل', auto_now=True)
-    created_by = models.ForeignKey(
-        'auth.User', on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة'
-    )
+    created_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة')
 
     class Meta:
         verbose_name = 'طلب عميل'
@@ -142,6 +157,7 @@ class CustomerRequest(models.Model):
     def save(self, *args, **kwargs):
         if not self.request_number:
             from common.auto_number import generate_auto_number
+
             self.request_number = generate_auto_number('CR', CustomerRequest)
         super().save(*args, **kwargs)
 
@@ -150,11 +166,8 @@ class ProductionOrder(models.Model):
     """
     أمر الإنتاج - يرتبط بطلب العميل ويحدد الخلطة والكمية
     """
-    PRIORITY_CHOICES = [
-        ('normal', 'عادي'),
-        ('urgent', 'عاجل'),
-        ('very_urgent', 'عاجل جداً'),
-    ]
+
+    PRIORITY_CHOICES = [('normal', 'عادي'), ('urgent', 'عاجل'), ('very_urgent', 'عاجل جداً')]
     STATUS_CHOICES = [
         ('draft', 'مسودة'),
         ('scheduled', 'مجدول'),
@@ -166,12 +179,9 @@ class ProductionOrder(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     order_number = models.CharField('رقم أمر الإنتاج', max_length=50, unique=True)
     customer_request = models.ForeignKey(
-        CustomerRequest, on_delete=models.PROTECT, verbose_name='طلب العميل',
-        related_name='production_orders'
+        CustomerRequest, on_delete=models.PROTECT, verbose_name='طلب العميل', related_name='production_orders'
     )
-    mix_design = models.ForeignKey(
-        ConcreteMixDesign, on_delete=models.PROTECT, verbose_name='تصميم الخلطة'
-    )
+    mix_design = models.ForeignKey(ConcreteMixDesign, on_delete=models.PROTECT, verbose_name='تصميم الخلطة')
     quantity_m3 = models.DecimalField('الكمية المطلوبة (م³)', max_digits=10, decimal_places=3)
     quantity_delivered = models.DecimalField('الكمية المسلمة (م³)', max_digits=10, decimal_places=3, default=0)
     priority = models.CharField('الأولوية', max_length=20, choices=PRIORITY_CHOICES, default='normal')
@@ -187,27 +197,30 @@ class ProductionOrder(models.Model):
     notes = models.TextField('ملاحظات', blank=True)
     created_at = models.DateTimeField('تاريخ الإنشاء', auto_now_add=True)
     updated_at = models.DateTimeField('تاريخ التعديل', auto_now=True)
-    created_by = models.ForeignKey(
-        'auth.User', on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة'
-    )
+    created_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة')
     sales_invoice = models.ForeignKey(
-        'sales.SalesInvoice', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='production_orders', verbose_name='فاتورة المبيعات المولّدة',
-        help_text='تُنشأ تلقائياً عند اكتمال تسليم الخرسانة'
+        'sales.SalesInvoice',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='production_orders',
+        verbose_name='فاتورة المبيعات المولّدة',
+        help_text='تُنشأ تلقائياً عند اكتمال تسليم الخرسانة',
     )
     branch = models.ForeignKey(
-        'company.CompanyBranch', on_delete=models.SET_NULL, null=True, blank=True,
-        verbose_name='الفرع', help_text='يُستخدم للصلاحيات على مستوى الكائن'
+        'company.CompanyBranch',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='الفرع',
+        help_text='يُستخدم للصلاحيات على مستوى الكائن',
     )
 
     class Meta:
         verbose_name = 'أمر إنتاج'
         verbose_name_plural = 'أوامر الإنتاج'
         ordering = ['-created_at']
-        permissions = [
-            ('approve_productionorder', 'اعتماد أمر إنتاج'),
-            ('print_productionorder', 'طباعة أمر إنتاج'),
-        ]
+        permissions = [('approve_productionorder', 'اعتماد أمر إنتاج'), ('print_productionorder', 'طباعة أمر إنتاج')]
         indexes = [
             models.Index(fields=['status']),
             models.Index(fields=['scheduled_date']),
@@ -220,6 +233,7 @@ class ProductionOrder(models.Model):
     def save(self, *args, **kwargs):
         if not self.order_number:
             from common.auto_number import generate_auto_number
+
             self.order_number = generate_auto_number('PO', ProductionOrder)
         self.total_price = self.quantity_m3 * self.unit_price
         super().save(*args, **kwargs)
@@ -228,6 +242,7 @@ class ProductionOrder(models.Model):
                 self.generate_sales_invoice()
             except Exception as e:
                 import logging
+
                 logging.getLogger(__name__).warning(
                     'تعذر إنشاء فاتورة المبيعات لأمر الإنتاج %s: %s', self.order_number, e
                 )
@@ -238,13 +253,13 @@ class ProductionOrder(models.Model):
             return self.sales_invoice
         from common.auto_number import generate_auto_number
         from sales.models import SalesInvoice, SalesInvoiceLine
+
         customer = self.customer_request.customer
         product = self.mix_design.product or None
         if not product:
             from purchases.models import Product
-            product = Product.objects.filter(
-                name__icontains='خرسانة'
-            ).first()
+
+            product = Product.objects.filter(name__icontains='خرسانة').first()
         if not customer or not product:
             return None
         invoice = SalesInvoice.objects.create(
@@ -292,14 +307,8 @@ class Truck(models.Model):
     """
     الشاحنات - أسطول نقل الخرسانة
     """
-    CAPACITY_CHOICES = [
-        (6, '6 م³'),
-        (7, '7 م³'),
-        (8, '8 م³'),
-        (9, '9 م³'),
-        (10, '10 م³'),
-        (12, '12 م³'),
-    ]
+
+    CAPACITY_CHOICES = [(6, '6 م³'), (7, '7 م³'), (8, '8 م³'), (9, '9 م³'), (10, '10 م³'), (12, '12 م³')]
     STATUS_CHOICES = [
         ('available', 'متاحة'),
         ('on_route', 'في الطريق'),
@@ -338,6 +347,7 @@ class ProductionBatch(models.Model):
     """
     الدفعة الإنتاجية - كل محاولة خلط وتسليم
     """
+
     STATUS_CHOICES = [
         ('queued', 'في الطابور'),
         ('mixing', 'جاري الخلط'),
@@ -352,12 +362,9 @@ class ProductionBatch(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     batch_number = models.CharField('رقم الدفعة', max_length=50, unique=True)
     production_order = models.ForeignKey(
-        ProductionOrder, on_delete=models.CASCADE, verbose_name='أمر الإنتاج',
-        related_name='batches'
+        ProductionOrder, on_delete=models.CASCADE, verbose_name='أمر الإنتاج', related_name='batches'
     )
-    truck = models.ForeignKey(
-        Truck, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='الشاحنة'
-    )
+    truck = models.ForeignKey(Truck, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='الشاحنة')
     quantity_m3 = models.DecimalField('الكمية (م³)', max_digits=10, decimal_places=3)
     actual_quantity_m3 = models.DecimalField('الكمية الفعلية (م³)', max_digits=10, decimal_places=3, default=0)
     status = models.CharField('الحالة', max_length=20, choices=STATUS_CHOICES, default='queued')
@@ -375,10 +382,7 @@ class ProductionBatch(models.Model):
         verbose_name = 'دفعة إنتاجية'
         verbose_name_plural = 'الدفعات الإنتاجية'
         ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['status']),
-            models.Index(fields=['-created_at']),
-        ]
+        indexes = [models.Index(fields=['status']), models.Index(fields=['-created_at'])]
 
     def __str__(self):
         return f'{self.batch_number} - {self.production_order.order_number}'
@@ -386,6 +390,7 @@ class ProductionBatch(models.Model):
     def save(self, *args, **kwargs):
         if not self.batch_number:
             from common.auto_number import generate_auto_number
+
             self.batch_number = generate_auto_number('B', ProductionBatch)
         super().save(*args, **kwargs)
 
@@ -406,6 +411,7 @@ class DeliverySchedule(models.Model):
     """
     جدول التسليمات - تتبع جدولة الشاحنات ووقت التسليم
     """
+
     STATUS_CHOICES = [
         ('scheduled', 'مجدول'),
         ('confirmed', 'مؤكد'),
@@ -416,18 +422,13 @@ class DeliverySchedule(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     production_order = models.ForeignKey(
-        ProductionOrder, on_delete=models.CASCADE, verbose_name='أمر الإنتاج',
-        related_name='delivery_schedules'
+        ProductionOrder, on_delete=models.CASCADE, verbose_name='أمر الإنتاج', related_name='delivery_schedules'
     )
-    batch = models.ForeignKey(
-        ProductionBatch, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='الدفعة'
-    )
+    batch = models.ForeignKey(ProductionBatch, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='الدفعة')
     delivery_date = models.DateField('تاريخ التسليم')
     time_slot_from = models.TimeField('من الساعة')
     time_slot_to = models.TimeField('إلى الساعة')
-    truck = models.ForeignKey(
-        Truck, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='الشاحنة'
-    )
+    truck = models.ForeignKey(Truck, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='الشاحنة')
     status = models.CharField('الحالة', max_length=20, choices=STATUS_CHOICES, default='scheduled')
     sequence = models.PositiveIntegerField('الترتيب', default=1)
     notes = models.TextField('ملاحظات', blank=True)
@@ -438,10 +439,7 @@ class DeliverySchedule(models.Model):
         verbose_name = 'جدول تسليم'
         verbose_name_plural = 'جداول التسليم'
         ordering = ['delivery_date', 'time_slot_from']
-        indexes = [
-            models.Index(fields=['delivery_date']),
-            models.Index(fields=['status']),
-        ]
+        indexes = [models.Index(fields=['delivery_date']), models.Index(fields=['status'])]
 
     def __str__(self):
         return f'{self.production_order.order_number} - {self.delivery_date}'
@@ -470,6 +468,7 @@ class ProductionCost(models.Model):
     """
     تكاليف الإنتاج - ربط تكاليف المواد والتشغيل بأوامر الإنتاج
     """
+
     COST_TYPES = [
         ('materials', 'مواد أولية'),
         ('labor', 'أجور عمال'),
@@ -482,15 +481,13 @@ class ProductionCost(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     production_order = models.ForeignKey(
-        ProductionOrder, on_delete=models.CASCADE, verbose_name='أمر الإنتاج',
-        related_name='costs'
+        ProductionOrder, on_delete=models.CASCADE, verbose_name='أمر الإنتاج', related_name='costs'
     )
     cost_type = models.CharField('نوع التكلفة', max_length=20, choices=COST_TYPES)
     amount = models.DecimalField('المبلغ', max_digits=15, decimal_places=6)
     description = models.CharField('الوصف', max_length=300, blank=True)
     journal_entry = models.ForeignKey(
-        'accounts.JournalEntry', on_delete=models.SET_NULL, null=True, blank=True,
-        verbose_name='القيد المحاسبي'
+        'accounts.JournalEntry', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القيد المحاسبي'
     )
     date = models.DateField('التاريخ', default=timezone.now)
     created_at = models.DateTimeField('تاريخ الإنشاء', auto_now_add=True)
@@ -508,6 +505,7 @@ class Silo(models.Model):
     """
     سيلة الاسمنت - تتبع كميات الاسمنت المتوفرة والحد الأدنى للطلب
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField('اسم السيلة', max_length=200)
     code = models.CharField('كود السيلة', max_length=50, unique=True)
@@ -518,8 +516,7 @@ class Silo(models.Model):
     location = models.CharField('الموقع', max_length=300, blank=True)
     cement_type = models.CharField('نوع الاسمنت', max_length=100, blank=True, help_text='مثال: CEM I, CEM II')
     supplier = models.ForeignKey(
-        'purchases.Supplier', on_delete=models.SET_NULL, null=True, blank=True,
-        verbose_name='المورد الأساسي'
+        'purchases.Supplier', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='المورد الأساسي'
     )
     is_active = models.BooleanField('نشط', default=True)
     created_at = models.DateTimeField('تاريخ الإنشاء', auto_now_add=True)
@@ -562,11 +559,8 @@ class SiloTransaction(models.Model):
     """
     حركات السيلة - تتبع التوريد والاستهلاك
     """
-    TRANSACTION_TYPES = [
-        ('in', 'توريد'),
-        ('out', 'استهلاك'),
-        ('adjustment', 'تسوية'),
-    ]
+
+    TRANSACTION_TYPES = [('in', 'توريد'), ('out', 'استهلاك'), ('adjustment', 'تسوية')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     silo = models.ForeignKey(Silo, on_delete=models.CASCADE, verbose_name='السيلة', related_name='transactions')
@@ -577,13 +571,10 @@ class SiloTransaction(models.Model):
     reference_number = models.CharField('رقم المرجع', max_length=100, blank=True)
     notes = models.TextField('ملاحظات', blank=True)
     production_order = models.ForeignKey(
-        ProductionOrder, on_delete=models.SET_NULL, null=True, blank=True,
-        verbose_name='أمر الإنتاج المرتبط'
+        ProductionOrder, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='أمر الإنتاج المرتبط'
     )
     date = models.DateTimeField('التاريخ', default=timezone.now)
-    created_by = models.ForeignKey(
-        'auth.User', on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة'
-    )
+    created_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة')
 
     class Meta:
         verbose_name = 'حركة سيلة'
@@ -601,6 +592,7 @@ class SiloTransaction(models.Model):
     def save(self, *args, **kwargs):
         if self._state.adding:
             from django.db import transaction
+
             with transaction.atomic():
                 # قفل صف السيلة أثناء القراءة-التعديل-الكتابة لمنع سباق التحديثات
                 # المتزامنة (Lost Update) عند تسجيل حركات متعددة على نفس السيلة.

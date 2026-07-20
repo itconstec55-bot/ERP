@@ -1,4 +1,5 @@
 import uuid
+
 from django.db import models
 
 
@@ -10,11 +11,7 @@ class RecurringJournal(models.Model):
         ('quarterly', 'ربع سنوي'),
         ('yearly', 'سنوي'),
     ]
-    STATUS_CHOICES = [
-        ('active', 'نشط'),
-        ('paused', 'متوقف'),
-        ('completed', 'مكتمل'),
-    ]
+    STATUS_CHOICES = [('active', 'نشط'), ('paused', 'متوقف'), ('completed', 'مكتمل')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, verbose_name='الاسم')
@@ -22,9 +19,12 @@ class RecurringJournal(models.Model):
     frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES, verbose_name='التكرار')
     day_of_month = models.IntegerField(default=1, verbose_name='يوم الشهر')
     next_due_date = models.DateField(verbose_name='التاريخ التالي')
-    journal_type = models.CharField(max_length=20, choices=[
-        ('general', 'قيد عام'), ('receipt', 'قبض'), ('payment', 'صرف'),
-    ], default='general', verbose_name='نوع القيد')
+    journal_type = models.CharField(
+        max_length=20,
+        choices=[('general', 'قيد عام'), ('receipt', 'قبض'), ('payment', 'صرف')],
+        default='general',
+        verbose_name='نوع القيد',
+    )
     reference = models.CharField(max_length=100, blank=True, verbose_name='المرجع')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='الحالة')
     total_debit = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name='إجمالي المدين')
@@ -60,7 +60,9 @@ class RecurringJournalLog(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     journal = models.ForeignKey(RecurringJournal, on_delete=models.CASCADE, related_name='logs', verbose_name='القيد')
     executed_date = models.DateField(verbose_name='تاريخ التنفيذ')
-    journal_entry = models.ForeignKey('accounts.JournalEntry', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القيد المرتبط')
+    journal_entry = models.ForeignKey(
+        'accounts.JournalEntry', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القيد المرتبط'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

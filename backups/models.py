@@ -1,20 +1,13 @@
 import os
 import uuid
-from django.db import models
+
 from django.conf import settings
+from django.db import models
 
 
 class Backup(models.Model):
-    BACKUP_TYPES = [
-        ('data', 'DB + Media (بيانات)'),
-        ('full', 'نسخة كاملة (الكل)'),
-        ('json', 'تصدير JSON'),
-    ]
-    STATUS_CHOICES = [
-        ('pending', 'قيد الإنشاء'),
-        ('completed', 'مكتملة'),
-        ('failed', 'فشل'),
-    ]
+    BACKUP_TYPES = [('data', 'DB + Media (بيانات)'), ('full', 'نسخة كاملة (الكل)'), ('json', 'تصدير JSON')]
+    STATUS_CHOICES = [('pending', 'قيد الإنشاء'), ('completed', 'مكتملة'), ('failed', 'فشل')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, verbose_name='اسم النسخة')
@@ -24,8 +17,7 @@ class Backup(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='الحالة')
     notes = models.TextField(blank=True, verbose_name='ملاحظات')
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-        verbose_name='أنشأها'
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, verbose_name='أنشأها'
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاريخ الإنشاء')
 
@@ -47,6 +39,7 @@ class Backup(models.Model):
             return f'{size / (1024 * 1024):.1f} MB'
         else:
             return f'{size / (1024 * 1024 * 1024):.2f} GB'
+
     file_size_display.short_description = 'الحجم'
 
     def delete_file(self):
@@ -120,24 +113,33 @@ class FactoryResetRequest(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     reason = models.TextField(verbose_name='مبرر الطلب')
     reset_scope = models.CharField(
-        max_length=20, choices=SCOPE_CHOICES, default=SCOPE_BUSINESS,
-        verbose_name='نطاق الاستعادة')
+        max_length=20, choices=SCOPE_CHOICES, default=SCOPE_BUSINESS, verbose_name='نطاق الاستعادة'
+    )
     status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING,
-        db_index=True, verbose_name='الحالة')
+        max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True, verbose_name='الحالة'
+    )
 
     # --- الطالب (Maker) ---
     requested_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-        related_name='factory_reset_requests', verbose_name='الطالب')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='factory_reset_requests',
+        verbose_name='الطالب',
+    )
     requested_at = models.DateTimeField(auto_now_add=True, verbose_name='وقت الطلب')
     requester_ip = models.GenericIPAddressField(null=True, blank=True, verbose_name='IP الطالب')
     requester_user_agent = models.CharField(max_length=500, blank=True, verbose_name='جهاز الطالب')
 
     # --- المعتمِد / الرافض (Checker) ---
     reviewed_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='factory_reset_reviews', verbose_name='المعتمِد')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='factory_reset_reviews',
+        verbose_name='المعتمِد',
+    )
     reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='وقت المراجعة')
     review_ip = models.GenericIPAddressField(null=True, blank=True, verbose_name='IP المعتمِد')
     review_user_agent = models.CharField(max_length=500, blank=True, verbose_name='جهاز المعتمِد')
@@ -149,15 +151,25 @@ class FactoryResetRequest(models.Model):
 
     # --- المنفّذ (Executor) ---
     executed_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='factory_reset_executions', verbose_name='المنفّذ')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='factory_reset_executions',
+        verbose_name='المنفّذ',
+    )
     executed_at = models.DateTimeField(null=True, blank=True, verbose_name='وقت التنفيذ')
     execution_ip = models.GenericIPAddressField(null=True, blank=True, verbose_name='IP المنفّذ')
     execution_user_agent = models.CharField(max_length=500, blank=True, verbose_name='جهاز المنفّذ')
 
     safety_backup = models.ForeignKey(
-        Backup, on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', verbose_name='النسخة الاحتياطية الأمنية')
+        Backup,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        verbose_name='النسخة الاحتياطية الأمنية',
+    )
     result_notes = models.TextField(blank=True, verbose_name='نتيجة التنفيذ')
 
     class Meta:
@@ -171,6 +183,7 @@ class FactoryResetRequest(models.Model):
 
     def is_expired(self):
         from django.utils import timezone
+
         return bool(self.approval_expires_at and timezone.now() > self.approval_expires_at)
 
     @property

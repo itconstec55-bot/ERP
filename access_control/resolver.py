@@ -10,12 +10,18 @@
 - الصلاحية الوظيفية = اتحاد منح الأدوار (OR)، ثم تُطبَّق استثناءات المستخدم.
 - الحرمان الصريح (deny) — من دور أو من استثناء مستخدم — يتغلّب على أي منح.
 """
+
 from datetime import date
+
 from django.core.cache import cache
 
 from .models import (
-    UserRoleAssignment, RoleScreenPermission, UserScreenPermission,
-    UserBranch, UserWarehouse, UserAccountTypeScope,
+    RoleScreenPermission,
+    UserAccountTypeScope,
+    UserBranch,
+    UserRoleAssignment,
+    UserScreenPermission,
+    UserWarehouse,
 )
 
 LEVELS = ('view', 'add', 'edit', 'delete', 'print', 'export')
@@ -117,9 +123,7 @@ def _resolve_screens(user, role_ids):
                 bucket[lvl] = True
 
     if role_ids:
-        rperms = RoleScreenPermission.objects.filter(
-            role_id__in=role_ids
-        ).select_related('screen')
+        rperms = RoleScreenPermission.objects.filter(role_id__in=role_ids).select_related('screen')
         for rp in rperms:
             code = rp.screen.code
             target = deny if rp.grant_type == 'deny' else allow
@@ -142,29 +146,29 @@ def _resolve_screens(user, role_ids):
 
 
 def _resolve_scopes(user, profile):
-    branches = [str(b) for b in UserBranch.objects.filter(
-        user=user).values_list('branch_id', flat=True)]
+    branches = [str(b) for b in UserBranch.objects.filter(user=user).values_list('branch_id', flat=True)]
     if profile and profile.branch_id and str(profile.branch_id) not in branches:
         branches.append(str(profile.branch_id))
 
     warehouses = {}
     for w in UserWarehouse.objects.filter(user=user):
         warehouses[str(w.warehouse_id)] = {
-            'receive': w.can_receive, 'issue': w.can_issue,
-            'count': w.can_count, 'transfer': w.can_transfer,
+            'receive': w.can_receive,
+            'issue': w.can_issue,
+            'count': w.can_count,
+            'transfer': w.can_transfer,
         }
 
     account_types = {}
     for a in UserAccountTypeScope.objects.filter(user=user):
-        account_types[str(a.account_type_id)] = {
-            'view': a.can_view, 'transact': a.can_transact,
-        }
+        account_types[str(a.account_type_id)] = {'view': a.can_view, 'transact': a.can_transact}
 
     return branches, warehouses, account_types
 
 
 def _compute(user):
     from common.permissions import get_user_profile
+
     profile = get_user_profile(user)
     view_all_branches = bool(profile and profile.view_all_branches)
     view_all_warehouses = bool(profile and profile.view_all_warehouses)
@@ -172,10 +176,15 @@ def _compute(user):
 
     if user.is_superuser:
         return {
-            'is_superuser': True, 'screens': {}, 'branches': [],
-            'warehouses': {}, 'account_types': {},
-            'can_view_prices': True, 'view_all_branches': True,
-            'view_all_warehouses': True, 'has_roles': True,
+            'is_superuser': True,
+            'screens': {},
+            'branches': [],
+            'warehouses': {},
+            'account_types': {},
+            'can_view_prices': True,
+            'view_all_branches': True,
+            'view_all_warehouses': True,
+            'has_roles': True,
         }
 
     role_ids = _active_role_ids(user)
@@ -196,12 +205,19 @@ def _compute(user):
 def resolve(user, use_cache=True):
     """يُرجع ResolvedPermissions لمستخدم، مع تخزين مؤقت وإبطال آمن."""
     if not user or not getattr(user, 'is_authenticated', False):
-        return ResolvedPermissions({
-            'is_superuser': False, 'screens': {}, 'branches': [],
-            'warehouses': {}, 'account_types': {}, 'can_view_prices': False,
-            'view_all_branches': False, 'view_all_warehouses': False,
-            'has_roles': False,
-        })
+        return ResolvedPermissions(
+            {
+                'is_superuser': False,
+                'screens': {},
+                'branches': [],
+                'warehouses': {},
+                'account_types': {},
+                'can_view_prices': False,
+                'view_all_branches': False,
+                'view_all_warehouses': False,
+                'has_roles': False,
+            }
+        )
 
     if not use_cache:
         return ResolvedPermissions(_compute(user))

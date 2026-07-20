@@ -1,26 +1,28 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from common.permissions import screen_permission_required
 from django.contrib import messages
-from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .models import (
-    Contractor, Contract, ContractItem, InterimCertificate,
-    CertificateItem, ContractorPayment
-)
-from .forms import (
-    ContractorForm, ContractorFilterForm, ContractForm, ContractFilterForm,
-    ContractItemFormSet, InterimCertificateForm, CertificateItemFormSet,
-    ContractorPaymentForm
-)
+from common.permissions import screen_permission_required
 
+from .forms import (
+    CertificateItemFormSet,
+    ContractFilterForm,
+    ContractForm,
+    ContractItemFormSet,
+    ContractorFilterForm,
+    ContractorForm,
+    ContractorPaymentForm,
+    InterimCertificateForm,
+)
+from .models import Contract, Contractor, ContractorPayment, InterimCertificate
 
 # ══════════════════════════════════════════════════════════════
 # لوحة التحكم
 # ══════════════════════════════════════════════════════════════
+
 
 @screen_permission_required('contractors.contractor', 'view')
 def dashboard(request):
@@ -29,24 +31,22 @@ def dashboard(request):
         'active_contracts': Contract.objects.filter(status__in=['active', 'in_progress']).count(),
         'pending_certificates': InterimCertificate.objects.filter(status__in=['draft', 'submitted']).count(),
         'total_contracts_value': float(
-            Contract.objects.filter(status__in=['active', 'in_progress']).aggregate(
-                total=Sum('contract_amount')
-            )['total'] or 0
+            Contract.objects.filter(status__in=['active', 'in_progress']).aggregate(total=Sum('contract_amount'))[
+                'total'
+            ]
+            or 0
         ),
         'total_certified': float(
-            InterimCertificate.objects.filter(status__in=['approved', 'certified']).aggregate(
-                total=Sum('net_amount')
-            )['total'] or 0
+            InterimCertificate.objects.filter(status__in=['approved', 'certified']).aggregate(total=Sum('net_amount'))[
+                'total'
+            ]
+            or 0
         ),
         'total_payments': float(
-            ContractorPayment.objects.filter(status='paid').aggregate(
-                total=Sum('amount')
-            )['total'] or 0
+            ContractorPayment.objects.filter(status='paid').aggregate(total=Sum('amount'))['total'] or 0
         ),
         'recent_contracts': Contract.objects.select_related('contractor')[:10],
-        'recent_certificates': InterimCertificate.objects.select_related(
-            'contract__contractor'
-        )[:5],
+        'recent_certificates': InterimCertificate.objects.select_related('contract__contractor')[:5],
     }
     return render(request, 'contractors/dashboard.html', context)
 
@@ -54,6 +54,7 @@ def dashboard(request):
 # ══════════════════════════════════════════════════════════════
 # المقاولون
 # ══════════════════════════════════════════════════════════════
+
 
 @screen_permission_required('contractors.contractor', 'view')
 def contractor_list(request):
@@ -70,9 +71,9 @@ def contractor_list(request):
     paginator = Paginator(contractors, 25)
     page = request.GET.get('page')
     contractors_page = paginator.get_page(page)
-    return render(request, 'contractors/contractor_list.html', {
-        'contractors': contractors_page, 'filter_form': filter_form,
-    })
+    return render(
+        request, 'contractors/contractor_list.html', {'contractors': contractors_page, 'filter_form': filter_form}
+    )
 
 
 @screen_permission_required('contractors.contractor', 'add')
@@ -85,9 +86,7 @@ def contractor_create(request):
             return redirect('contractors:contractor_detail', pk=contractor.pk)
     else:
         form = ContractorForm()
-    return render(request, 'contractors/contractor_form.html', {
-        'form': form, 'title': 'إضافة مقاول جديد',
-    })
+    return render(request, 'contractors/contractor_form.html', {'form': form, 'title': 'إضافة مقاول جديد'})
 
 
 @screen_permission_required('contractors.contractor', 'view')
@@ -95,9 +94,11 @@ def contractor_detail(request, pk):
     contractor = get_object_or_404(Contractor, pk=pk)
     contracts = contractor.contracts.all()
     payments = ContractorPayment.objects.filter(contract__contractor=contractor)[:10]
-    return render(request, 'contractors/contractor_detail.html', {
-        'contractor': contractor, 'contracts': contracts, 'payments': payments,
-    })
+    return render(
+        request,
+        'contractors/contractor_detail.html',
+        {'contractor': contractor, 'contracts': contracts, 'payments': payments},
+    )
 
 
 @screen_permission_required('contractors.contractor', 'edit')
@@ -111,14 +112,17 @@ def contractor_edit(request, pk):
             return redirect('contractors:contractor_detail', pk=contractor.pk)
     else:
         form = ContractorForm(instance=contractor)
-    return render(request, 'contractors/contractor_form.html', {
-        'form': form, 'contractor': contractor, 'title': 'تعديل بيانات المقاول',
-    })
+    return render(
+        request,
+        'contractors/contractor_form.html',
+        {'form': form, 'contractor': contractor, 'title': 'تعديل بيانات المقاول'},
+    )
 
 
 # ══════════════════════════════════════════════════════════════
 # العقود
 # ══════════════════════════════════════════════════════════════
+
 
 @screen_permission_required('contractors.contractor', 'view')
 def contract_list(request):
@@ -132,9 +136,7 @@ def contract_list(request):
     paginator = Paginator(contracts, 25)
     page = request.GET.get('page')
     contracts_page = paginator.get_page(page)
-    return render(request, 'contractors/contract_list.html', {
-        'contracts': contracts_page, 'filter_form': filter_form,
-    })
+    return render(request, 'contractors/contract_list.html', {'contracts': contracts_page, 'filter_form': filter_form})
 
 
 @screen_permission_required('contractors.contractor', 'add')
@@ -153,23 +155,20 @@ def contract_create(request):
     else:
         form = ContractForm()
         formset = ContractItemFormSet(prefix='items')
-    return render(request, 'contractors/contract_form.html', {
-        'form': form, 'formset': formset, 'title': 'عقد جديد',
-    })
+    return render(request, 'contractors/contract_form.html', {'form': form, 'formset': formset, 'title': 'عقد جديد'})
 
 
 @screen_permission_required('contractors.contractor', 'view')
 def contract_detail(request, pk):
-    contract = get_object_or_404(
-        Contract.objects.select_related('contractor'), pk=pk
-    )
+    contract = get_object_or_404(Contract.objects.select_related('contractor'), pk=pk)
     items = contract.items.all()
     certificates = contract.certificates.all()
     payments = contract.payments.all()
-    return render(request, 'contractors/contract_detail.html', {
-        'contract': contract, 'items': items,
-        'certificates': certificates, 'payments': payments,
-    })
+    return render(
+        request,
+        'contractors/contract_detail.html',
+        {'contract': contract, 'items': items, 'certificates': certificates, 'payments': payments},
+    )
 
 
 @screen_permission_required('contractors.contractor', 'edit')
@@ -186,9 +185,11 @@ def contract_edit(request, pk):
     else:
         form = ContractForm(instance=contract)
         formset = ContractItemFormSet(instance=contract, prefix='items')
-    return render(request, 'contractors/contract_form.html', {
-        'form': form, 'formset': formset, 'contract': contract, 'title': 'تعديل العقد',
-    })
+    return render(
+        request,
+        'contractors/contract_form.html',
+        {'form': form, 'formset': formset, 'contract': contract, 'title': 'تعديل العقد'},
+    )
 
 
 @screen_permission_required('contractors.contractor', 'edit')
@@ -217,6 +218,7 @@ def contract_close(request, pk):
 # المستخلصات
 # ══════════════════════════════════════════════════════════════
 
+
 @screen_permission_required('contractors.contractor', 'view')
 def certificate_list(request):
     certificates = InterimCertificate.objects.select_related('contract__contractor')
@@ -226,9 +228,7 @@ def certificate_list(request):
     paginator = Paginator(certificates, 25)
     page = request.GET.get('page')
     certificates_page = paginator.get_page(page)
-    return render(request, 'contractors/certificate_list.html', {
-        'certificates': certificates_page, 'status': status,
-    })
+    return render(request, 'contractors/certificate_list.html', {'certificates': certificates_page, 'status': status})
 
 
 @screen_permission_required('contractors.contractor', 'add')
@@ -248,20 +248,16 @@ def certificate_create(request):
     else:
         form = InterimCertificateForm()
         formset = CertificateItemFormSet(prefix='cert_items')
-    return render(request, 'contractors/certificate_form.html', {
-        'form': form, 'formset': formset, 'title': 'مستخلص جديد',
-    })
+    return render(
+        request, 'contractors/certificate_form.html', {'form': form, 'formset': formset, 'title': 'مستخلص جديد'}
+    )
 
 
 @screen_permission_required('contractors.contractor', 'view')
 def certificate_detail(request, pk):
-    cert = get_object_or_404(
-        InterimCertificate.objects.select_related('contract__contractor'), pk=pk
-    )
+    cert = get_object_or_404(InterimCertificate.objects.select_related('contract__contractor'), pk=pk)
     items = cert.items.select_related('contract_item').all()
-    return render(request, 'contractors/certificate_detail.html', {
-        'cert': cert, 'items': items,
-    })
+    return render(request, 'contractors/certificate_detail.html', {'cert': cert, 'items': items})
 
 
 @screen_permission_required('contractors.contractor', 'edit')
@@ -296,6 +292,7 @@ def certificate_post(request, pk):
 # المدفوعات
 # ══════════════════════════════════════════════════════════════
 
+
 @screen_permission_required('contractors.contractor', 'view')
 def payment_list(request):
     payments = ContractorPayment.objects.select_related('contract__contractor', 'certificate')
@@ -305,9 +302,7 @@ def payment_list(request):
     paginator = Paginator(payments, 25)
     page = request.GET.get('page')
     payments_page = paginator.get_page(page)
-    return render(request, 'contractors/payment_list.html', {
-        'payments': payments_page, 'status': status,
-    })
+    return render(request, 'contractors/payment_list.html', {'payments': payments_page, 'status': status})
 
 
 @screen_permission_required('contractors.contractor', 'add')
@@ -321,6 +316,7 @@ def payment_create(request):
             messages.success(request, f'تم إنشاء الدفعة {payment.payment_number}')
             try:
                 from notifications.utils import notify_contractor_payment_created
+
                 notify_contractor_payment_created(payment)
             except Exception:
                 pass
@@ -333,20 +329,13 @@ def payment_create(request):
             form.fields['contract'].initial = contract_pk
         if cert_pk:
             form.fields['certificate'].initial = cert_pk
-    return render(request, 'contractors/payment_form.html', {
-        'form': form, 'title': 'دفعة جديدة',
-    })
+    return render(request, 'contractors/payment_form.html', {'form': form, 'title': 'دفعة جديدة'})
 
 
 @screen_permission_required('contractors.contractor', 'view')
 def payment_detail(request, pk):
-    payment = get_object_or_404(
-        ContractorPayment.objects.select_related('contract__contractor', 'certificate'),
-        pk=pk
-    )
-    return render(request, 'contractors/payment_detail.html', {
-        'payment': payment,
-    })
+    payment = get_object_or_404(ContractorPayment.objects.select_related('contract__contractor', 'certificate'), pk=pk)
+    return render(request, 'contractors/payment_detail.html', {'payment': payment})
 
 
 @screen_permission_required('contractors.contractor', 'edit')
@@ -365,6 +354,7 @@ def payment_post(request, pk):
             messages.success(request, f'تم ترحيل الدفعة {payment.payment_number} بنجاح')
             try:
                 from notifications.utils import notify_contractor_payment_posted
+
                 notify_contractor_payment_posted(payment)
             except Exception:
                 pass
@@ -377,11 +367,14 @@ def payment_post(request, pk):
 # API
 # ══════════════════════════════════════════════════════════════
 
+
 @screen_permission_required('contractors.contractor', 'view')
 def api_contract_items(request, pk):
     """API: بنود العقد"""
     contract = get_object_or_404(Contract, pk=pk)
-    items = list(contract.items.values('id', 'item_number', 'description', 'unit', 'quantity', 'unit_price', 'executed_quantity'))
+    items = list(
+        contract.items.values('id', 'item_number', 'description', 'unit', 'quantity', 'unit_price', 'executed_quantity')
+    )
     return JsonResponse({'items': items})
 
 

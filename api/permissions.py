@@ -19,6 +19,7 @@ class IsOwnerOrReadOnly(BasePermission):
 
 class ModulePermission(BasePermission):
     """Check screen-based permissions matching access_control module."""
+
     MODULE_MAP = {
         'accounts': ('accounts.account', 'view'),
         'account-types': ('accounts.account', 'edit'),
@@ -80,9 +81,11 @@ class ModulePermission(BasePermission):
     }
 
     ACTION_MAP = {
-        'list': 'view', 'retrieve': 'view',
+        'list': 'view',
+        'retrieve': 'view',
         'create': 'add',
-        'update': 'edit', 'partial_update': 'edit',
+        'update': 'edit',
+        'partial_update': 'edit',
         'destroy': 'delete',
     }
 

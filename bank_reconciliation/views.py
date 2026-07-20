@@ -1,18 +1,18 @@
-from django.contrib.auth.decorators import login_required
-from common.permissions import screen_permission_required
-from django.views.decorators.http import require_POST
-from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_cookie
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.db import models, transaction
-from django.http import HttpResponse
-from .models import BankStatementItem, ReconciliationSession
-from .forms import ReconciliationSessionForm, BankStatementItemForm
-from treasury.models import Bank
 import csv
 import io
-from decimal import Decimal, InvalidOperation
+
+from django.contrib import messages
+from django.db import models, transaction
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.cache import cache_page
+from django.views.decorators.http import require_POST
+from django.views.decorators.vary import vary_on_cookie
+
+from common.permissions import screen_permission_required
+from treasury.models import Bank
+
+from .forms import BankStatementItemForm, ReconciliationSessionForm
+from .models import BankStatementItem, ReconciliationSession
 
 
 @screen_permission_required('bank_reconciliation.statement', 'view')
@@ -26,9 +26,7 @@ def reconciliation_dashboard(request):
     banks = Bank.objects.filter(is_active=True)
     bank_balances = {}
     bank_items = BankStatementItem.objects.values('bank_account').annotate(
-        total_credit=models.Sum('credit_amount'),
-        total_debit=models.Sum('debit_amount'),
-        count=models.Count('id'),
+        total_credit=models.Sum('credit_amount'), total_debit=models.Sum('debit_amount'), count=models.Count('id')
     )
     bank_lookup = {bank.pk: bank for bank in banks}
     for item in bank_items:
@@ -40,11 +38,17 @@ def reconciliation_dashboard(request):
                 'total_debit': item['total_debit'] or 0,
                 'count': item['count'],
             }
-    return render(request, 'bank_reconciliation/dashboard.html', {
-        'sessions': sessions, 'unmatched_count': unmatched_count,
-        'matched_count': matched_count, 'total_items': total_items,
-        'bank_balances': bank_balances.values(),
-    })
+    return render(
+        request,
+        'bank_reconciliation/dashboard.html',
+        {
+            'sessions': sessions,
+            'unmatched_count': unmatched_count,
+            'matched_count': matched_count,
+            'total_items': total_items,
+            'bank_balances': bank_balances.values(),
+        },
+    )
 
 
 @screen_permission_required('bank_reconciliation.statement', 'add')
@@ -63,13 +67,17 @@ def session_create(request):
             for err in errs:
                 messages.error(request, f'{form.fields[field].label if field in form.fields else field}: {err}')
         return render(request, 'bank_reconciliation/session_form.html', {'banks': banks, 'form': form})
-    return render(request, 'bank_reconciliation/session_form.html', {'banks': banks, 'form': ReconciliationSessionForm()})
+    return render(
+        request, 'bank_reconciliation/session_form.html', {'banks': banks, 'form': ReconciliationSessionForm()}
+    )
 
 
 @screen_permission_required('bank_reconciliation.statement', 'view')
 def session_detail(request, pk):
     session = get_object_or_404(ReconciliationSession, pk=pk)
-    items = BankStatementItem.objects.filter(bank_account=session.bank_account, transaction_date__range=[session.period_start, session.period_end])
+    items = BankStatementItem.objects.filter(
+        bank_account=session.bank_account, transaction_date__range=[session.period_start, session.period_end]
+    )
     return render(request, 'bank_reconciliation/session_detail.html', {'session': session, 'items': items})
 
 
@@ -107,6 +115,7 @@ def item_match(request, pk):
     item = get_object_or_404(BankStatementItem, pk=pk)
     if request.method == 'POST':
         from treasury.models import BankTransaction
+
         tx_id = request.POST.get('transaction_id')
         if tx_id:
             tx = BankTransaction.objects.filter(pk=tx_id, bank_id=item.bank_account_id).first()
@@ -155,13 +164,16 @@ def import_csv(request):
                 desc = row.get('description') or row.get('الوصف') or row.get('Description') or row.get('البيان', '')
                 ref = row.get('reference') or row.get('المرجع') or row.get('Reference') or ''
                 debit_str = row.get('debit') or row.get('المدين') or row.get('Debit') or row.get('debit_amount', '0')
-                credit_str = row.get('credit') or row.get('الدائن') or row.get('Credit') or row.get('credit_amount', '0')
+                credit_str = (
+                    row.get('credit') or row.get('الدائن') or row.get('Credit') or row.get('credit_amount', '0')
+                )
 
                 if not date_val or not desc:
                     skipped += 1
                     continue
 
                 from decimal import Decimal, InvalidOperation
+
                 debit_val = Decimal(str(debit_str).replace(',', '').replace('"', '').strip() or '0')
                 credit_val = Decimal(str(credit_str).replace(',', '').replace('"', '').strip() or '0')
                 if debit_val < 0 or credit_val < 0:
@@ -169,6 +181,7 @@ def import_csv(request):
                     continue
 
                 from datetime import datetime as dt
+
                 date_obj = None
                 for fmt in ('%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y', '%Y/%m/%d'):
                     try:
@@ -179,8 +192,6 @@ def import_csv(request):
                 if not date_obj:
                     skipped += 1
                     continue
-
-                amount_val = credit_val - debit_val if credit_val > 0 else debit_val
 
                 exists = BankStatementItem.objects.filter(
                     bank_account=bank,
@@ -216,7 +227,6 @@ def import_csv(request):
 
 
 def _parse_csv_import(file):
-    import csv, io
     decoded = file.read().decode('utf-8-sig')
     reader = csv.DictReader(io.StringIO(decoded))
     return list(reader)
@@ -227,7 +237,7 @@ def _parse_excel_import(file):
         import openpyxl
     except ImportError:
         raise ValueError('openpyxl is required for Excel import')
-    
+
     wb = openpyxl.load_workbook(file, read_only=True, data_only=True)
     ws = wb.active
     rows = list(ws.iter_rows(values_only=True))
@@ -257,6 +267,7 @@ def auto_match(request):
     matched_count = 0
     with transaction.atomic():
         from treasury.models import BankTransaction
+
         unmatched = list(unmatched)
         if not unmatched:
             return redirect('bank_reconciliation:item_list')
@@ -266,9 +277,7 @@ def auto_match(request):
         amounts = {abs(item.amount) for item in unmatched}
 
         tx_candidates = BankTransaction.objects.filter(
-            bank_id__in=bank_ids,
-            transaction_date__in=dates,
-            amount__in=amounts,
+            bank_id__in=bank_ids, transaction_date__in=dates, amount__in=amounts
         ).select_for_update()
 
         tx_map = {}

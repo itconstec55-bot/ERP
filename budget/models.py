@@ -1,4 +1,5 @@
 import uuid
+
 from django.db import models
 
 
@@ -6,7 +7,9 @@ class CostCenter(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=50, unique=True, verbose_name='الكود')
     name = models.CharField(max_length=200, verbose_name='الاسم')
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children', verbose_name='المركز الأب')
+    parent = models.ForeignKey(
+        'self', on_delete=models.CASCADE, null=True, blank=True, related_name='children', verbose_name='المركز الأب'
+    )
     description = models.TextField(blank=True, verbose_name='الوصف')
     manager = models.CharField(max_length=100, blank=True, verbose_name='المسؤول')
     is_active = models.BooleanField(default=True, verbose_name='نشط')
@@ -21,21 +24,15 @@ class CostCenter(models.Model):
 
 
 class Budget(models.Model):
-    PERIOD_CHOICES = [
-        ('monthly', 'شهري'),
-        ('quarterly', 'ربع سنوي'),
-        ('yearly', 'سنوي'),
-    ]
-    STATUS_CHOICES = [
-        ('draft', 'مسودة'),
-        ('active', 'نشط'),
-        ('closed', 'مغلق'),
-    ]
+    PERIOD_CHOICES = [('monthly', 'شهري'), ('quarterly', 'ربع سنوي'), ('yearly', 'سنوي')]
+    STATUS_CHOICES = [('draft', 'مسودة'), ('active', 'نشط'), ('closed', 'مغلق')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, verbose_name='اسم الموازنة')
     account = models.ForeignKey('accounts.Account', on_delete=models.CASCADE, verbose_name='الحساب')
-    cost_center = models.ForeignKey(CostCenter, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='مركز التكلفة')
+    cost_center = models.ForeignKey(
+        CostCenter, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='مركز التكلفة'
+    )
     period = models.CharField(max_length=20, choices=PERIOD_CHOICES, default='monthly', verbose_name='الفترة')
     year = models.IntegerField(verbose_name='السنة')
     month = models.IntegerField(null=True, blank=True, verbose_name='الشهر')

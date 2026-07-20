@@ -1,17 +1,15 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from decimal import Decimal
 
-from .models import ETAConnection, TaxInvoice
-from .services import ETAService, ETAAPIError
 from common.permissions import screen_permission_required
 from sales.models import SalesInvoice
+
+from .models import ETAConnection, TaxInvoice
+from .services import ETAAPIError, ETAService
 
 
 @screen_permission_required('tax_invoices.taxinvoice', 'view')
@@ -32,9 +30,9 @@ def tax_dashboard(request):
 
     # فواتير المبيعات غير المُرسلة بعد
     sent_ids = tax_invoices.values_list('sales_invoice_id', flat=True)
-    unsent_invoices = SalesInvoice.objects.filter(
-        is_tax_invoice=True, is_posted=True
-    ).exclude(id__in=sent_ids).order_by('-date')[:20]
+    unsent_invoices = (
+        SalesInvoice.objects.filter(is_tax_invoice=True, is_posted=True).exclude(id__in=sent_ids).order_by('-date')[:20]
+    )
 
     context = {
         'connections': connections,
@@ -82,9 +80,7 @@ def connection_create(request):
         return redirect('tax_invoices:connection_list')
 
     # التحقق من وجود إعداد افتراضي
-    return render(request, 'tax_invoices/connection_form.html', {
-        'environments': ETAConnection.ENVIRONMENT_CHOICES,
-    })
+    return render(request, 'tax_invoices/connection_form.html', {'environments': ETAConnection.ENVIRONMENT_CHOICES})
 
 
 @screen_permission_required('tax_invoices.taxinvoice', 'edit')
@@ -109,10 +105,9 @@ def connection_edit(request, pk):
         messages.success(request, 'تم تحديث إعداد الاتصال بنجاح')
         return redirect('tax_invoices:connection_list')
 
-    return render(request, 'tax_invoices/connection_form.html', {
-        'conn': conn,
-        'environments': ETAConnection.ENVIRONMENT_CHOICES,
-    })
+    return render(
+        request, 'tax_invoices/connection_form.html', {'conn': conn, 'environments': ETAConnection.ENVIRONMENT_CHOICES}
+    )
 
 
 @screen_permission_required('tax_invoices.taxinvoice', 'view')
@@ -127,11 +122,11 @@ def tax_invoice_list(request):
     page = request.GET.get('page')
     page_obj = paginator.get_page(page)
 
-    return render(request, 'tax_invoices/tax_invoice_list.html', {
-        'tax_invoices': page_obj,
-        'status_choices': TaxInvoice.SUBMISSION_STATUS_CHOICES,
-        'current_status': status,
-    })
+    return render(
+        request,
+        'tax_invoices/tax_invoice_list.html',
+        {'tax_invoices': page_obj, 'status_choices': TaxInvoice.SUBMISSION_STATUS_CHOICES, 'current_status': status},
+    )
 
 
 @screen_permission_required('tax_invoices.taxinvoice', 'view')
@@ -143,10 +138,7 @@ def tax_invoice_detail(request, pk):
     except Exception as e:
         document = {'error': str(e)}
 
-    return render(request, 'tax_invoices/tax_invoice_detail.html', {
-        'tax_invoice': tax_invoice,
-        'document': document,
-    })
+    return render(request, 'tax_invoices/tax_invoice_detail.html', {'tax_invoice': tax_invoice, 'document': document})
 
 
 @require_POST
@@ -196,7 +188,9 @@ def tax_invoice_create_from_sales(request, sales_pk):
             tax_invoice.submission_log = json_dumps_pretty(result)
             tax_invoice.save()
 
-            messages.success(request, f'تم إرسال الفاتورة لمصلحة الضرائب. رقم المتابعة: {tax_invoice.eta_submission_uuid}')
+            messages.success(
+                request, f'تم إرسال الفاتورة لمصلحة الضرائب. رقم المتابعة: {tax_invoice.eta_submission_uuid}'
+            )
         elif isinstance(result, dict):
             tax_invoice.eta_uuid = result.get('uuid')
             tax_invoice.eta_submission_uuid = result.get('submissionUuid') or result.get('submission_uuid')
@@ -275,6 +269,7 @@ def tax_invoice_check_status(request, pk):
 
 def json_dumps_pretty(obj):
     import json
+
     try:
         return json.dumps(obj, ensure_ascii=False, indent=2)
     except (TypeError, ValueError):

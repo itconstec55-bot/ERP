@@ -1,14 +1,14 @@
 from django import forms
-from purchases.models import Supplier, Product
-from budget.models import CostCenter
+
+from purchases.models import Product, Supplier
+
 from .models import PurchaseOrder, PurchaseOrderLine
 
 
 class PurchaseOrderForm(forms.ModelForm):
     class Meta:
         model = PurchaseOrder
-        fields = ['order_number', 'supplier', 'cost_center', 'date', 'expected_date',
-                  'status', 'notes']
+        fields = ['order_number', 'supplier', 'cost_center', 'date', 'expected_date', 'status', 'notes']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'expected_date': forms.DateInput(attrs={'type': 'date'}),
@@ -51,10 +51,5 @@ class PurchaseOrderLineForm(forms.ModelForm):
 
 
 PurchaseOrderLineFormSet = forms.inlineformset_factory(
-    PurchaseOrder, PurchaseOrderLine,
-    form=PurchaseOrderLineForm,
-    extra=3,
-    can_delete=True,
-    min_num=1,
-    validate_min=True,
+    PurchaseOrder, PurchaseOrderLine, form=PurchaseOrderLineForm, extra=3, can_delete=True, min_num=1, validate_min=True
 )

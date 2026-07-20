@@ -4,6 +4,7 @@
 تُعيد التحقق من *كل* الشروط بنفسها (دفاع في العمق) بصرف النظر عن الواجهة،
 فلا يقع أي مسح ما لم تُستوفَ شروط الاعتماد المحددة مسبقاً.
 """
+
 import hashlib
 import logging
 import os
@@ -17,6 +18,7 @@ from django.db import connection, transaction
 from django.utils import timezone
 
 from audit.models import log_action
+
 from .models import Backup, FactoryResetRequest
 
 logger = logging.getLogger('accounting')
@@ -46,10 +48,7 @@ class FactoryResetError(Exception):
 # أدوات مساعدة
 # ----------------------------------------------------------------------------
 def meta_from_request(request):
-    return {
-        'ip': request.META.get('REMOTE_ADDR'),
-        'ua': request.META.get('HTTP_USER_AGENT', '')[:500],
-    }
+    return {'ip': request.META.get('REMOTE_ADDR'), 'ua': request.META.get('HTTP_USER_AGENT', '')[:500]}
 
 
 def _hash_token(token):
@@ -57,13 +56,8 @@ def _hash_token(token):
 
 
 def _audit(user, action, req, note='', request_meta=None):
-    changes = {
-        'reset_scope': req.reset_scope,
-        'status': req.status,
-        'note': note,
-    }
-    log_action(user, action, 'backups.FactoryResetRequest',
-               object_id=req.id, object_repr=str(req), changes=changes)
+    changes = {'reset_scope': req.reset_scope, 'status': req.status, 'note': note}
+    log_action(user, action, 'backups.FactoryResetRequest', object_id=req.id, object_repr=str(req), changes=changes)
 
 
 def _preserve_set(scope):
@@ -159,8 +153,7 @@ def _create_safety_backup(user):
     filename = f'pre_reset_full_{stamp}.zip'
     filepath = os.path.join(BACKUP_DIR, filename)
     backup = Backup.objects.create(
-        name=f'نسخة أمان قبل الاستعادة {stamp}',
-        backup_type='full', file_path='', status='pending', created_by=user,
+        name=f'نسخة أمان قبل الاستعادة {stamp}', backup_type='full', file_path='', status='pending', created_by=user
     )
     try:
         with zipfile.ZipFile(filepath, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -194,10 +187,7 @@ def _wipe_data(scope):
     وضمان مسح متّسق. الجداول المحميّة (النظام/الدخول/المساءلة) لا تُمسّ.
     """
     preserve = _preserve_set(scope)
-    models = [
-        m for m in django_apps.get_models()
-        if m._meta.managed and m._meta.app_label not in preserve
-    ]
+    models = [m for m in django_apps.get_models() if m._meta.managed and m._meta.app_label not in preserve]
     deleted = {}
     with transaction.atomic():
         with connection.constraint_checks_disabled():
@@ -216,30 +206,30 @@ def execute_request(req_id, executor, token, phrase, password, request_meta):
     ملاحظة تصميمية: نجمع نتيجة الفحص داخل قفل الصف ثم *نُخرِج* التسجيل والرفض
     خارج المعاملة، حتى لا يُلغى أثر التدقيق أو تغيّر الحالة عند رفع الاستثناء.
     """
-    error = None          # رسالة تُرفع للمستخدم
-    denied_note = None    # يُسجَّل كمحاولة رفض في سجل التدقيق
+    error = None  # رسالة تُرفع للمستخدم
+    denied_note = None  # يُسجَّل كمحاولة رفض في سجل التدقيق
     proceed = False
 
     # قفل الصف لمنع التنفيذ المتزامن/المزدوج، والفحص الذرّي
     with transaction.atomic():
         req = FactoryResetRequest.objects.select_for_update().get(pk=req_id)
 
-        if not executor.is_superuser:                                   # (أ)
+        if not executor.is_superuser:  # (أ)
             error, denied_note = 'التنفيذ مقصور على مدير النظام (superuser).', 'تنفيذ بلا superuser'
-        elif req.status != FactoryResetRequest.STATUS_APPROVED:         # (ب)
+        elif req.status != FactoryResetRequest.STATUS_APPROVED:  # (ب)
             error = 'الطلب غير معتمد أو نُفّذ مسبقاً.'
-        elif req.is_expired():                                          # (ج)
+        elif req.is_expired():  # (ج)
             req.status = FactoryResetRequest.STATUS_EXPIRED
             req.execution_token_hash = ''
             req.save(update_fields=['status', 'execution_token_hash'])
             error = 'انتهت صلاحية الاعتماد؛ يلزم اعتماد جديد.'
-        elif req.reviewed_by_id == executor.id:                        # (د)
+        elif req.reviewed_by_id == executor.id:  # (د)
             error, denied_note = 'لا يجوز لمن اعتمد الطلب أن ينفّذه بنفسه (فصل المهام).', 'المعتمِد يحاول التنفيذ'
         elif not req.execution_token_hash or _hash_token(token or '') != req.execution_token_hash:  # (هـ)
             error, denied_note = 'رمز التنفيذ غير صحيح.', 'رمز تنفيذ غير صحيح'
-        elif (phrase or '').strip() != CONFIRM_PHRASE:                 # (و)
+        elif (phrase or '').strip() != CONFIRM_PHRASE:  # (و)
             error = 'عبارة التأكيد غير مطابقة.'
-        elif not password or not executor.check_password(password):    # (ز)
+        elif not password or not executor.check_password(password):  # (ز)
             error, denied_note = 'كلمة المرور غير صحيحة.', 'فشل إعادة المصادقة'
         else:
             # اجتياز كل الشروط: ننتقل لحالة التنفيذ ونستهلك الرمز
@@ -273,12 +263,20 @@ def execute_request(req_id, executor, token, phrase, password, request_meta):
         deleted = _wipe_data(req.reset_scope)
         req.safety_backup = backup
         req.status = FactoryResetRequest.STATUS_COMPLETED
-        req.result_notes = 'تم المسح. الجداول المتأثرة: ' + ', '.join(
-            f'{k}={v}' for k, v in deleted.items()) or 'لا توجد بيانات للمسح.'
+        req.result_notes = (
+            'تم المسح. الجداول المتأثرة: ' + ', '.join(f'{k}={v}' for k, v in deleted.items())
+            or 'لا توجد بيانات للمسح.'
+        )
         req.save()
         _audit(executor, 'delete', req, note=f'اكتمال الاستعادة ({req.reset_scope})')
-        log_action(executor, 'backup', 'backups.Backup', object_id=backup.id,
-                   object_repr=backup.name, changes={'context': 'pre_factory_reset'})
+        log_action(
+            executor,
+            'backup',
+            'backups.Backup',
+            object_id=backup.id,
+            object_repr=backup.name,
+            changes={'context': 'pre_factory_reset'},
+        )
         return req, deleted
     except Exception as e:
         req.status = FactoryResetRequest.STATUS_FAILED

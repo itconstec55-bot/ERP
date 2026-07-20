@@ -1,19 +1,20 @@
-from django.shortcuts import render, get_object_or_404, redirect
+import logging
+from decimal import Decimal
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Sum
-from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-import logging
+from django.views.decorators.http import require_POST
 
-from common.permissions import screen_permission_required
-from purchases.models import Supplier, Product, PurchaseInvoice, PurchaseInvoiceLine
 from budget.models import Budget
 from common.models import SequenceNumber
-from .models import PurchaseOrder, PurchaseOrderLine
+from common.permissions import screen_permission_required
+from purchases.models import Product, PurchaseInvoice, PurchaseInvoiceLine, Supplier
+
 from .forms import PurchaseOrderForm, PurchaseOrderLineFormSet
-from decimal import Decimal
+from .models import PurchaseOrder
 
 logger = logging.getLogger('accounting')
 
@@ -41,11 +42,11 @@ def po_list(request):
     paginator = Paginator(orders, 25)
     page = request.GET.get('page')
     orders_page = paginator.get_page(page)
-    return render(request, 'purchase_orders/po_list.html', {
-        'orders': orders_page,
-        'status_filter': status,
-        'suppliers': Supplier.objects.filter(is_active=True),
-    })
+    return render(
+        request,
+        'purchase_orders/po_list.html',
+        {'orders': orders_page, 'status_filter': status, 'suppliers': Supplier.objects.filter(is_active=True)},
+    )
 
 
 @screen_permission_required('purchase_orders.purchaseorder', 'add')
@@ -66,23 +67,20 @@ def po_create(request):
         form = PurchaseOrderForm()
         formset = PurchaseOrderLineFormSet()
     products = Product.objects.filter(is_active=True)
-    return render(request, 'purchase_orders/po_form.html', {
-        'form': form,
-        'formset': formset,
-        'products': products,
-        'title': 'إنشاء أمر شراء جديد',
-    })
+    return render(
+        request,
+        'purchase_orders/po_form.html',
+        {'form': form, 'formset': formset, 'products': products, 'title': 'إنشاء أمر شراء جديد'},
+    )
 
 
 @screen_permission_required('purchase_orders.purchaseorder', 'view')
 def po_detail(request, pk):
     order = get_object_or_404(PurchaseOrder.objects.select_related('supplier'), pk=pk)
     lines = order.lines.select_related('product').all()
-    return render(request, 'purchase_orders/po_detail.html', {
-        'order': order,
-        'lines': lines,
-        'budget': order.budget_check(),
-    })
+    return render(
+        request, 'purchase_orders/po_detail.html', {'order': order, 'lines': lines, 'budget': order.budget_check()}
+    )
 
 
 @screen_permission_required('purchase_orders.purchaseorder', 'edit')
@@ -104,13 +102,17 @@ def po_edit(request, pk):
         form = PurchaseOrderForm(instance=order)
         formset = PurchaseOrderLineFormSet(instance=order)
     products = Product.objects.filter(is_active=True)
-    return render(request, 'purchase_orders/po_form.html', {
-        'form': form,
-        'formset': formset,
-        'products': products,
-        'order': order,
-        'title': f'تعديل أمر الشراء {order.order_number}',
-    })
+    return render(
+        request,
+        'purchase_orders/po_form.html',
+        {
+            'form': form,
+            'formset': formset,
+            'products': products,
+            'order': order,
+            'title': f'تعديل أمر الشراء {order.order_number}',
+        },
+    )
 
 
 @require_POST
@@ -122,15 +124,11 @@ def po_approve(request, pk):
     else:
         check = order.budget_check()
         if order.cost_center and not check['ok']:
-            messages.error(
-                request,
-                f'تعذّر الاعتماد: {check["message"]} (المتاح {check["available"]} ج.م)'
-            )
+            messages.error(request, f'تعذّر الاعتماد: {check["message"]} (المتاح {check["available"]} ج.م)')
             return redirect('purchase_orders:po_detail', pk=order.pk)
         if not order.cost_center:
             messages.warning(
-                request,
-                'تم الاعتماد دون تحديد مركز تكلفة — يُفضّل ربط الأمر بمركز تكلفة للمتابعة الموازنية'
+                request, 'تم الاعتماد دون تحديد مركز تكلفة — يُفضّل ربط الأمر بمركز تكلفة للمتابعة الموازنية'
             )
         order.status = 'approved'
         order.save(update_fields=['status', 'updated_at'])
@@ -196,7 +194,9 @@ def po_to_invoice(request, pk):
         invoice.save(update_fields=['approved_by', 'approved_at'])
         try:
             invoice.create_journal_entry()
-            messages.success(request, f'تم إنشاء فاتورة المشتريات {invoice.invoice_number} وترحيلها محاسبياً من أمر الشراء')
+            messages.success(
+                request, f'تم إنشاء فاتورة المشتريات {invoice.invoice_number} وترحيلها محاسبياً من أمر الشراء'
+            )
         except Exception as exc:
             logger.warning('تعذّر الترحيل التلقائي لفاتورة %s: %s', invoice.invoice_number, exc)
             messages.warning(request, f'تم إنشاء الفاتورة {invoice.invoice_number} ولكنها تحتاج ترحيلاً يدوياً')

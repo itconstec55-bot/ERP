@@ -1,18 +1,28 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import (
-    Contractor, Contract, ContractItem, InterimCertificate,
-    CertificateItem, ContractorPayment
-)
+
+from .models import CertificateItem, Contract, ContractItem, Contractor, ContractorPayment, InterimCertificate
 
 
 class ContractorForm(forms.ModelForm):
     class Meta:
         model = Contractor
         fields = [
-            'code', 'name', 'contractor_type', 'tax_number', 'commercial_register',
-            'phone', 'email', 'address', 'speciality', 'credit_limit',
-            'retention_rate', 'status', 'is_active', 'account', 'notes',
+            'code',
+            'name',
+            'contractor_type',
+            'tax_number',
+            'commercial_register',
+            'phone',
+            'email',
+            'address',
+            'speciality',
+            'credit_limit',
+            'retention_rate',
+            'status',
+            'is_active',
+            'account',
+            'notes',
         ]
         widgets = {
             'code': forms.TextInput(attrs={'class': 'form-control'}),
@@ -36,13 +46,15 @@ class ContractorFilterForm(forms.Form):
     search = forms.CharField(required=False, label='بحث', widget=forms.TextInput(attrs={'class': 'form-control'}))
     status = forms.ChoiceField(
         choices=[('', 'الكل')] + Contractor.STATUS_CHOICES,
-        required=False, label='الحالة',
-        widget=forms.Select(attrs={'class': 'form-select'})
+        required=False,
+        label='الحالة',
+        widget=forms.Select(attrs={'class': 'form-select'}),
     )
     contractor_type = forms.ChoiceField(
         choices=[('', 'الكل')] + Contractor.CONTRACTOR_TYPES,
-        required=False, label='النوع',
-        widget=forms.Select(attrs={'class': 'form-select'})
+        required=False,
+        label='النوع',
+        widget=forms.Select(attrs={'class': 'form-select'}),
     )
 
 
@@ -50,10 +62,19 @@ class ContractForm(forms.ModelForm):
     class Meta:
         model = Contract
         fields = [
-            'title', 'contractor', 'contract_type', 'contract_amount',
-            'vat_rate', 'retention_rate', 'advance_payment_percent',
-            'start_date', 'end_date', 'cost_account',
-            'penalties_clause', 'special_conditions', 'notes',
+            'title',
+            'contractor',
+            'contract_type',
+            'contract_amount',
+            'vat_rate',
+            'retention_rate',
+            'advance_payment_percent',
+            'start_date',
+            'end_date',
+            'cost_account',
+            'penalties_clause',
+            'special_conditions',
+            'notes',
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
@@ -75,13 +96,15 @@ class ContractForm(forms.ModelForm):
 class ContractFilterForm(forms.Form):
     status = forms.ChoiceField(
         choices=[('', 'الكل')] + Contract.STATUS_CHOICES,
-        required=False, label='الحالة',
-        widget=forms.Select(attrs={'class': 'form-select'})
+        required=False,
+        label='الحالة',
+        widget=forms.Select(attrs={'class': 'form-select'}),
     )
     contractor = forms.ModelChoiceField(
         queryset=Contractor.objects.filter(is_active=True),
-        required=False, label='المقاول',
-        widget=forms.Select(attrs={'class': 'form-select'})
+        required=False,
+        label='المقاول',
+        widget=forms.Select(attrs={'class': 'form-select'}),
     )
 
 
@@ -100,19 +123,18 @@ class ContractItemForm(forms.ModelForm):
 
 
 ContractItemFormSet = inlineformset_factory(
-    Contract, ContractItem,
+    Contract,
+    ContractItem,
     fields=['item_number', 'description', 'unit', 'quantity', 'unit_price', 'order'],
-    extra=3, can_delete=True,
+    extra=3,
+    can_delete=True,
 )
 
 
 class InterimCertificateForm(forms.ModelForm):
     class Meta:
         model = InterimCertificate
-        fields = [
-            'contract', 'period_number', 'previous_amount', 'current_amount',
-            'period_from', 'period_to', 'notes',
-        ]
+        fields = ['contract', 'period_number', 'previous_amount', 'current_amount', 'period_from', 'period_to', 'notes']
         widgets = {
             'contract': forms.Select(attrs={'class': 'form-select'}),
             'period_number': forms.NumberInput(attrs={'class': 'form-control'}),
@@ -136,9 +158,11 @@ class CertificateItemForm(forms.ModelForm):
 
 
 CertificateItemFormSet = inlineformset_factory(
-    InterimCertificate, CertificateItem,
+    InterimCertificate,
+    CertificateItem,
     fields=['contract_item', 'previous_quantity', 'current_quantity'],
-    extra=2, can_delete=True,
+    extra=2,
+    can_delete=True,
 )
 
 
@@ -146,8 +170,14 @@ class ContractorPaymentForm(forms.ModelForm):
     class Meta:
         model = ContractorPayment
         fields = [
-            'contract', 'certificate', 'amount', 'payment_method',
-            'payment_date', 'check_number', 'bank_reference', 'notes',
+            'contract',
+            'certificate',
+            'amount',
+            'payment_method',
+            'payment_date',
+            'check_number',
+            'bank_reference',
+            'notes',
         ]
         widgets = {
             'contract': forms.Select(attrs={'class': 'form-select'}),

@@ -1,13 +1,16 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, get_object_or_404
+from datetime import timedelta
+
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from datetime import date, timedelta
-from .models import RecurringJournal, RecurringJournalLine, RecurringJournalLog
+
+from accounts.models import Account
+
 from .forms import RecurringJournalForm
-from accounts.models import Account, JournalEntry, JournalEntryLine
+from .models import RecurringJournal, RecurringJournalLine, RecurringJournalLog
 
 
 @login_required
@@ -59,13 +62,17 @@ def recurring_edit(request, pk):
                 label = form.fields[field].label if field in form.fields else field
                 messages.error(request, f'{label}: {err}')
         existing_lines = rj.lines.all()
-        return render(request, 'recurring/recurring_form.html', {
-            'accounts': accounts, 'rj': rj, 'existing_lines': existing_lines, 'form': form,
-        })
+        return render(
+            request,
+            'recurring/recurring_form.html',
+            {'accounts': accounts, 'rj': rj, 'existing_lines': existing_lines, 'form': form},
+        )
     existing_lines = rj.lines.all()
-    return render(request, 'recurring/recurring_form.html', {
-        'accounts': accounts, 'rj': rj, 'existing_lines': existing_lines, 'form': RecurringJournalForm(instance=rj),
-    })
+    return render(
+        request,
+        'recurring/recurring_form.html',
+        {'accounts': accounts, 'rj': rj, 'existing_lines': existing_lines, 'form': RecurringJournalForm(instance=rj)},
+    )
 
 
 @require_POST
@@ -78,14 +85,12 @@ def recurring_execute(request, pk):
 
     with transaction.atomic():
         from common.accounting_service import JournalEntryService
+
         entry_lines = []
         for line in rj.lines.all():
-            entry_lines.append({
-                'account': line.account,
-                'debit': line.debit,
-                'credit': line.credit,
-                'description': line.description,
-            })
+            entry_lines.append(
+                {'account': line.account, 'debit': line.debit, 'credit': line.credit, 'description': line.description}
+            )
 
         if not entry_lines:
             messages.error(request, 'لا توجد بنود في القيد الدوري')
@@ -100,9 +105,7 @@ def recurring_execute(request, pk):
             created_by=request.user,
         )
 
-        RecurringJournalLog.objects.create(
-            journal=rj, executed_date=timezone.now().date(), journal_entry=entry,
-        )
+        RecurringJournalLog.objects.create(journal=rj, executed_date=timezone.now().date(), journal_entry=entry)
 
         if rj.frequency == 'daily':
             rj.next_due_date += timedelta(days=1)
@@ -154,6 +157,7 @@ def _save_lines(rj, request):
     debits = request.POST.getlist('line_debit')
     credits = request.POST.getlist('line_credit')
     from decimal import Decimal
+
     total_d = Decimal('0')
     total_c = Decimal('0')
     for i in range(len(accounts)):
@@ -161,9 +165,11 @@ def _save_lines(rj, request):
             d = Decimal(debits[i]) if i < len(debits) and debits[i] else Decimal('0')
             c = Decimal(credits[i]) if i < len(credits) and credits[i] else Decimal('0')
             RecurringJournalLine.objects.create(
-                journal=rj, account_id=accounts[i],
+                journal=rj,
+                account_id=accounts[i],
                 description=descriptions[i] if i < len(descriptions) else '',
-                debit=d, credit=c,
+                debit=d,
+                credit=c,
             )
             total_d += d
             total_c += c

@@ -1,20 +1,22 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
+import logging
+import uuid
 from decimal import Decimal
+
+from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-import uuid
-import logging
 
-from common.permissions import screen_permission_required
-from purchases.models import Supplier, Product, PurchaseInvoice, PurchaseInvoiceLine
-from purchase_orders.models import PurchaseOrder, PurchaseOrderLine
 from common.models import SequenceNumber
-from warehouses.models import WarehouseProduct, StockMovement, Warehouse, InventoryCostLayer
-from .models import GoodsReceivedNote, GoodsReceivedLine
-from .forms import GoodsReceivedNoteForm, GoodsReceivedLineFormSet
+from common.permissions import screen_permission_required
+from purchase_orders.models import PurchaseOrderLine
+from purchases.models import Product, PurchaseInvoice, PurchaseInvoiceLine
+from warehouses.models import InventoryCostLayer, StockMovement, Warehouse, WarehouseProduct
+
+from .forms import GoodsReceivedLineFormSet, GoodsReceivedNoteForm
+from .models import GoodsReceivedNote
 
 logger = logging.getLogger('accounting')
 
@@ -28,10 +30,7 @@ def grn_list(request):
     paginator = Paginator(notes, 25)
     page = request.GET.get('page')
     notes_page = paginator.get_page(page)
-    return render(request, 'goods_received/grn_list.html', {
-        'notes': notes_page,
-        'status_filter': status,
-    })
+    return render(request, 'goods_received/grn_list.html', {'notes': notes_page, 'status_filter': status})
 
 
 @screen_permission_required('goods_received.grn', 'add')
@@ -52,24 +51,18 @@ def grn_create(request):
         form = GoodsReceivedNoteForm()
         formset = GoodsReceivedLineFormSet()
     products = Product.objects.filter(is_active=True)
-    return render(request, 'goods_received/grn_form.html', {
-        'form': form,
-        'formset': formset,
-        'products': products,
-        'title': 'إنشاء إيصال استلام جديد',
-    })
+    return render(
+        request,
+        'goods_received/grn_form.html',
+        {'form': form, 'formset': formset, 'products': products, 'title': 'إنشاء إيصال استلام جديد'},
+    )
 
 
 @screen_permission_required('goods_received.grn', 'view')
 def grn_detail(request, pk):
-    grn = get_object_or_404(
-        GoodsReceivedNote.objects.select_related('supplier', 'purchase_order'), pk=pk
-    )
+    grn = get_object_or_404(GoodsReceivedNote.objects.select_related('supplier', 'purchase_order'), pk=pk)
     lines = grn.lines.select_related('product', 'purchase_order_line').all()
-    return render(request, 'goods_received/grn_detail.html', {
-        'grn': grn,
-        'lines': lines,
-    })
+    return render(request, 'goods_received/grn_detail.html', {'grn': grn, 'lines': lines})
 
 
 @require_POST
@@ -96,7 +89,7 @@ def grn_confirm(request, pk):
             warehouse = grn.warehouse or Warehouse.objects.first()
             if warehouse:
                 StockMovement.objects.create(
-                    movement_number=f"GRN-{grn.grn_number}-{line.product.code}-{uuid.uuid4().hex[:6]}",
+                    movement_number=f'GRN-{grn.grn_number}-{line.product.code}-{uuid.uuid4().hex[:6]}',
                     movement_type='in',
                     warehouse=warehouse,
                     product=line.product,
@@ -108,8 +101,7 @@ def grn_confirm(request, pk):
                     date=grn.date,
                 )
                 wp, _ = WarehouseProduct.objects.get_or_create(
-                    warehouse=warehouse, product=line.product,
-                    defaults={'quantity': Decimal('0')},
+                    warehouse=warehouse, product=line.product, defaults={'quantity': Decimal('0')}
                 )
                 wp.quantity = (wp.quantity or Decimal('0')) + line.quantity_received
                 wp.save(update_fields=['quantity'])
@@ -137,11 +129,12 @@ def grn_confirm(request, pk):
 
     # فحص المخزون المنخفض بعد الاستلام
     try:
-        from notifications.utils import notify_low_stock
         from django.db.models import F
+
+        from notifications.utils import notify_low_stock
+
         low_stock_products = WarehouseProduct.objects.filter(
-            quantity__lte=F('minimum_quantity'),
-            minimum_quantity__gt=0
+            quantity__lte=F('minimum_quantity'), minimum_quantity__gt=0
         ).select_related('product')[:10]
         for wp in low_stock_products:
             notify_low_stock(wp.product, wp.quantity, wp.minimum_quantity)
@@ -191,9 +184,13 @@ def grn_to_invoice(request, pk):
         invoice.save(update_fields=['approved_by', 'approved_at'])
         try:
             invoice.create_journal_entry()
-            messages.success(request, f'تم إنشاء فاتورة المشتريات {invoice.invoice_number} وترحيلها محاسبياً من إيصال الاستلام')
+            messages.success(
+                request, f'تم إنشاء فاتورة المشتريات {invoice.invoice_number} وترحيلها محاسبياً من إيصال الاستلام'
+            )
         except Exception as exc:
-            logger.warning('تعذّر الترحيل التلقائي لفاتورة %s المحوّلة من إيصال الاستلام: %s', invoice.invoice_number, exc)
+            logger.warning(
+                'تعذّر الترحيل التلقائي لفاتورة %s المحوّلة من إيصال الاستلام: %s', invoice.invoice_number, exc
+            )
             messages.warning(request, f'تم إنشاء الفاتورة {invoice.invoice_number} ولكنها تحتاج ترحيلاً يدوياً')
 
     return redirect('purchases:invoice_detail', pk=invoice.pk)

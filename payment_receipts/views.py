@@ -1,17 +1,19 @@
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.shortcuts import render, redirect, get_object_or_404
+import logging
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Sum, Count, Q
-from .models import PaymentReceipt
-from .forms import PaymentReceiptForm
-from sales.models import Customer, SalesInvoice
-from purchases.models import Supplier, PurchaseInvoice
-from treasury.models import Bank, Safe
+from django.db.models import Sum
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
 from common.permissions import screen_permission_required
-import logging
+from purchases.models import PurchaseInvoice, Supplier
+from sales.models import Customer, SalesInvoice
+from treasury.models import Bank, Safe
+
+from .forms import PaymentReceiptForm
+from .models import PaymentReceipt
 
 logger = logging.getLogger('accounting')
 
@@ -50,15 +52,19 @@ def receipt_list(request):
     paginator_obj = Paginator(receipts, 25)
     page = request.GET.get('page')
     receipts_page = paginator_obj.get_page(page)
-    return render(request, 'payment_receipts/receipt_list.html', {
-        'receipts': receipts_page,
-        'total_receipts': total_receipts,
-        'total_payments': total_payments,
-        'total_receipt_amount': total_receipt_amount,
-        'total_payment_amount': total_payment_amount,
-        'total_count': total_count,
-        'unposted_count': unposted_count,
-    })
+    return render(
+        request,
+        'payment_receipts/receipt_list.html',
+        {
+            'receipts': receipts_page,
+            'total_receipts': total_receipts,
+            'total_payments': total_payments,
+            'total_receipt_amount': total_receipt_amount,
+            'total_payment_amount': total_payment_amount,
+            'total_count': total_count,
+            'unposted_count': unposted_count,
+        },
+    )
 
 
 @screen_permission_required('payment_receipts.paymentreceipt', 'add')
@@ -85,25 +91,43 @@ def receipt_create(request):
             suppliers = Supplier.objects.filter(is_active=True)
             banks = Bank.objects.filter(is_active=True)
             safes = Safe.objects.filter(is_active=True)
-            return render(request, 'payment_receipts/receipt_form.html', {
-                'customers': customers, 'suppliers': suppliers, 'banks': banks, 'safes': safes,
-                'next_number': request.POST.get('receipt_number', ''),
-                'receipt_type': request.POST.get('receipt_type', receipt_type),
-                'form': form,
-            })
+            return render(
+                request,
+                'payment_receipts/receipt_form.html',
+                {
+                    'customers': customers,
+                    'suppliers': suppliers,
+                    'banks': banks,
+                    'safes': safes,
+                    'next_number': request.POST.get('receipt_number', ''),
+                    'receipt_type': request.POST.get('receipt_type', receipt_type),
+                    'form': form,
+                },
+            )
 
     next_type = request.GET.get('type', 'receipt')
     from common.models import SequenceNumber
-    next_number = f"PR-{SequenceNumber.get_next_number('payment_receipt')}"
-    return render(request, 'payment_receipts/receipt_form.html', {
-        'customers': customers, 'suppliers': suppliers, 'banks': banks, 'safes': safes,
-        'next_number': next_number, 'receipt_type': next_type,
-    })
+
+    next_number = f'PR-{SequenceNumber.get_next_number("payment_receipt")}'
+    return render(
+        request,
+        'payment_receipts/receipt_form.html',
+        {
+            'customers': customers,
+            'suppliers': suppliers,
+            'banks': banks,
+            'safes': safes,
+            'next_number': next_number,
+            'receipt_type': next_type,
+        },
+    )
 
 
 @screen_permission_required('payment_receipts.paymentreceipt', 'view')
 def receipt_detail(request, pk):
-    receipt = get_object_or_404(PaymentReceipt.objects.select_related('customer', 'supplier', 'bank', 'safe', 'journal_entry'), pk=pk)
+    receipt = get_object_or_404(
+        PaymentReceipt.objects.select_related('customer', 'supplier', 'bank', 'safe', 'journal_entry'), pk=pk
+    )
     return render(request, 'payment_receipts/receipt_detail.html', {'receipt': receipt})
 
 
@@ -114,7 +138,7 @@ def receipt_post(request, pk):
     try:
         receipt.create_journal_entry()
         messages.success(request, f'تم ترحيل السند {receipt.receipt_number} بنجاح')
-    except Exception as e:
+    except Exception:
         messages.error(request, 'حدث خطأ أثناء الترحيل. تأكد من صحة البيانات وحاول مرة أخرى.')
         logger.exception('Posting failed for PaymentReceipt %s', pk)
     return redirect('payment_receipts:detail', pk=pk)
@@ -129,6 +153,7 @@ def receipt_allocate(request, pk):
         return redirect('payment_receipts:detail', pk=pk)
 
     from decimal import Decimal
+
     invoice_ids = request.POST.getlist('invoice_ids')
     amounts = request.POST.getlist('allocation_amounts')
 
@@ -157,7 +182,8 @@ def receipt_allocate(request, pk):
     with transaction.atomic():
         for inv_id, amount in allocations:
             if receipt.receipt_type == 'receipt':
-                from sales.models import SalesInvoice, Customer
+                from sales.models import Customer, SalesInvoice
+
                 invoice = SalesInvoice.objects.select_for_update().get(pk=inv_id)
                 invoice.paid_amount += amount
                 invoice.calculate_totals()
@@ -168,6 +194,7 @@ def receipt_allocate(request, pk):
                     customer.save(update_fields=['current_balance'])
             else:
                 from purchases.models import PurchaseInvoice, Supplier
+
                 invoice = PurchaseInvoice.objects.select_for_update().get(pk=inv_id)
                 invoice.paid_amount += amount
                 invoice.calculate_totals()
@@ -196,6 +223,7 @@ def receipt_delete(request, pk):
 @screen_permission_required('payment_receipts.paymentreceipt', 'print')
 def receipt_print(request, pk):
     from company.models import Company
+
     receipt = get_object_or_404(PaymentReceipt, pk=pk)
     company = Company.objects.first()
     return render(request, 'payment_receipts/receipt_print.html', {'receipt': receipt, 'company': company})
@@ -204,22 +232,24 @@ def receipt_print(request, pk):
 @screen_permission_required('payment_receipts.paymentreceipt', 'view')
 def get_customer_invoices(request):
     from django.http import JsonResponse
+
     customer_id = request.GET.get('customer_id')
     if not customer_id:
         return JsonResponse([], safe=False)
-    invoices = SalesInvoice.objects.filter(
-        customer_id=customer_id, remaining_amount__gt=0, is_posted=True
-    ).values('pk', 'invoice_number', 'remaining_amount', 'total_amount')
+    invoices = SalesInvoice.objects.filter(customer_id=customer_id, remaining_amount__gt=0, is_posted=True).values(
+        'pk', 'invoice_number', 'remaining_amount', 'total_amount'
+    )
     return JsonResponse(list(invoices), safe=False)
 
 
 @screen_permission_required('payment_receipts.paymentreceipt', 'view')
 def get_supplier_invoices(request):
     from django.http import JsonResponse
+
     supplier_id = request.GET.get('supplier_id')
     if not supplier_id:
         return JsonResponse([], safe=False)
-    invoices = PurchaseInvoice.objects.filter(
-        supplier_id=supplier_id, remaining_amount__gt=0, is_posted=True
-    ).values('pk', 'invoice_number', 'remaining_amount', 'total_amount')
+    invoices = PurchaseInvoice.objects.filter(supplier_id=supplier_id, remaining_amount__gt=0, is_posted=True).values(
+        'pk', 'invoice_number', 'remaining_amount', 'total_amount'
+    )
     return JsonResponse(list(invoices), safe=False)

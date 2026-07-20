@@ -1,45 +1,44 @@
-from rest_framework import viewsets, status
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from django.db.models import Count
+from django.utils import timezone
+from django.views.decorators.cache import cache_page
+from rest_framework import viewsets
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action, api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import SimpleRateThrottle
-from django.utils import timezone
-from django.views.decorators.cache import cache_page
-from django.contrib.auth import authenticate
-from rest_framework.authtoken.models import Token
-from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Count
-from rest_framework.filters import SearchFilter, OrderingFilter
-from django.contrib.auth.models import User
-from accounts.models import AccountType, Account, JournalEntry
-from purchases.models import Supplier, Product, ProductCategory, UnitOfMeasure, PurchaseInvoice
-from sales.models import Customer, SalesInvoice
-from treasury.models import Bank, Safe, BankTransaction, SafeTransaction
-from hr.models import Department, Employee, Attendance, Salary
-from assets.models import AssetCategory, Asset, DepreciationEntry
-from warehouses.models import Warehouse, WarehouseProduct, StockMovement
-from company.models import Company, CompanyBranch
-from budget.models import CostCenter, Budget
-from currency.models import Currency, ExchangeRateHistory
-from documents.models import DocumentType, DocumentTemplate, Document
+
+from accounts.models import Account, AccountType, JournalEntry
+from assets.models import Asset, AssetCategory, DepreciationEntry
 from audit.models import AuditLog
+from budget.models import Budget, CostCenter
 from cheques.models import Cheque
+from company.models import Company, CompanyBranch
+from contractors.models import Contract, Contractor, ContractorPayment, InterimCertificate
 from credit_notes.models import CreditNote
-from sales_returns.models import SalesReturn
-from purchase_returns.models import PurchaseReturn
-from payment_receipts.models import PaymentReceipt
-from stock_adjustments.models import StockAdjustment
-from tax_invoices.models import ETAConnection, TaxInvoice
-from purchase_orders.models import PurchaseOrder
-from sales_orders.models import SalesOrder
+from currency.models import Currency, ExchangeRateHistory
+from documents.models import Document, DocumentTemplate, DocumentType
 from goods_received.models import GoodsReceivedNote
+from hr.models import Attendance, Department, Employee, Salary
+from notifications.models import NotificationCategory, NotificationLog, NotificationTemplate
+from payment_receipts.models import PaymentReceipt
+from purchase_orders.models import PurchaseOrder
+from purchase_returns.models import PurchaseReturn
+from purchases.models import Product, ProductCategory, PurchaseInvoice, Supplier, UnitOfMeasure
+from recurring.models import RecurringJournal
 from requisitions.models import Requisition
 from rfq.models import RFQ, Quotation
-from contractors.models import Contractor, Contract, InterimCertificate, ContractorPayment
-from recurring.models import RecurringJournal
-from notifications.models import NotificationCategory, NotificationTemplate, NotificationLog
+from sales.models import Customer, SalesInvoice
+from sales_orders.models import SalesOrder
+from sales_returns.models import SalesReturn
+from stock_adjustments.models import StockAdjustment
+from tax_invoices.models import ETAConnection, TaxInvoice
+from treasury.models import Bank, BankTransaction, Safe, SafeTransaction
+from warehouses.models import StockMovement, Warehouse, WarehouseProduct
+
 from .serializers import *
-from .pagination import StandardResultsPagination
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -123,7 +122,11 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 
 class PurchaseInvoiceViewSet(viewsets.ModelViewSet):
-    queryset = PurchaseInvoice.objects.select_related('supplier', 'created_by', 'approved_by').prefetch_related('lines__product').all()
+    queryset = (
+        PurchaseInvoice.objects.select_related('supplier', 'created_by', 'approved_by')
+        .prefetch_related('lines__product')
+        .all()
+    )
     serializer_class = PurchaseInvoiceSerializer
     search_fields = ['invoice_number', 'file_number', 'supplier__name']
     ordering_fields = ['date', 'invoice_number', 'total_amount']
@@ -174,7 +177,9 @@ class CustomerViewSet(viewsets.ModelViewSet):
 
 
 class SalesInvoiceViewSet(viewsets.ModelViewSet):
-    queryset = SalesInvoice.objects.select_related('customer', 'created_by', 'branch').prefetch_related('lines__product').all()
+    queryset = (
+        SalesInvoice.objects.select_related('customer', 'created_by', 'branch').prefetch_related('lines__product').all()
+    )
     serializer_class = SalesInvoiceSerializer
     search_fields = ['invoice_number', 'file_number', 'customer__name']
     ordering_fields = ['date', 'invoice_number', 'total_amount']
@@ -380,7 +385,11 @@ class DocumentTemplateViewSet(viewsets.ModelViewSet):
 
 
 class DocumentViewSet(viewsets.ModelViewSet):
-    queryset = Document.objects.select_related('document_type', 'created_by', 'assigned_to').prefetch_related('flows', 'attachments').all()
+    queryset = (
+        Document.objects.select_related('document_type', 'created_by', 'assigned_to')
+        .prefetch_related('flows', 'attachments')
+        .all()
+    )
     serializer_class = DocumentSerializer
     search_fields = ['document_number', 'title']
     ordering_fields = ['date', 'document_number']
@@ -585,6 +594,7 @@ class NotificationLogViewSet(viewsets.ReadOnlyModelViewSet):
 
 class AuthRateThrottle(SimpleRateThrottle):
     """تقييد معدل محاولات تسجيل الدخول عبر API — 20 محاولة في الساعة."""
+
     scope = 'auth'
 
     def get_cache_key(self, request: object, view: object) -> str:
@@ -607,12 +617,9 @@ def api_login(request: object) -> Response:
     if user is None:
         return Response({'error': 'اسم المستخدم أو كلمة المرور غير صحيحة'}, status=401)
     token, _ = Token.objects.get_or_create(user=user)
-    return Response({
-        'token': token.key,
-        'user_id': user.pk,
-        'username': user.username,
-        'is_superuser': user.is_superuser,
-    })
+    return Response(
+        {'token': token.key, 'user_id': user.pk, 'username': user.username, 'is_superuser': user.is_superuser}
+    )
 
 
 @api_view(['GET'])
@@ -620,53 +627,49 @@ def api_login(request: object) -> Response:
 @cache_page(60)
 def api_dashboard(request: object) -> Response:
     """Dashboard summary API endpoint"""
-    from accounts.models import Account, JournalEntry
-    from sales.models import SalesInvoice, Customer
-    from purchases.models import PurchaseInvoice, Supplier
-    from django.db import models
     from datetime import date
-    
+
+    from django.db import models
+
+    from accounts.models import JournalEntry
+    from purchases.models import PurchaseInvoice, Supplier
+    from sales.models import Customer, SalesInvoice
+
     today = date.today()
     month_start = today.replace(day=1)
-    
-    sales_this_month = SalesInvoice.objects.filter(
-        date__gte=month_start, is_posted=True
-    ).count()
-    purchases_this_month = PurchaseInvoice.objects.filter(
-        date__gte=month_start, is_posted=True
-    ).count()
-    total_receivable = Customer.objects.aggregate(
-        total=models.Sum('current_balance')
-    )['total'] or 0
-    total_payable = Supplier.objects.aggregate(
-        total=models.Sum('current_balance')
-    )['total'] or 0
+
+    sales_this_month = SalesInvoice.objects.filter(date__gte=month_start, is_posted=True).count()
+    purchases_this_month = PurchaseInvoice.objects.filter(date__gte=month_start, is_posted=True).count()
+    total_receivable = Customer.objects.aggregate(total=models.Sum('current_balance'))['total'] or 0
+    total_payable = Supplier.objects.aggregate(total=models.Sum('current_balance'))['total'] or 0
     recent_entries = JournalEntry.objects.order_by('-date')[:5].values(
         'entry_number', 'date', 'description', 'entry_type', 'total_debit', 'total_credit'
     )
-    
-    return Response({
-        'sales_this_month': sales_this_month,
-        'purchases_this_month': purchases_this_month,
-        'total_receivable': float(total_receivable),
-        'total_payable': float(total_payable),
-        'recent_entries': list(recent_entries),
-    })
+
+    return Response(
+        {
+            'sales_this_month': sales_this_month,
+            'purchases_this_month': purchases_this_month,
+            'total_receivable': float(total_receivable),
+            'total_payable': float(total_payable),
+            'recent_entries': list(recent_entries),
+        }
+    )
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_stock_summary(request: object) -> Response:
     """Stock summary API endpoint"""
-    from warehouses.models import WarehouseProduct
     from django.db.models import Sum
-    
-    products = WarehouseProduct.objects.select_related(
-        'product', 'warehouse'
-    ).values(
-        'product__name', 'product__code', 'warehouse__name'
-    ).annotate(
-        total_qty=Sum('quantity')
-    ).order_by('product__name')[:50]
-    
+
+    from warehouses.models import WarehouseProduct
+
+    products = (
+        WarehouseProduct.objects.select_related('product', 'warehouse')
+        .values('product__name', 'product__code', 'warehouse__name')
+        .annotate(total_qty=Sum('quantity'))
+        .order_by('product__name')[:50]
+    )
+
     return Response(list(products))

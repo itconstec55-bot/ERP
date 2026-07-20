@@ -1,7 +1,9 @@
 import logging
-from django.core.mail import send_mail
+
 from django.conf import settings as django_settings
-from .models import NotificationTemplate, NotificationLog
+from django.core.mail import send_mail
+
+from .models import NotificationLog, NotificationTemplate
 
 logger = logging.getLogger('accounting')
 
@@ -19,7 +21,7 @@ def render_template(template_text, context):
 def send_notification(event, context=None, extra_recipients=None):
     """
     إرسال إشعار بالبريد الإلكتروني.
-    
+
     event: نوع الحدث (invoice_created, invoice_posted, low_stock, etc.)
     context: قاموس المتغيرات للاستبدال في القالب
     extra_recipients: قائمة إضافية بالبريد الإلكتروني
@@ -49,19 +51,14 @@ def send_notification(event, context=None, extra_recipients=None):
     email_host_user = getattr(django_settings, 'EMAIL_HOST_USER', '')
     if not email_host_user:
         logger.warning('EMAIL_HOST_USER not configured. Skipping email send.')
-        _log_notification(template, '', subject, body, success=False,
-                          error_message='EMAIL_HOST_USER not configured')
+        _log_notification(template, '', subject, body, success=False, error_message='EMAIL_HOST_USER not configured')
         return False
 
     success_count = 0
     for email in recipients:
         try:
             send_mail(
-                subject=subject,
-                message=body,
-                from_email=email_host_user,
-                recipient_list=[email],
-                fail_silently=False,
+                subject=subject, message=body, from_email=email_host_user, recipient_list=[email], fail_silently=False
             )
             _log_notification(template, email, subject, body, success=True)
             success_count += 1
@@ -114,9 +111,7 @@ def notify_low_stock(product, current_stock, minimum_stock):
 
 
 def notify_salary_due():
-    send_notification('salary_due', {
-        'message': 'موعد صرف الرواتب الشهرية',
-    })
+    send_notification('salary_due', {'message': 'موعد صرف الرواتب الشهرية'})
 
 
 def notify_purchase_invoice_created(invoice):

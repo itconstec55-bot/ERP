@@ -1,12 +1,11 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404, redirect, render
+
 from common.permissions import screen_permission_required
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.db.models import Q, Count
-from .models import DocumentType, DocumentTemplate, Document, DocumentFlow, DocumentAttachment
-from .forms import (DocumentTypeForm, DocumentTemplateForm, DocumentForm,
-                     DocumentFlowForm, DocumentAttachmentForm)
+from .forms import DocumentAttachmentForm, DocumentFlowForm, DocumentForm, DocumentTemplateForm, DocumentTypeForm
+from .models import Document, DocumentFlow, DocumentTemplate, DocumentType
 
 
 @screen_permission_required('documents.document', 'view')
@@ -89,14 +88,18 @@ def document_list(request):
         docs = docs.filter(Q(title__icontains=search) | Q(document_number__icontains=search))
     doc_types = DocumentType.objects.filter(is_active=True)
     status_counts = Document.objects.values('status').annotate(count=Count('id'))
-    return render(request, 'documents/document_list.html', {
-        'documents': docs,
-        'doc_types': doc_types,
-        'status_counts': {s['status']: s['count'] for s in status_counts},
-        'current_status': status_filter,
-        'current_type': type_filter,
-        'search': search,
-    })
+    return render(
+        request,
+        'documents/document_list.html',
+        {
+            'documents': docs,
+            'doc_types': doc_types,
+            'status_counts': {s['status']: s['count'] for s in status_counts},
+            'current_status': status_filter,
+            'current_type': type_filter,
+            'search': search,
+        },
+    )
 
 
 @screen_permission_required('documents.document', 'add')
@@ -110,11 +113,7 @@ def document_create(request):
                 doc.document_number = doc.document_type.generate_number()
             doc.save()
             DocumentFlow.objects.create(
-                document=doc,
-                action='create',
-                to_status=doc.status,
-                performed_by=request.user,
-                comment='إنشاء المستند',
+                document=doc, action='create', to_status=doc.status, performed_by=request.user, comment='إنشاء المستند'
             )
             messages.success(request, 'تم إنشاء المستند بنجاح')
             return redirect('documents:document_detail', pk=doc.pk)
@@ -125,19 +124,24 @@ def document_create(request):
 
 @screen_permission_required('documents.document', 'view')
 def document_detail(request, pk):
-    doc = get_object_or_404(Document.objects.select_related(
-        'document_type', 'department', 'created_by', 'assigned_to'), pk=pk)
+    doc = get_object_or_404(
+        Document.objects.select_related('document_type', 'department', 'created_by', 'assigned_to'), pk=pk
+    )
     flows = doc.flows.select_related('performed_by').all()
     attachments = doc.attachments.select_related('uploaded_by').all()
     flow_form = DocumentFlowForm()
     attachment_form = DocumentAttachmentForm()
-    return render(request, 'documents/document_detail.html', {
-        'document': doc,
-        'flows': flows,
-        'attachments': attachments,
-        'flow_form': flow_form,
-        'attachment_form': attachment_form,
-    })
+    return render(
+        request,
+        'documents/document_detail.html',
+        {
+            'document': doc,
+            'flows': flows,
+            'attachments': attachments,
+            'flow_form': flow_form,
+            'attachment_form': attachment_form,
+        },
+    )
 
 
 @screen_permission_required('documents.document', 'edit')
@@ -189,7 +193,9 @@ def document_action(request, pk):
         performed_by=request.user,
         comment=comment,
     )
-    messages.success(request, f'تم {doc.get_action_display() if hasattr(doc, "get_action_display") else action} المستند بنجاح')
+    messages.success(
+        request, f'تم {doc.get_action_display() if hasattr(doc, "get_action_display") else action} المستند بنجاح'
+    )
     return redirect('documents:document_detail', pk=doc.pk)
 
 

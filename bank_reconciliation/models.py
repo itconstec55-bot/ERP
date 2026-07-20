@@ -1,17 +1,11 @@
 import uuid
+
 from django.db import models
 
 
 class BankStatementItem(models.Model):
-    TYPE_CHOICES = [
-        ('credit', 'إيداع'),
-        ('debit', 'سحب'),
-    ]
-    STATUS_CHOICES = [
-        ('unmatched', 'غير مطابق'),
-        ('matched', 'مطابق'),
-        ('partial', 'مطابقة جزئية'),
-    ]
+    TYPE_CHOICES = [('credit', 'إيداع'), ('debit', 'سحب')]
+    STATUS_CHOICES = [('unmatched', 'غير مطابق'), ('matched', 'مطابق'), ('partial', 'مطابقة جزئية')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     bank_account = models.ForeignKey('treasury.Bank', on_delete=models.CASCADE, verbose_name='الحساب البنكي')
@@ -21,7 +15,9 @@ class BankStatementItem(models.Model):
     debit_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name='المدين')
     credit_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name='الدائن')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='unmatched', verbose_name='الحالة')
-    matched_transaction = models.ForeignKey('treasury.BankTransaction', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='المعاملة المطابقة')
+    matched_transaction = models.ForeignKey(
+        'treasury.BankTransaction', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='المعاملة المطابقة'
+    )
     notes = models.TextField(blank=True, verbose_name='ملاحظات')
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -41,11 +37,7 @@ class BankStatementItem(models.Model):
 
 
 class ReconciliationSession(models.Model):
-    STATUS_CHOICES = [
-        ('in_progress', 'قيد التنفيذ'),
-        ('completed', 'مكتمل'),
-        ('cancelled', 'ملغي'),
-    ]
+    STATUS_CHOICES = [('in_progress', 'قيد التنفيذ'), ('completed', 'مكتمل'), ('cancelled', 'ملغي')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     bank_account = models.ForeignKey('treasury.Bank', on_delete=models.CASCADE, verbose_name='الحساب البنكي')

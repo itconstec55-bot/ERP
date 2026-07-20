@@ -1,6 +1,8 @@
 from django.urls import path
-from . import views
+
 from purchases import views as purchases_views
+
+from . import views
 
 app_name = 'warehouses'
 

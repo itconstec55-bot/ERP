@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Bank, Safe, BankTransaction, SafeTransaction
+
+from .models import Bank, BankTransaction, Safe, SafeTransaction
 
 
 @admin.register(Bank)

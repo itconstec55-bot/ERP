@@ -1,11 +1,12 @@
-from django.contrib.auth.decorators import login_required
-from common.permissions import screen_permission_required
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 from datetime import date
-from decimal import Decimal
-from .models import Currency, ExchangeRateHistory
+
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect, render
+
+from common.permissions import screen_permission_required
+
 from .forms import CurrencyForm
+from .models import Currency, ExchangeRateHistory
 
 
 @screen_permission_required('currency.currency', 'view')
@@ -41,9 +42,7 @@ def currency_edit(request, pk):
             currency = form.save()
             if old_rate != currency.exchange_rate_to_egp:
                 ExchangeRateHistory.objects.create(
-                    currency=currency,
-                    rate=currency.exchange_rate_to_egp,
-                    date=date.today(),
+                    currency=currency, rate=currency.exchange_rate_to_egp, date=date.today()
                 )
             messages.success(request, 'تم تعديل العملة بنجاح')
             return redirect('currency:currency_list')

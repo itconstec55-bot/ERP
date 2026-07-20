@@ -1,14 +1,16 @@
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.shortcuts import render, redirect, get_object_or_404
+import logging
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from .models import PurchaseReturn, PurchaseReturnLine
-from purchases.models import Supplier, Product
+from django.views.decorators.http import require_POST
+
 from common.permissions import screen_permission_required
-import logging
+from purchases.models import Product, Supplier
+
+from .models import PurchaseReturn, PurchaseReturnLine
 
 logger = logging.getLogger('accounting')
 
@@ -28,6 +30,7 @@ def purchase_return_create(request):
     products = Product.objects.filter(is_active=True)
     if request.method == 'POST':
         from decimal import Decimal, InvalidOperation
+
         errors = []
         return_number = request.POST.get('return_number', '').strip()
         date_val = request.POST.get('date', '').strip()
@@ -72,9 +75,11 @@ def purchase_return_create(request):
             for e in errors:
                 messages.error(request, e)
             next_number = f'RET-P-{timezone.now().strftime("%Y%m%d")}-{PurchaseReturn.objects.count() + 1:04d}'
-            return render(request, 'purchase_returns/return_form.html', {
-                'suppliers': suppliers, 'products': products, 'next_number': next_number,
-            })
+            return render(
+                request,
+                'purchase_returns/return_form.html',
+                {'suppliers': suppliers, 'products': products, 'next_number': next_number},
+            )
 
         with transaction.atomic():
             pr = PurchaseReturn.objects.create(
@@ -86,19 +91,16 @@ def purchase_return_create(request):
                 created_by=request.user,
             )
             for pid, qty, price in parsed_lines:
-                PurchaseReturnLine.objects.create(
-                    purchase_return=pr,
-                    product_id=pid,
-                    quantity=qty,
-                    unit_price=price,
-                )
+                PurchaseReturnLine.objects.create(purchase_return=pr, product_id=pid, quantity=qty, unit_price=price)
             pr.calculate_totals()
         messages.success(request, f'تم إنشاء المرتجع {pr.return_number} بنجاح')
         return redirect('purchase_returns:detail', pk=pr.pk)
     next_number = f'RET-P-{timezone.now().strftime("%Y%m%d")}-{PurchaseReturn.objects.count() + 1:04d}'
-    return render(request, 'purchase_returns/return_form.html', {
-        'suppliers': suppliers, 'products': products, 'next_number': next_number,
-    })
+    return render(
+        request,
+        'purchase_returns/return_form.html',
+        {'suppliers': suppliers, 'products': products, 'next_number': next_number},
+    )
 
 
 @screen_permission_required('purchase_returns.purchasereturn', 'view')
@@ -114,9 +116,11 @@ def purchase_return_post(request, pk):
     pr = get_object_or_404(PurchaseReturn, pk=pk)
     try:
         pr.create_journal_entry()
-        from warehouses.models import WarehouseProduct, StockMovement, Warehouse
-        from decimal import Decimal
         import uuid as _uuid
+        from decimal import Decimal
+
+        from warehouses.models import StockMovement, Warehouse, WarehouseProduct
+
         lines = pr.lines.select_related('product').all()
         for line in lines:
             if line.quantity <= 0:
@@ -125,7 +129,7 @@ def purchase_return_post(request, pk):
             if not warehouse:
                 continue
             StockMovement.objects.create(
-                movement_number=f"PR-{pr.return_number}-{line.product.code}-{_uuid.uuid4().hex[:6]}",
+                movement_number=f'PR-{pr.return_number}-{line.product.code}-{_uuid.uuid4().hex[:6]}',
                 movement_type='out',
                 warehouse=warehouse,
                 product=line.product,
@@ -137,13 +141,12 @@ def purchase_return_post(request, pk):
                 performed_by=request.user,
             )
             wp, _ = WarehouseProduct.objects.get_or_create(
-                warehouse=warehouse, product=line.product,
-                defaults={'quantity': Decimal('0')},
+                warehouse=warehouse, product=line.product, defaults={'quantity': Decimal('0')}
             )
             wp.quantity = (wp.quantity or Decimal('0')) - line.quantity
             wp.save(update_fields=['quantity'])
         messages.success(request, f'تم ترحيل المرتجع {pr.return_number} وتحديث المخزون بنجاح')
-    except Exception as e:
+    except Exception:
         messages.error(request, 'حدث خطأ أثناء الترحيل. تأكد من صحة البيانات وحاول مرة أخرى.')
         logger.exception('Posting failed for PurchaseReturn %s', pk)
     return redirect('purchase_returns:detail', pk=pk)

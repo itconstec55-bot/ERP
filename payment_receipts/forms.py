@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+
 from .models import PaymentReceipt
 
 
@@ -7,15 +8,21 @@ class PaymentReceiptForm(forms.ModelForm):
     class Meta:
         model = PaymentReceipt
         fields = [
-            'receipt_number', 'receipt_type', 'date', 'amount',
-            'payment_method', 'customer', 'supplier',
-            'invoice', 'purchase_invoice', 'bank', 'safe',
-            'cheque_number', 'description',
+            'receipt_number',
+            'receipt_type',
+            'date',
+            'amount',
+            'payment_method',
+            'customer',
+            'supplier',
+            'invoice',
+            'purchase_invoice',
+            'bank',
+            'safe',
+            'cheque_number',
+            'description',
         ]
-        widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 3}),
-        }
+        widgets = {'date': forms.DateInput(attrs={'type': 'date'}), 'description': forms.Textarea(attrs={'rows': 3})}
 
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')

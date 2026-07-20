@@ -1,14 +1,13 @@
 """
 Middleware مركزي لمعالجة الأخطاء وتتبع الطلبات
 """
+
 import logging
 import time
-import traceback
-from typing import Optional
 
 from django.conf import settings
 from django.core.cache import cache
-from django.http import JsonResponse, HttpResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.deprecation import MiddlewareMixin
 
 from common.exceptions import AccountingError
@@ -22,7 +21,7 @@ class CSPMiddleware(MiddlewareMixin):
 
     CSP_POLICY = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self'"
 
-    def process_response(self, request: HttpRequest, response: HttpResponse) -> Optional[HttpResponse]:
+    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse | None:
         if not getattr(settings, 'DEBUG', True):
             response['Content-Security-Policy'] = self.CSP_POLICY
         return response
@@ -33,13 +32,14 @@ class IdleSessionTimeoutMiddleware(MiddlewareMixin):
 
     IDLE_TIMEOUT = 30 * 60  # 30 minutes
 
-    def process_request(self, request: HttpRequest) -> Optional[HttpResponse]:
+    def process_request(self, request: HttpRequest) -> HttpResponse | None:
         if hasattr(request, 'user') and request.user.is_authenticated:
             last_activity = request.session.get('last_activity')
             now = time.time()
             if last_activity and (now - last_activity) > self.IDLE_TIMEOUT:
                 logger.info('Idle session timeout for user %s', request.user.pk)
                 from django.contrib.auth import logout
+
                 logout(request)
                 return
             request.session['last_activity'] = now
@@ -72,9 +72,10 @@ class LoginThrottleMiddleware(MiddlewareMixin):
     محلي لكل عملية Gunicorn. في بيئة إنتاج متعددة العمليات، يجب استخدام Redis
     أو Memcached كخزّان مؤقت مشترك عبر CACHES setting.
     """
+
     MAX_ATTEMPTS = 10
-    WINDOW = 300       # ثوانٍ لإعادة ضبط العداد
-    BLOCK = 300        # ثوانٍ مدة الحظر عند تجاوز الحد
+    WINDOW = 300  # ثوانٍ لإعادة ضبط العداد
+    BLOCK = 300  # ثوانٍ مدة الحظر عند تجاوز الحد
 
     def _ip(self, request: HttpRequest) -> str:
         forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -95,10 +96,7 @@ class LoginThrottleMiddleware(MiddlewareMixin):
         # محظور حالياً
         if data.get('blocked_until') and now < data['blocked_until']:
             logger.warning('Blocked login attempt from %s (throttled)', ip)
-            return HttpResponse(
-                'تجاوزت عدد محاولات الدخول المسموح. يرجى المحاولة بعد بضع دقائق.',
-                status=429,
-            )
+            return HttpResponse('تجاوزت عدد محاولات الدخول المسموح. يرجى المحاولة بعد بضع دقائق.', status=429)
 
         # Django login view يعيد 200 عند فشل الدخول (إعادة عرض النموذج)
         # ويعيد 302 عند نجاح الدخول (إعادة توجيه)
@@ -111,10 +109,7 @@ class LoginThrottleMiddleware(MiddlewareMixin):
             cache.set(key, data, int(self.WINDOW + self.BLOCK))
             # إعادة فحص بعد التحديث للتأكد من أن المستخدم غير محظور الآن
             if data.get('blocked_until') and now < data['blocked_until']:
-                return HttpResponse(
-                    'تجاوزت عدد محاولات الدخول المسموح. يرجى المحاولة بعد بضع دقائق.',
-                    status=429,
-                )
+                return HttpResponse('تجاوزت عدد محاولات الدخول المسموح. يرجى المحاولة بعد بضع دقائق.', status=429)
         elif response.status_code in (302, 303):
             # نجاح الدخول: إعادة ضبط العداد
             cache.delete(key)
@@ -133,23 +128,23 @@ class ErrorHandlingMiddleware(MiddlewareMixin):
     def process_exception(self, request, exception):
         if isinstance(exception, AccountingError):
             if request.headers.get('Accept') == 'application/json':
-                return JsonResponse(
-                    {'error': exception.message, 'code': exception.code},
-                    status=400,
-                )
+                return JsonResponse({'error': exception.message, 'code': exception.code}, status=400)
             from django.contrib import messages
+
             messages.error(request, exception.message)
             return None
 
         if isinstance(exception, PermissionError):
             logger.warning(
                 'Permission denied: %s %s user=%s',
-                request.method, request.path,
+                request.method,
+                request.path,
                 request.user.pk if request.user.is_authenticated else 'anon',
             )
             if request.headers.get('Accept') == 'application/json':
                 return JsonResponse({'error': 'ليس لديك صلاحية لتنفيذ هذا الإجراء'}, status=403)
             from django.contrib import messages
+
             messages.error(request, 'ليس لديك صلاحية لتنفيذ هذا الإجراء')
             return None
 
@@ -158,12 +153,14 @@ class ErrorHandlingMiddleware(MiddlewareMixin):
             if request.headers.get('Accept') == 'application/json':
                 return JsonResponse({'error': 'الملف المطلوب غير موجود'}, status=404)
             from django.contrib import messages
+
             messages.error(request, 'الملف المطلوب غير موجود')
             return None
 
         logger.exception(
             'Unhandled exception: %s %s user=%s',
-            request.method, request.path,
+            request.method,
+            request.path,
             request.user.pk if request.user.is_authenticated else 'anon',
         )
         if request.headers.get('Accept') == 'application/json':
@@ -192,20 +189,11 @@ class RequestLoggingMiddleware(MiddlewareMixin):
         user = request.user.pk if hasattr(request, 'user') and request.user.is_authenticated else 'anon'
 
         if status >= 500:
-            logger.error(
-                '%s %s %d %.1fms user=%s',
-                method, path, status, duration_ms, user,
-            )
+            logger.error('%s %s %d %.1fms user=%s', method, path, status, duration_ms, user)
         elif duration_ms > self.SLOW_REQUEST_THRESHOLD_MS:
-            logger.warning(
-                'Slow request: %s %s %d %.1fms user=%s',
-                method, path, status, duration_ms, user,
-            )
+            logger.warning('Slow request: %s %s %d %.1fms user=%s', method, path, status, duration_ms, user)
         elif status >= 400:
-            request_logger.info(
-                '%s %s %d %.1fms user=%s',
-                method, path, status, duration_ms, user,
-            )
+            request_logger.info('%s %s %d %.1fms user=%s', method, path, status, duration_ms, user)
 
         return response
 
@@ -239,9 +227,11 @@ class TwoFactorAuthMiddleware(MiddlewareMixin):
                 return None
 
         from users.models import UserProfile
+
         profile = UserProfile.objects.filter(user=request.user).first()
         if profile and profile.is_2fa_enabled and not request.session.get('2fa_verified'):
             from django.shortcuts import redirect
+
             return redirect(f'/users/2fa/verify/?next={path}')
 
         return None

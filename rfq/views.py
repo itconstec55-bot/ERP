@@ -1,16 +1,15 @@
-from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from common.permissions import screen_permission_required
-from purchases.models import Product, Supplier
-from common.models import SequenceNumber
-from .models import RFQ, RFQLine, Quotation, QuotationLine
-from .forms import RFQForm, RFQLineFormSet, QuotationForm, QuotationLineFormSet
+from purchases.models import Product
+
+from .forms import QuotationForm, QuotationLineFormSet, RFQForm, RFQLineFormSet
+from .models import RFQ, Quotation
 
 logger = __import__('logging').getLogger('accounting')
 
@@ -24,11 +23,9 @@ def rfq_list(request):
     paginator = Paginator(rfqs, 25)
     page = request.GET.get('page')
     rfqs_page = paginator.get_page(page)
-    return render(request, 'rfq/rfq_list.html', {
-        'rfqs': rfqs_page,
-        'status_filter': status,
-        'status_choices': RFQ.STATUS_CHOICES,
-    })
+    return render(
+        request, 'rfq/rfq_list.html', {'rfqs': rfqs_page, 'status_filter': status, 'status_choices': RFQ.STATUS_CHOICES}
+    )
 
 
 @screen_permission_required('rfq.rfq', 'add')
@@ -50,18 +47,23 @@ def rfq_create(request):
     else:
         form = RFQForm(user=request.user)
         formset = RFQLineFormSet()
-    return render(request, 'rfq/rfq_form.html', {
-        'form': form,
-        'formset': formset,
-        'products': Product.objects.filter(is_active=True),
-        'title': 'إنشاء طلب عروض أسعار جديد',
-    })
+    return render(
+        request,
+        'rfq/rfq_form.html',
+        {
+            'form': form,
+            'formset': formset,
+            'products': Product.objects.filter(is_active=True),
+            'title': 'إنشاء طلب عروض أسعار جديد',
+        },
+    )
 
 
 @screen_permission_required('rfq.rfq', 'view')
 def rfq_detail(request, pk):
     rfq = get_object_or_404(
-        RFQ.objects.select_related('requested_by', 'cost_center', 'requisition', 'created_by'), pk=pk)
+        RFQ.objects.select_related('requested_by', 'cost_center', 'requisition', 'created_by'), pk=pk
+    )
     lines = rfq.lines.select_related('product').all()
     quotations = rfq.quotations.select_related('supplier').prefetch_related('lines__product').all()
 
@@ -75,17 +77,15 @@ def rfq_detail(request, pk):
             price = qline.unit_price if qline else None
             if price is not None and (lowest is None or price < lowest):
                 lowest = price
-            row['cells'].append({'quotation': q, 'qline': qline,
-                                 'price': price, 'delivery': qline.delivery_days if qline else None})
+            row['cells'].append(
+                {'quotation': q, 'qline': qline, 'price': price, 'delivery': qline.delivery_days if qline else None}
+            )
         row['lowest'] = lowest
         comparison.append(row)
 
-    return render(request, 'rfq/rfq_detail.html', {
-        'rfq': rfq,
-        'lines': lines,
-        'quotations': quotations,
-        'comparison': comparison,
-    })
+    return render(
+        request, 'rfq/rfq_detail.html', {'rfq': rfq, 'lines': lines, 'quotations': quotations, 'comparison': comparison}
+    )
 
 
 @screen_permission_required('rfq.rfq', 'edit')
@@ -106,13 +106,17 @@ def rfq_edit(request, pk):
     else:
         form = RFQForm(instance=rfq, user=request.user)
         formset = RFQLineFormSet(instance=rfq)
-    return render(request, 'rfq/rfq_form.html', {
-        'form': form,
-        'formset': formset,
-        'products': Product.objects.filter(is_active=True),
-        'rfq': rfq,
-        'title': f'تعديل طلب عروض الأسعار {rfq.number}',
-    })
+    return render(
+        request,
+        'rfq/rfq_form.html',
+        {
+            'form': form,
+            'formset': formset,
+            'products': Product.objects.filter(is_active=True),
+            'rfq': rfq,
+            'title': f'تعديل طلب عروض الأسعار {rfq.number}',
+        },
+    )
 
 
 @require_POST
@@ -168,13 +172,17 @@ def quotation_create(request, pk):
     else:
         form = QuotationForm()
         formset = QuotationLineFormSet(rfq=rfq)
-    return render(request, 'rfq/quotation_form.html', {
-        'form': form,
-        'formset': formset,
-        'rfq': rfq,
-        'products': Product.objects.filter(is_active=True),
-        'title': f'إضافة عرض سعر لطلب {rfq.number}',
-    })
+    return render(
+        request,
+        'rfq/quotation_form.html',
+        {
+            'form': form,
+            'formset': formset,
+            'rfq': rfq,
+            'products': Product.objects.filter(is_active=True),
+            'title': f'إضافة عرض سعر لطلب {rfq.number}',
+        },
+    )
 
 
 @require_POST
@@ -186,7 +194,8 @@ def quotation_accept(request, pk):
         return redirect('rfq:rfq_detail', pk=quotation.rfq.pk)
     with transaction.atomic():
         Quotation.objects.filter(rfq=quotation.rfq).exclude(pk=quotation.pk).update(
-            status='rejected', updated_at=timezone.now())
+            status='rejected', updated_at=timezone.now()
+        )
         quotation.status = 'accepted'
         quotation.save(update_fields=['status', 'updated_at'])
     messages.success(request, f'تم قبول عرض السعر من {quotation.supplier.name} ورفض البقية')
@@ -218,6 +227,7 @@ def rfq_convert_to_po(request, pk):
         created = 0
         for qline in quotation.lines.select_related('product').all():
             from decimal import Decimal
+
             unit_price = qline.unit_price or Decimal('0')
             if qline.quantity and qline.discount:
                 unit_price = unit_price - (Decimal(qline.discount) / Decimal(qline.quantity))
@@ -244,12 +254,6 @@ def rfq_convert_to_po(request, pk):
 @screen_permission_required('rfq.rfq', 'view')
 def pending_quotations(request):
     today = timezone.localdate()
-    overdue = RFQ.objects.filter(
-        status='sent', valid_until__lt=today
-    ).select_related('requested_by', 'cost_center')
+    overdue = RFQ.objects.filter(status='sent', valid_until__lt=today).select_related('requested_by', 'cost_center')
     open_sent = RFQ.objects.filter(status='sent').select_related('requested_by', 'cost_center')
-    return render(request, 'rfq/pending_quotations.html', {
-        'overdue': overdue,
-        'open_sent': open_sent,
-        'today': today,
-    })
+    return render(request, 'rfq/pending_quotations.html', {'overdue': overdue, 'open_sent': open_sent, 'today': today})

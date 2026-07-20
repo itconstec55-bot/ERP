@@ -1,8 +1,7 @@
 import uuid
-import hashlib
-import base64
-from django.db import models
+
 from django.contrib.auth.models import User
+from django.db import models
 
 
 class UserProfile(models.Model):
@@ -25,15 +24,14 @@ class UserProfile(models.Model):
         if not self.totp_secret:
             return None
         import pyotp
-        return pyotp.totp.TOTP(self.totp_secret).provisioning_uri(
-            name=self.user.username,
-            issuer_name='نظام المحاسبة'
-        )
+
+        return pyotp.totp.TOTP(self.totp_secret).provisioning_uri(name=self.user.username, issuer_name='نظام المحاسبة')
 
     def verify_totp(self, code):
         if not self.totp_secret or not self.is_2fa_enabled:
             return False
         import pyotp
+
         totp = pyotp.TOTP(self.totp_secret)
         return totp.verify(code, valid_window=1)
 

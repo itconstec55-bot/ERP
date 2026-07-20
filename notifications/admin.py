@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import NotificationCategory, NotificationTemplate, NotificationLog
+
+from .models import NotificationCategory, NotificationLog, NotificationTemplate
 
 
 @admin.register(NotificationCategory)

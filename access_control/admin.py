@@ -1,8 +1,14 @@
 from django.contrib import admin
 
 from .models import (
-    Role, Screen, RoleScreenPermission, UserScreenPermission,
-    UserRoleAssignment, UserBranch, UserWarehouse, UserAccountTypeScope,
+    Role,
+    RoleScreenPermission,
+    Screen,
+    UserAccountTypeScope,
+    UserBranch,
+    UserRoleAssignment,
+    UserScreenPermission,
+    UserWarehouse,
 )
 
 _LEVEL_FIELDS = ('can_view', 'can_add', 'can_edit', 'can_delete', 'can_print', 'can_export')

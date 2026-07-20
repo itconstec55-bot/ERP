@@ -1,13 +1,15 @@
-from django.shortcuts import render, get_object_or_404, redirect
+import logging
+
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-from common.permissions import screen_permission_required
+
 from common.excel_utils import export_to_excel, import_from_excel
 from common.exceptions import AccountingError
-from .models import Bank, Safe, BankTransaction, SafeTransaction
-from .forms import BankForm, SafeForm, BankTransactionForm, SafeTransactionForm
-import logging
+from common.permissions import screen_permission_required
+
+from .forms import BankForm, BankTransactionForm, SafeForm, SafeTransactionForm
+from .models import Bank, BankTransaction, Safe, SafeTransaction
 
 logger = logging.getLogger('accounting')
 
@@ -34,11 +36,10 @@ def bank_create(request):
 @screen_permission_required('treasury.bank', 'view')
 def bank_detail(request, pk):
     bank = get_object_or_404(Bank, pk=pk)
-    transactions = BankTransaction.objects.filter(bank=bank).select_related('journal_entry', 'created_by').order_by('-date')[:50]
-    return render(request, 'treasury/bank_detail.html', {
-        'bank': bank,
-        'transactions': transactions,
-    })
+    transactions = (
+        BankTransaction.objects.filter(bank=bank).select_related('journal_entry', 'created_by').order_by('-date')[:50]
+    )
+    return render(request, 'treasury/bank_detail.html', {'bank': bank, 'transactions': transactions})
 
 
 @screen_permission_required('treasury.bank', 'edit')
@@ -85,11 +86,7 @@ def bank_transaction_create(request, bank_id):
                 logger.warning('Bank transaction failed: %s', e)
     else:
         form = BankTransactionForm()
-    return render(request, 'treasury/transaction_form.html', {
-        'form': form,
-        'bank': bank,
-        'title': 'معاملة بنكية',
-    })
+    return render(request, 'treasury/transaction_form.html', {'form': form, 'bank': bank, 'title': 'معاملة بنكية'})
 
 
 @screen_permission_required('treasury.safe', 'view')
@@ -114,11 +111,10 @@ def safe_create(request):
 @screen_permission_required('treasury.safe', 'view')
 def safe_detail(request, pk):
     safe = get_object_or_404(Safe, pk=pk)
-    transactions = SafeTransaction.objects.filter(safe=safe).select_related('journal_entry', 'created_by').order_by('-date')[:50]
-    return render(request, 'treasury/safe_detail.html', {
-        'safe': safe,
-        'transactions': transactions,
-    })
+    transactions = (
+        SafeTransaction.objects.filter(safe=safe).select_related('journal_entry', 'created_by').order_by('-date')[:50]
+    )
+    return render(request, 'treasury/safe_detail.html', {'safe': safe, 'transactions': transactions})
 
 
 @screen_permission_required('treasury.safe', 'edit')
@@ -165,33 +161,37 @@ def safe_transaction_create(request, safe_id):
                 logger.warning('Safe transaction failed: %s', e)
     else:
         form = SafeTransactionForm()
-    return render(request, 'treasury/transaction_form.html', {
-        'form': form,
-        'safe': safe,
-        'title': 'معاملة خزينة',
-    })
+    return render(request, 'treasury/transaction_form.html', {'form': form, 'safe': safe, 'title': 'معاملة خزينة'})
 
 
 @screen_permission_required('treasury.bank', 'export')
 def export_banks(request):
     banks = Bank.objects.all()
-    return export_to_excel(banks, [
-        {'field': 'name', 'header': 'اسم البنك', 'width': 25},
-        {'field': 'branch', 'header': 'الفرع', 'width': 20},
-        {'field': 'account_number', 'header': 'رقم الحساب', 'width': 20},
-        {'field': 'current_balance', 'header': 'الرصيد الحالي', 'width': 18},
-    ], filename="banks")
+    return export_to_excel(
+        banks,
+        [
+            {'field': 'name', 'header': 'اسم البنك', 'width': 25},
+            {'field': 'branch', 'header': 'الفرع', 'width': 20},
+            {'field': 'account_number', 'header': 'رقم الحساب', 'width': 20},
+            {'field': 'current_balance', 'header': 'الرصيد الحالي', 'width': 18},
+        ],
+        filename='banks',
+    )
 
 
 @screen_permission_required('treasury.safe', 'export')
 def export_safes(request):
     safes = Safe.objects.all()
-    return export_to_excel(safes, [
-        {'field': 'name', 'header': 'اسم الخزينة', 'width': 25},
-        {'field': 'responsible_person', 'header': 'المسؤول', 'width': 20},
-        {'field': 'current_balance', 'header': 'الرصيد الحالي', 'width': 18},
-        {'field': 'maximum_limit', 'header': 'الحد الأقصى', 'width': 18},
-    ], filename="safes")
+    return export_to_excel(
+        safes,
+        [
+            {'field': 'name', 'header': 'اسم الخزينة', 'width': 25},
+            {'field': 'responsible_person', 'header': 'المسؤول', 'width': 20},
+            {'field': 'current_balance', 'header': 'الرصيد الحالي', 'width': 18},
+            {'field': 'maximum_limit', 'header': 'الحد الأقصى', 'width': 18},
+        ],
+        filename='safes',
+    )
 
 
 @screen_permission_required('treasury.bank', 'add')
@@ -203,12 +203,15 @@ def import_banks(request):
         messages.error(request, 'يرجى اختيار ملف Excel')
         return redirect('treasury:bank_list')
     try:
-        rows = import_from_excel(file, [
-            {'field': 'name', 'header': 'اسم البنك'},
-            {'field': 'branch', 'header': 'الفرع'},
-            {'field': 'account_number', 'header': 'رقم الحساب'},
-            {'field': 'current_balance', 'header': 'الرصيد الحالي', 'type': 'decimal'},
-        ])
+        rows = import_from_excel(
+            file,
+            [
+                {'field': 'name', 'header': 'اسم البنك'},
+                {'field': 'branch', 'header': 'الفرع'},
+                {'field': 'account_number', 'header': 'رقم الحساب'},
+                {'field': 'current_balance', 'header': 'الرصيد الحالي', 'type': 'decimal'},
+            ],
+        )
         created = 0
         for row in rows:
             Bank.objects.create(
@@ -219,7 +222,7 @@ def import_banks(request):
             )
             created += 1
         messages.success(request, f'تم استيراد {created} بنك بنجاح')
-    except Exception as e:
+    except Exception:
         messages.error(request, 'حدث خطأ أثناء الاستيراد. تأكد من صحة بيانات الملف وحاول مرة أخرى.')
         logger.exception('Import failed')
     return redirect('treasury:bank_list')
@@ -234,12 +237,15 @@ def import_safes(request):
         messages.error(request, 'يرجى اختيار ملف Excel')
         return redirect('treasury:safe_list')
     try:
-        rows = import_from_excel(file, [
-            {'field': 'name', 'header': 'اسم الخزينة'},
-            {'field': 'responsible_person', 'header': 'المسؤول'},
-            {'field': 'current_balance', 'header': 'الرصيد الحالي', 'type': 'decimal'},
-            {'field': 'maximum_limit', 'header': 'الحد الأقصى', 'type': 'decimal'},
-        ])
+        rows = import_from_excel(
+            file,
+            [
+                {'field': 'name', 'header': 'اسم الخزينة'},
+                {'field': 'responsible_person', 'header': 'المسؤول'},
+                {'field': 'current_balance', 'header': 'الرصيد الحالي', 'type': 'decimal'},
+                {'field': 'maximum_limit', 'header': 'الحد الأقصى', 'type': 'decimal'},
+            ],
+        )
         created = 0
         for row in rows:
             Safe.objects.create(
@@ -250,7 +256,7 @@ def import_safes(request):
             )
             created += 1
         messages.success(request, f'تم استيراد {created} خزينة بنجاح')
-    except Exception as e:
+    except Exception:
         messages.error(request, 'حدث خطأ أثناء الاستيراد. تأكد من صحة بيانات الملف وحاول مرة أخرى.')
         logger.exception('Import failed')
     return redirect('treasury:safe_list')

@@ -1,19 +1,19 @@
 """
 أدوات مساعدة مشتركة للنظام المحاسبي
 """
-import logging
-from datetime import datetime, date
-from typing import Optional, Tuple
 
-from django.http import HttpRequest
+import logging
+from datetime import date, datetime
+
 from django.contrib import messages
+from django.http import HttpRequest
 
 logger = logging.getLogger('accounting')
 
 DATE_FORMAT = '%Y-%m-%d'
 
 
-def parse_date(date_string: str) -> Optional[date]:
+def parse_date(date_string: str) -> date | None:
     """
     تحليل نص تاريخ بأمان. تعيد None بدلاً من رمي استثناء عند فشل التحليل.
     """
@@ -29,9 +29,9 @@ def parse_date_range(
     request: HttpRequest,
     param_from: str = 'date_from',
     param_to: str = 'date_to',
-    default_from: Optional[date] = None,
-    default_to: Optional[date] = None,
-) -> Tuple[Optional[date], Optional[date]]:
+    default_from: date | None = None,
+    default_to: date | None = None,
+) -> tuple[date | None, date | None]:
     """
     تحليل نطاق تواريخ من query string مع التحقق من صيغة التاريخ ونطاق السيرفر.
 

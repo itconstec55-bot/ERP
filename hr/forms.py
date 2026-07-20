@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Employee, Department, Attendance, Salary, Contract, LeaveType, LeaveRequest
+
+from .models import Attendance, Contract, Department, Employee, LeaveRequest, LeaveType, Salary
 
 
 def _validate_salary(value, field_name):
@@ -12,11 +13,28 @@ def _validate_salary(value, field_name):
 class EmployeeForm(forms.ModelForm):
     class Meta:
         model = Employee
-        fields = ['employee_number', 'first_name', 'last_name', 'national_id',
-                  'gender', 'date_of_birth', 'marital_status', 'department',
-                  'position', 'hire_date', 'phone', 'mobile', 'email', 'address',
-                  'salary', 'social_insurance_number', 'tax_number', 'bank_account',
-                  'account', 'notes']
+        fields = [
+            'employee_number',
+            'first_name',
+            'last_name',
+            'national_id',
+            'gender',
+            'date_of_birth',
+            'marital_status',
+            'department',
+            'position',
+            'hire_date',
+            'phone',
+            'mobile',
+            'email',
+            'address',
+            'salary',
+            'social_insurance_number',
+            'tax_number',
+            'bank_account',
+            'account',
+            'notes',
+        ]
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
             'hire_date': forms.DateInput(attrs={'type': 'date'}),
@@ -32,16 +50,13 @@ class DepartmentForm(forms.ModelForm):
     class Meta:
         model = Department
         fields = ['name', 'manager', 'description']
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
-        }
+        widgets = {'description': forms.Textarea(attrs={'rows': 3})}
 
 
 class AttendanceForm(forms.ModelForm):
     class Meta:
         model = Attendance
-        fields = ['employee', 'date', 'check_in', 'check_out', 'status',
-                  'overtime_hours', 'notes']
+        fields = ['employee', 'date', 'check_in', 'check_out', 'status', 'overtime_hours', 'notes']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'check_in': forms.TimeInput(attrs={'type': 'time'}),
@@ -51,18 +66,33 @@ class AttendanceForm(forms.ModelForm):
 
 
 class SalaryForm(forms.ModelForm):
-    MONETARY_FIELDS = ['basic_salary', 'allowances', 'overtime', 'bonus',
-                       'deductions', 'social_insurance', 'income_tax']
+    MONETARY_FIELDS = [
+        'basic_salary',
+        'allowances',
+        'overtime',
+        'bonus',
+        'deductions',
+        'social_insurance',
+        'income_tax',
+    ]
 
     class Meta:
         model = Salary
-        fields = ['employee', 'month', 'year', 'basic_salary', 'allowances',
-                  'overtime', 'bonus', 'deductions', 'social_insurance',
-                  'income_tax', 'payment_date', 'notes']
-        widgets = {
-            'payment_date': forms.DateInput(attrs={'type': 'date'}),
-            'notes': forms.Textarea(attrs={'rows': 3}),
-        }
+        fields = [
+            'employee',
+            'month',
+            'year',
+            'basic_salary',
+            'allowances',
+            'overtime',
+            'bonus',
+            'deductions',
+            'social_insurance',
+            'income_tax',
+            'payment_date',
+            'notes',
+        ]
+        widgets = {'payment_date': forms.DateInput(attrs={'type': 'date'}), 'notes': forms.Textarea(attrs={'rows': 3})}
 
     def clean(self):
         cleaned = super().clean()
@@ -76,8 +106,18 @@ class SalaryForm(forms.ModelForm):
 class ContractForm(forms.ModelForm):
     class Meta:
         model = Contract
-        fields = ['employee', 'contract_number', 'contract_type', 'start_date', 'end_date',
-                  'salary', 'probation_period_months', 'annual_leave_days', 'notice_period_days', 'notes']
+        fields = [
+            'employee',
+            'contract_number',
+            'contract_type',
+            'start_date',
+            'end_date',
+            'salary',
+            'probation_period_months',
+            'annual_leave_days',
+            'notice_period_days',
+            'notes',
+        ]
         widgets = {
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'end_date': forms.DateInput(attrs={'type': 'date'}),

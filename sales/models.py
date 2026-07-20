@@ -1,27 +1,29 @@
+import uuid
 from decimal import Decimal
+
+from django.contrib.auth.models import User
 from django.db import models, transaction
 from django.utils import timezone
-from django.contrib.auth.models import User
+
 from accounts.models import Account, JournalEntry
-import uuid
 from common.models import SequenceNumber
-from common.validators import (validate_positive_decimal, validate_non_negative_decimal,
-                                validate_vat_rate,
-                                validate_withholding_tax_type, validate_payment_method)
+from common.validators import (
+    validate_non_negative_decimal,
+    validate_payment_method,
+    validate_positive_decimal,
+    validate_withholding_tax_type,
+)
 
 
 class Customer(models.Model):
-    CUSTOMER_TYPE_CHOICES = [
-        ('company', 'شركة'),
-        ('individual', 'فرد'),
-        ('government', 'جهة حكومية'),
-    ]
+    CUSTOMER_TYPE_CHOICES = [('company', 'شركة'), ('individual', 'فرد'), ('government', 'جهة حكومية')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=20, unique=True, verbose_name='كود العميل')
     name = models.CharField(max_length=200, verbose_name='اسم العميل')
-    customer_type = models.CharField(max_length=20, choices=CUSTOMER_TYPE_CHOICES,
-                                      default='company', verbose_name='نوع العميل')
+    customer_type = models.CharField(
+        max_length=20, choices=CUSTOMER_TYPE_CHOICES, default='company', verbose_name='نوع العميل'
+    )
     tax_number = models.CharField(max_length=50, blank=True, null=True, verbose_name='الرقم الضريبي')
     commercial_register = models.CharField(max_length=50, blank=True, null=True, verbose_name='سجل تجاري')
     address = models.TextField(blank=True, null=True, verbose_name='العنوان')
@@ -29,14 +31,13 @@ class Customer(models.Model):
     phone = models.CharField(max_length=20, blank=True, null=True, verbose_name='التليفون')
     mobile = models.CharField(max_length=20, blank=True, null=True, verbose_name='المحمول')
     email = models.EmailField(blank=True, null=True, verbose_name='البريد الإلكتروني')
-    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True,
-                                verbose_name='الحساب المحاسبي')
+    account = models.ForeignKey(
+        Account, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='الحساب المحاسبي'
+    )
     is_active = models.BooleanField(default=True, db_index=True, verbose_name='نشط')
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
-    credit_limit = models.DecimalField(max_digits=20, decimal_places=10, default=0,
-                                         verbose_name='حد الائتمان')
-    current_balance = models.DecimalField(max_digits=20, decimal_places=10, default=0,
-                                            verbose_name='الرصيد الحالي')
+    credit_limit = models.DecimalField(max_digits=20, decimal_places=10, default=0, verbose_name='حد الائتمان')
+    current_balance = models.DecimalField(max_digits=20, decimal_places=10, default=0, verbose_name='الرصيد الحالي')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -50,18 +51,8 @@ class Customer(models.Model):
 
 
 class SalesInvoice(models.Model):
-    PAYMENT_METHOD_CHOICES = [
-        ('cash', 'نقدي'),
-        ('credit', 'آجل'),
-        ('check', 'شيك'),
-        ('transfer', 'تحويل بنكي'),
-    ]
-    WITHHOLDING_TAX_CHOICES = [
-        (0, 'بدون'),
-        (1, '1% - شركات'),
-        (3, '3% - جهات حكومية'),
-        (5, '5% - مقاولات'),
-    ]
+    PAYMENT_METHOD_CHOICES = [('cash', 'نقدي'), ('credit', 'آجل'), ('check', 'شيك'), ('transfer', 'تحويل بنكي')]
+    WITHHOLDING_TAX_CHOICES = [(0, 'بدون'), (1, '1% - شركات'), (3, '3% - جهات حكومية'), (5, '5% - مقاولات')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     invoice_number = models.CharField(max_length=50, unique=True, verbose_name='رقم الفاتورة')
@@ -69,49 +60,93 @@ class SalesInvoice(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, verbose_name='العميل')
     date = models.DateField(verbose_name='التاريخ')
     due_date = models.DateField(blank=True, null=True, verbose_name='تاريخ الاستحقاق')
-    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES,
-                                       default='credit', verbose_name='طريقة الدفع',
-                                       validators=[validate_payment_method])
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        default='credit',
+        verbose_name='طريقة الدفع',
+        validators=[validate_payment_method],
+    )
     is_tax_invoice = models.BooleanField(default=True, verbose_name='فاتورة مؤثرة في الضرائب')
-    withholding_tax_type = models.IntegerField(choices=WITHHOLDING_TAX_CHOICES, default=0,
-                                                verbose_name='نسبة الخصم والتحصيل',
-                                                validators=[validate_withholding_tax_type])
-    subtotal = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                    verbose_name='المبلغ قبل الضريبة',
-                                    validators=[validate_positive_decimal])
-    vat_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                      verbose_name='ضريبة القيمة المضافة',
-                                      validators=[validate_positive_decimal])
-    discount_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                            verbose_name='الخصم على الفاتورة',
-                                            validators=[validate_non_negative_decimal])
-    withholding_tax_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                                  verbose_name='مبلغ الخصم والتحصيل',
-                                                  validators=[validate_positive_decimal])
-    total_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                        verbose_name='الإجمالي',
-                                        validators=[validate_positive_decimal])
-    paid_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                        verbose_name='المبلغ المحصّل',
-                                        validators=[validate_non_negative_decimal])
-    remaining_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                            verbose_name='المبلغ المتبقي',
-                                            validators=[validate_positive_decimal])
-    cost_of_goods = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                         verbose_name='تكلفة البضاعة',
-                                         validators=[validate_positive_decimal])
-    gross_profit = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                        verbose_name='إجمالي الربح',
-                                        validators=[validate_positive_decimal])
-    journal_entry = models.ForeignKey(JournalEntry, on_delete=models.SET_NULL, null=True, blank=True,
-                                       verbose_name='القيد المحاسبي')
+    withholding_tax_type = models.IntegerField(
+        choices=WITHHOLDING_TAX_CHOICES,
+        default=0,
+        verbose_name='نسبة الخصم والتحصيل',
+        validators=[validate_withholding_tax_type],
+    )
+    subtotal = models.DecimalField(
+        max_digits=30,
+        decimal_places=10,
+        default=0,
+        verbose_name='المبلغ قبل الضريبة',
+        validators=[validate_positive_decimal],
+    )
+    vat_amount = models.DecimalField(
+        max_digits=30,
+        decimal_places=10,
+        default=0,
+        verbose_name='ضريبة القيمة المضافة',
+        validators=[validate_positive_decimal],
+    )
+    discount_amount = models.DecimalField(
+        max_digits=30,
+        decimal_places=10,
+        default=0,
+        verbose_name='الخصم على الفاتورة',
+        validators=[validate_non_negative_decimal],
+    )
+    withholding_tax_amount = models.DecimalField(
+        max_digits=30,
+        decimal_places=10,
+        default=0,
+        verbose_name='مبلغ الخصم والتحصيل',
+        validators=[validate_positive_decimal],
+    )
+    total_amount = models.DecimalField(
+        max_digits=30, decimal_places=10, default=0, verbose_name='الإجمالي', validators=[validate_positive_decimal]
+    )
+    paid_amount = models.DecimalField(
+        max_digits=30,
+        decimal_places=10,
+        default=0,
+        verbose_name='المبلغ المحصّل',
+        validators=[validate_non_negative_decimal],
+    )
+    remaining_amount = models.DecimalField(
+        max_digits=30,
+        decimal_places=10,
+        default=0,
+        verbose_name='المبلغ المتبقي',
+        validators=[validate_positive_decimal],
+    )
+    cost_of_goods = models.DecimalField(
+        max_digits=30,
+        decimal_places=10,
+        default=0,
+        verbose_name='تكلفة البضاعة',
+        validators=[validate_positive_decimal],
+    )
+    gross_profit = models.DecimalField(
+        max_digits=30, decimal_places=10, default=0, verbose_name='إجمالي الربح', validators=[validate_positive_decimal]
+    )
+    journal_entry = models.ForeignKey(
+        JournalEntry, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القيد المحاسبي'
+    )
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
-    currency = models.ForeignKey('currency.Currency', on_delete=models.PROTECT, null=True, blank=True, verbose_name='العملة')
+    currency = models.ForeignKey(
+        'currency.Currency', on_delete=models.PROTECT, null=True, blank=True, verbose_name='العملة'
+    )
     currency_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0, verbose_name='المبلغ بالعملة')
     exchange_rate = models.DecimalField(max_digits=15, decimal_places=6, default=1, verbose_name='سعر الصرف')
     is_posted = models.BooleanField(default=False, verbose_name='مرحل')
-    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
-                                    related_name='approved_sales', verbose_name='معتمد بواسطة')
+    approved_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='approved_sales',
+        verbose_name='معتمد بواسطة',
+    )
     approved_at = models.DateTimeField(null=True, blank=True, verbose_name='تاريخ الاعتماد')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -127,14 +162,23 @@ class SalesInvoice(models.Model):
         self.approved_by = user
         self.approved_at = timezone.now()
         self.save(update_fields=['approved_by', 'approved_at'])
+
     production_order = models.ForeignKey(
-        'concrete_production.ProductionOrder', on_delete=models.SET_NULL, null=True,
-        blank=True, related_name='sales_invoices', verbose_name='أمر إنتاج الخرسانة',
-        help_text='يرتبط تلقائياً عند إنشاء فاتورة من تسليم خرسانة'
+        'concrete_production.ProductionOrder',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sales_invoices',
+        verbose_name='أمر إنتاج الخرسانة',
+        help_text='يرتبط تلقائياً عند إنشاء فاتورة من تسليم خرسانة',
     )
     branch = models.ForeignKey(
-        'company.CompanyBranch', on_delete=models.SET_NULL, null=True, blank=True,
-        verbose_name='الفرع', help_text='يُستخدم للصلاحيات على مستوى الكائن'
+        'company.CompanyBranch',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='الفرع',
+        help_text='يُستخدم للصلاحيات على مستوى الكائن',
     )
 
     class Meta:
@@ -158,7 +202,8 @@ class SalesInvoice(models.Model):
         return f'{self.invoice_number} - {self.customer.name}'
 
     def calculate_totals(self):
-        from common.decimal_utils import quantize_10, safe_add, safe_sub, safe_mul, safe_div, calculate_vat, calculate_withholding
+        from common.decimal_utils import calculate_vat, calculate_withholding, quantize_10, safe_add, safe_sub
+
         lines = self.lines.all()
         self.subtotal = sum(quantize_10(line.total_price) for line in lines)
         self.cost_of_goods = sum(quantize_10(line.cost_total) for line in lines)
@@ -175,14 +220,24 @@ class SalesInvoice(models.Model):
         self.total_amount = safe_sub(self.total_amount, self.discount_amount)
         self.remaining_amount = safe_sub(safe_sub(self.total_amount, self.paid_amount), self.withholding_tax_amount)
         self.gross_profit = safe_sub(self.subtotal, self.cost_of_goods)
-        self.save(update_fields=['subtotal', 'vat_amount', 'total_amount',
-                                  'remaining_amount', 'discount_amount', 'withholding_tax_amount',
-                                  'cost_of_goods', 'gross_profit'])
+        self.save(
+            update_fields=[
+                'subtotal',
+                'vat_amount',
+                'total_amount',
+                'remaining_amount',
+                'discount_amount',
+                'withholding_tax_amount',
+                'cost_of_goods',
+                'gross_profit',
+            ]
+        )
 
     def create_journal_entry(self):
         from common.accounting_service import JournalEntryService
         from company.models import Company
-        from warehouses.models import WarehouseProduct, StockMovement, Warehouse
+        from warehouses.models import StockMovement, Warehouse, WarehouseProduct
+
         company = Company.get_company()
 
         with transaction.atomic():
@@ -204,7 +259,9 @@ class SalesInvoice(models.Model):
             )
 
             # الحسابات
-            customer_account = invoice.customer.account or company.customer_account or JournalEntryService.get_account('1100')
+            customer_account = (
+                invoice.customer.account or company.customer_account or JournalEntryService.get_account('1100')
+            )
             revenue_account = company.sales_revenue_account or JournalEntryService.get_account('4100')
             vat_account = company.vat_account or JournalEntryService.get_account('3200')
             # حساب الخصم والتحصيل المستحق للغير (مدين = مدين للشركة من جهة الخصم)
@@ -221,31 +278,30 @@ class SalesInvoice(models.Model):
             net_receivable = invoice.total_amount - invoice.withholding_tax_amount
             entry.lines.create(
                 account=customer_account,
-                debit=net_receivable, credit=0,
+                debit=net_receivable,
+                credit=0,
                 description=f'العميل - {invoice.customer.name}',
             )
             if invoice.withholding_tax_amount > 0:
                 entry.lines.create(
                     account=withholding_receivable_account,
-                    debit=invoice.withholding_tax_amount, credit=0,
+                    debit=invoice.withholding_tax_amount,
+                    credit=0,
                     description=f'الخصم والتحصيل {invoice.get_withholding_tax_type_display()}',
                 )
             entry.lines.create(
                 account=revenue_account,
-                debit=0, credit=invoice.subtotal,
+                debit=0,
+                credit=invoice.subtotal,
                 description=f'إيرادات مبيعات - {invoice.customer.name}',
             )
             if invoice.is_tax_invoice and invoice.vat_amount > 0:
                 entry.lines.create(
-                    account=vat_account,
-                    debit=0, credit=invoice.vat_amount,
-                    description='ضريبة القيمة المضافة المستحقة',
+                    account=vat_account, debit=0, credit=invoice.vat_amount, description='ضريبة القيمة المضافة المستحقة'
                 )
             if invoice.discount_amount > 0:
                 entry.lines.create(
-                    account=discount_account,
-                    debit=0, credit=invoice.discount_amount,
-                    description='خصم على الفاتورة',
+                    account=discount_account, debit=0, credit=invoice.discount_amount, description='خصم على الفاتورة'
                 )
 
             entry.calculate_totals()
@@ -276,7 +332,7 @@ class SalesInvoice(models.Model):
                     total_cost = line.cost_price * line.quantity
 
                 StockMovement.objects.create(
-                    movement_number=f"SM-{invoice.invoice_number}-{line.product.code}-{uuid.uuid4().hex[:6]}",
+                    movement_number=f'SM-{invoice.invoice_number}-{line.product.code}-{uuid.uuid4().hex[:6]}',
                     movement_type='out',
                     warehouse=warehouse,
                     product=line.product,
@@ -293,29 +349,30 @@ class SalesInvoice(models.Model):
 
 class SalesInvoiceLine(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    invoice = models.ForeignKey(SalesInvoice, on_delete=models.CASCADE,
-                                 related_name='lines', verbose_name='الفاتورة')
+    invoice = models.ForeignKey(SalesInvoice, on_delete=models.CASCADE, related_name='lines', verbose_name='الفاتورة')
     product = models.ForeignKey('purchases.Product', on_delete=models.PROTECT, verbose_name='المنتج')
-    quantity = models.DecimalField(max_digits=20, decimal_places=10, verbose_name='الكمية',
-                                    validators=[validate_positive_decimal])
-    unit_price = models.DecimalField(max_digits=20, decimal_places=10, verbose_name='سعر البيع',
-                                      validators=[validate_positive_decimal])
-    cost_price = models.DecimalField(max_digits=20, decimal_places=10, default=0,
-                                      verbose_name='سعر الشراء',
-                                      validators=[validate_positive_decimal])
-    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0,
-                                            verbose_name='نسبة الخصم',
-                                            validators=[validate_positive_decimal])
-    total_price = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                       verbose_name='الإجمالي',
-                                       validators=[validate_positive_decimal])
-    cost_total = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                      verbose_name='التكلفة',
-                                      validators=[validate_positive_decimal])
-    profit = models.DecimalField(max_digits=30, decimal_places=10, default=0, verbose_name='الربح',
-                                  validators=[validate_positive_decimal])
-    profit_margin = models.DecimalField(max_digits=5, decimal_places=2, default=0,
-                                         verbose_name='نسبة الربح %')
+    quantity = models.DecimalField(
+        max_digits=20, decimal_places=10, verbose_name='الكمية', validators=[validate_positive_decimal]
+    )
+    unit_price = models.DecimalField(
+        max_digits=20, decimal_places=10, verbose_name='سعر البيع', validators=[validate_positive_decimal]
+    )
+    cost_price = models.DecimalField(
+        max_digits=20, decimal_places=10, default=0, verbose_name='سعر الشراء', validators=[validate_positive_decimal]
+    )
+    discount_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0, verbose_name='نسبة الخصم', validators=[validate_positive_decimal]
+    )
+    total_price = models.DecimalField(
+        max_digits=30, decimal_places=10, default=0, verbose_name='الإجمالي', validators=[validate_positive_decimal]
+    )
+    cost_total = models.DecimalField(
+        max_digits=30, decimal_places=10, default=0, verbose_name='التكلفة', validators=[validate_positive_decimal]
+    )
+    profit = models.DecimalField(
+        max_digits=30, decimal_places=10, default=0, verbose_name='الربح', validators=[validate_positive_decimal]
+    )
+    profit_margin = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name='نسبة الربح %')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -327,7 +384,8 @@ class SalesInvoiceLine(models.Model):
         return f'{self.product.name} - {self.quantity}'
 
     def save(self, *args, **kwargs):
-        from common.decimal_utils import quantize_10, safe_mul, safe_sub, safe_div
+        from common.decimal_utils import safe_div, safe_mul, safe_sub
+
         if self.cost_price == 0 and self.product:
             self.cost_price = self.product.purchase_price
         self.total_price = safe_mul(self.quantity, self.unit_price)
@@ -345,14 +403,13 @@ class SalesInvoiceLine(models.Model):
     @classmethod
     def get_fifo_cost(cls, product, quantity):
         """حساب تكلفة FIFO للكمية المطلوبة."""
+
         from warehouses.models import InventoryCostLayer, WarehouseProduct
-        from decimal import Decimal
+
         wp = WarehouseProduct.objects.filter(product=product).order_by('-quantity').first()
         if not wp:
             return product.purchase_price, product.purchase_price * quantity
         unit_cost, total_cost = InventoryCostLayer.consume_fifo(
-            product=product,
-            warehouse=wp.warehouse,
-            quantity=quantity,
+            product=product, warehouse=wp.warehouse, quantity=quantity
         )
         return unit_cost, total_cost

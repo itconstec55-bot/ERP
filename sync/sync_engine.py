@@ -1,11 +1,10 @@
-import os
 import json
 import logging
-import importlib
 from datetime import datetime
+
 from django.conf import settings
-from django.db import connection
-from .models import MachineInfo, SyncLog, SyncSettings
+
+from .models import SyncLog
 
 logger = logging.getLogger('accounting')
 
@@ -53,6 +52,7 @@ ALL_SYNC_MODELS = SYNC_ORDER_MASTER + SYNC_ORDER_TRANSACTION
 
 def _get_model(app_label, model_name):
     from django.apps import apps
+
     return apps.get_model(app_label, model_name)
 
 
@@ -117,7 +117,7 @@ def export_data(machine_id=None, limit=None, offset=0):
             key = f'{app_label}.{model_name}'
             qs = model.objects.all()
             if limit is not None:
-                qs = qs[offset:offset + limit]
+                qs = qs[offset : offset + limit]
             records = [_model_to_dict(obj) for obj in qs]
             export['data'][key] = records
             total += len(records)
@@ -130,11 +130,7 @@ def export_data(machine_id=None, limit=None, offset=0):
 
 
 def import_data(data, source_machine_id=None):
-    results = {
-        'imported': 0,
-        'skipped': 0,
-        'errors': [],
-    }
+    results = {'imported': 0, 'skipped': 0, 'errors': []}
 
     sync_data = data.get('data', {})
 
@@ -157,20 +153,13 @@ def import_data(data, source_machine_id=None):
             try:
                 cleaned = _dict_to_model_data(app_label, model_name, record_data)
                 if 'id' in cleaned and cleaned['id']:
-                    obj, created = model.objects.update_or_create(
-                        id=cleaned['id'],
-                        defaults=cleaned
-                    )
+                    obj, created = model.objects.update_or_create(id=cleaned['id'], defaults=cleaned)
                 else:
                     cleaned.pop('id', None)
                     obj = model.objects.create(**cleaned)
                 results['imported'] += 1
             except Exception as e:
-                results['errors'].append({
-                    'model': key,
-                    'error': str(e),
-                    'record_id': record_data.get('id', 'unknown'),
-                })
+                results['errors'].append({'model': key, 'error': str(e), 'record_id': record_data.get('id', 'unknown')})
                 results['skipped'] += 1
 
     return results
@@ -178,17 +167,18 @@ def import_data(data, source_machine_id=None):
 
 def recalculate_balances():
     from django.db.models import Sum
+
     from accounts.models import Account, JournalEntryLine
+    from purchases.models import Product, Supplier
     from sales.models import Customer
-    from purchases.models import Supplier, Product
-    from warehouses.models import WarehouseProduct
 
     try:
         # الحسابات: تجميع القيود المرحّلة لكل حساب دفعة واحدة (دون N+1)
-        lines = (JournalEntryLine.objects
-                 .filter(journal_entry__is_posted=True, journal_entry__is_reversed=False)
-                 .values('account_id')
-                 .annotate(debit=Sum('debit'), credit=Sum('credit')))
+        lines = (
+            JournalEntryLine.objects.filter(journal_entry__is_posted=True, journal_entry__is_reversed=False)
+            .values('account_id')
+            .annotate(debit=Sum('debit'), credit=Sum('credit'))
+        )
         bal = {row['account_id']: (row['debit'] or 0, row['credit'] or 0) for row in lines}
 
         accounts = list(Account.objects.all())
@@ -203,18 +193,14 @@ def recalculate_balances():
         # العملاء: رصيد = مجموع (الإجمالي - المدفوع) للفواتير المرحّلة
         customers = list(Customer.objects.prefetch_related('salesinvoice_set'))
         for c in customers:
-            c.current_balance = sum(
-                (i.total_amount - i.paid_amount)
-                for i in c.salesinvoice_set.all() if i.is_posted
-            )
+            c.current_balance = sum((i.total_amount - i.paid_amount) for i in c.salesinvoice_set.all() if i.is_posted)
         Customer.objects.bulk_update(customers, ['current_balance'])
 
         # الموردون
         suppliers = list(Supplier.objects.prefetch_related('purchaseinvoice_set'))
         for s in suppliers:
             s.current_balance = sum(
-                (i.total_amount - i.paid_amount)
-                for i in s.purchaseinvoice_set.all() if i.is_posted
+                (i.total_amount - i.paid_amount) for i in s.purchaseinvoice_set.all() if i.is_posted
             )
         Supplier.objects.bulk_update(suppliers, ['current_balance'])
 
@@ -237,8 +223,4 @@ def recalculate_balances():
 
 
 def create_sync_log(source_machine, sync_type, status='pending'):
-    return SyncLog.objects.create(
-        source_machine=source_machine,
-        sync_type=sync_type,
-        status=status,
-    )
+    return SyncLog.objects.create(source_machine=source_machine, sync_type=sync_type, status=status)

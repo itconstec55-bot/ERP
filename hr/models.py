@@ -1,8 +1,10 @@
-from django.db import models, transaction
-from django.contrib.auth.models import User
-from accounts.models import Account, JournalEntry
-from django.utils import timezone
 import uuid
+
+from django.contrib.auth.models import User
+from django.db import models, transaction
+from django.utils import timezone
+
+from accounts.models import Account, JournalEntry
 
 
 class Department(models.Model):
@@ -23,21 +25,9 @@ class Department(models.Model):
 
 
 class Employee(models.Model):
-    GENDER_CHOICES = [
-        ('male', 'ذكر'),
-        ('female', 'أنثى'),
-    ]
-    MARITAL_STATUS_CHOICES = [
-        ('single', 'أعزب'),
-        ('married', 'متزوج'),
-        ('divorced', 'مطلق'),
-        ('widowed', 'أرمل'),
-    ]
-    STATUS_CHOICES = [
-        ('active', 'نشط'),
-        ('inactive', 'غير نشط'),
-        ('terminated', 'تم الفصل'),
-    ]
+    GENDER_CHOICES = [('male', 'ذكر'), ('female', 'أنثى')]
+    MARITAL_STATUS_CHOICES = [('single', 'أعزب'), ('married', 'متزوج'), ('divorced', 'مطلق'), ('widowed', 'أرمل')]
+    STATUS_CHOICES = [('active', 'نشط'), ('inactive', 'غير نشط'), ('terminated', 'تم الفصل')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee_number = models.CharField(max_length=20, unique=True, verbose_name='رقم الموظف')
@@ -46,10 +36,10 @@ class Employee(models.Model):
     national_id = models.CharField(max_length=20, unique=True, verbose_name='رقم الهوية')
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, verbose_name='الجنس')
     date_of_birth = models.DateField(blank=True, null=True, verbose_name='تاريخ الميلاد')
-    marital_status = models.CharField(max_length=20, choices=MARITAL_STATUS_CHOICES,
-                                       default='single', verbose_name='الحالة الاجتماعية')
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True,
-                                    verbose_name='القسم')
+    marital_status = models.CharField(
+        max_length=20, choices=MARITAL_STATUS_CHOICES, default='single', verbose_name='الحالة الاجتماعية'
+    )
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القسم')
     position = models.CharField(max_length=200, verbose_name='الوظيفة')
     hire_date = models.DateField(verbose_name='تاريخ التعيين')
     phone = models.CharField(max_length=20, blank=True, null=True, verbose_name='التليفون')
@@ -57,14 +47,17 @@ class Employee(models.Model):
     email = models.EmailField(blank=True, null=True, verbose_name='البريد الإلكتروني')
     address = models.TextField(blank=True, null=True, verbose_name='العنوان')
     salary = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='الراتب الأساسي')
-    social_insurance_number = models.CharField(max_length=50, blank=True, null=True,
-                                                verbose_name='رقم التأمين الاجتماعي')
+    social_insurance_number = models.CharField(
+        max_length=50, blank=True, null=True, verbose_name='رقم التأمين الاجتماعي'
+    )
     tax_number = models.CharField(max_length=50, blank=True, null=True, verbose_name='الرقم الضريبي')
     bank_account = models.CharField(max_length=50, blank=True, null=True, verbose_name='رقم الحساب البنكي')
-    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True,
-                                verbose_name='الحساب المحاسبي')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active',
-                               db_index=True, verbose_name='الحالة')
+    account = models.ForeignKey(
+        Account, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='الحساب المحاسبي'
+    )
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='active', db_index=True, verbose_name='الحالة'
+    )
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -88,23 +81,15 @@ class Employee(models.Model):
 
 
 class Attendance(models.Model):
-    STATUS_CHOICES = [
-        ('present', 'حاضر'),
-        ('absent', 'غائب'),
-        ('late', 'متأخر'),
-        ('leave', 'إجازة'),
-        ('sick', 'مرضي'),
-    ]
+    STATUS_CHOICES = [('present', 'حاضر'), ('absent', 'غائب'), ('late', 'متأخر'), ('leave', 'إجازة'), ('sick', 'مرضي')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, verbose_name='الموظف', related_name='attendances')
     date = models.DateField(verbose_name='التاريخ')
     check_in = models.TimeField(blank=True, null=True, verbose_name='وقت الحضور')
     check_out = models.TimeField(blank=True, null=True, verbose_name='وقت الانصراف')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='present',
-                               verbose_name='الحالة')
-    overtime_hours = models.DecimalField(max_digits=5, decimal_places=2, default=0,
-                                          verbose_name='ساعات العمل الإضافي')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='present', verbose_name='الحالة')
+    overtime_hours = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name='ساعات العمل الإضافي')
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -120,9 +105,18 @@ class Attendance(models.Model):
 
 class Salary(models.Model):
     MONTH_CHOICES = [
-        (1, 'يناير'), (2, 'فبراير'), (3, 'مارس'), (4, 'أبريل'),
-        (5, 'مايو'), (6, 'يونيو'), (7, 'يوليو'), (8, 'أغسطس'),
-        (9, 'سبتمبر'), (10, 'أكتوبر'), (11, 'نوفمبر'), (12, 'ديسمبر'),
+        (1, 'يناير'),
+        (2, 'فبراير'),
+        (3, 'مارس'),
+        (4, 'أبريل'),
+        (5, 'مايو'),
+        (6, 'يونيو'),
+        (7, 'يوليو'),
+        (8, 'أغسطس'),
+        (9, 'سبتمبر'),
+        (10, 'أكتوبر'),
+        (11, 'نوفمبر'),
+        (12, 'ديسمبر'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -134,15 +128,14 @@ class Salary(models.Model):
     overtime = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='العمل الإضافي')
     bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='المكافآت')
     deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='الخصومات')
-    social_insurance = models.DecimalField(max_digits=10, decimal_places=2, default=0,
-                                            verbose_name='التأمين الاجتماعي')
-    income_tax = models.DecimalField(max_digits=10, decimal_places=2, default=0,
-                                      verbose_name='ضريبة الدخل')
+    social_insurance = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='التأمين الاجتماعي')
+    income_tax = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='ضريبة الدخل')
     net_salary = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='صافي الراتب')
     is_paid = models.BooleanField(default=False, verbose_name='تم الدفع')
     payment_date = models.DateField(blank=True, null=True, verbose_name='تاريخ الدفع')
-    journal_entry = models.ForeignKey(JournalEntry, on_delete=models.SET_NULL, null=True, blank=True,
-                                       verbose_name='القيد المحاسبي')
+    journal_entry = models.ForeignKey(
+        JournalEntry, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القيد المحاسبي'
+    )
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -166,27 +159,55 @@ class Salary(models.Model):
 
     def create_journal_entry(self):
         from common.accounting_service import JournalEntryService
+
         if self.journal_entry:
             raise ValueError('تم ترحيل الراتب بالفعل')
 
         self.calculate_net_salary()
         total_gross = self.basic_salary + self.allowances + self.overtime + self.bonus
         lines = [
-            {'account': JournalEntryService.get_account('5300'), 'debit': total_gross, 'credit': 0,
-             'description': f'رواتب - {self.employee.full_name}'},
-            {'account': JournalEntryService.get_account('2300'), 'debit': 0, 'credit': self.net_salary,
-             'description': f'صافي راتب - {self.employee.full_name}'},
+            {
+                'account': JournalEntryService.get_account('5300'),
+                'debit': total_gross,
+                'credit': 0,
+                'description': f'رواتب - {self.employee.full_name}',
+            },
+            {
+                'account': JournalEntryService.get_account('2300'),
+                'debit': 0,
+                'credit': self.net_salary,
+                'description': f'صافي راتب - {self.employee.full_name}',
+            },
         ]
         if self.social_insurance > 0:
-            lines.append({'account': JournalEntryService.get_account('2310'), 'debit': 0,
-                          'credit': self.social_insurance, 'description': 'التأمين الاجتماعي'})
+            lines.append(
+                {
+                    'account': JournalEntryService.get_account('2310'),
+                    'debit': 0,
+                    'credit': self.social_insurance,
+                    'description': 'التأمين الاجتماعي',
+                }
+            )
         if self.income_tax > 0:
-            lines.append({'account': JournalEntryService.get_account('2320'), 'debit': 0,
-                          'credit': self.income_tax, 'description': 'ضريبة الدخل المستحقة'})
+            lines.append(
+                {
+                    'account': JournalEntryService.get_account('2320'),
+                    'debit': 0,
+                    'credit': self.income_tax,
+                    'description': 'ضريبة الدخل المستحقة',
+                }
+            )
         if self.deductions > 0:
-            lines.append({'account': JournalEntryService.get_account('2330'), 'debit': 0,
-                          'credit': self.deductions, 'description': 'الخصومات الأخرى'})
+            lines.append(
+                {
+                    'account': JournalEntryService.get_account('2330'),
+                    'debit': 0,
+                    'credit': self.deductions,
+                    'description': 'الخصومات الأخرى',
+                }
+            )
         from datetime import date
+
         with transaction.atomic():
             entry = JournalEntryService.create_entry(
                 entry_type='payroll',
@@ -208,25 +229,27 @@ class Contract(models.Model):
         ('internship', 'تدريب'),
         ('freelance', 'عمل حر'),
     ]
-    STATUS_CHOICES = [
-        ('active', 'نشط'),
-        ('expired', 'منتهي'),
-        ('terminated', 'ملغي'),
-    ]
+    STATUS_CHOICES = [('active', 'نشط'), ('expired', 'منتهي'), ('terminated', 'ملغي')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='contracts', verbose_name='الموظف')
     contract_number = models.CharField(max_length=50, unique=True, verbose_name='رقم العقد')
-    contract_type = models.CharField(max_length=20, choices=CONTRACT_TYPE_CHOICES, default='permanent', verbose_name='نوع العقد')
+    contract_type = models.CharField(
+        max_length=20, choices=CONTRACT_TYPE_CHOICES, default='permanent', verbose_name='نوع العقد'
+    )
     start_date = models.DateField(verbose_name='تاريخ البداية')
     end_date = models.DateField(blank=True, null=True, verbose_name='تاريخ النهاية')
     salary = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='الراتب')
     probation_period_months = models.IntegerField(default=3, verbose_name='فترة التجربة (أشهر)')
     annual_leave_days = models.IntegerField(default=21, verbose_name='أيام الإجازة السنوية')
     notice_period_days = models.IntegerField(default=30, verbose_name='أيام فترة الإشعار')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True, verbose_name='الحالة')
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='active', db_index=True, verbose_name='الحالة'
+    )
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='hr_contracts_created', verbose_name='أنشئ بواسطة')
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name='hr_contracts_created', verbose_name='أنشئ بواسطة'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -283,11 +306,22 @@ class LeaveRequest(models.Model):
     end_date = models.DateField(verbose_name='إلى تاريخ')
     days = models.IntegerField(verbose_name='عدد الأيام')
     reason = models.TextField(blank=True, null=True, verbose_name='السبب')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', db_index=True, verbose_name='الحالة')
-    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='leaves_approved', verbose_name='اعتمد بواسطة')
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='pending', db_index=True, verbose_name='الحالة'
+    )
+    approved_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='leaves_approved',
+        verbose_name='اعتمد بواسطة',
+    )
     approved_date = models.DateTimeField(blank=True, null=True, verbose_name='تاريخ الاعتماد')
     rejection_reason = models.TextField(blank=True, null=True, verbose_name='سبب الرفض')
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='leaves_created', verbose_name='أنشئ بواسطة')
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name='leaves_created', verbose_name='أنشئ بواسطة'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -301,12 +335,15 @@ class LeaveRequest(models.Model):
 
     @property
     def remaining_days(self):
-        used = LeaveRequest.objects.filter(
-            employee=self.employee,
-            leave_type=self.leave_type,
-            status='approved',
-            start_date__year=timezone.now().year,
-        ).aggregate(total=models.Sum('days'))['total'] or 0
+        used = (
+            LeaveRequest.objects.filter(
+                employee=self.employee,
+                leave_type=self.leave_type,
+                status='approved',
+                start_date__year=timezone.now().year,
+            ).aggregate(total=models.Sum('days'))['total']
+            or 0
+        )
         return self.leave_type.days_per_year - used
 
     def approve(self, user):

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import DocumentType, DocumentTemplate, Document, DocumentFlow, DocumentAttachment
+
+from .models import Document, DocumentAttachment, DocumentFlow, DocumentTemplate, DocumentType
 
 
 class DocumentTypeAdmin(admin.ModelAdmin):
@@ -28,8 +29,17 @@ class DocumentAttachmentInline(admin.TabularInline):
 
 
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('document_number', 'title', 'document_type', 'status', 'priority',
-                    'department', 'date', 'due_date', 'created_by')
+    list_display = (
+        'document_number',
+        'title',
+        'document_type',
+        'status',
+        'priority',
+        'department',
+        'date',
+        'due_date',
+        'created_by',
+    )
     list_filter = ('status', 'priority', 'document_type', 'department')
     search_fields = ('document_number', 'title')
     inlines = [DocumentFlowInline, DocumentAttachmentInline]

@@ -1,14 +1,17 @@
 import json
-from decimal import Decimal
 from datetime import datetime
+from decimal import Decimal
+
 from django.db.models import Sum
-from accounts.models import Account, JournalEntry, JournalEntryLine
+
+from accounts.models import Account, JournalEntry
 from purchases.models import PurchaseInvoice
 from sales.models import SalesInvoice
+
 from .detector import AccountingErrorDetector
-from .prompts import ACCOUNTING_ERROR_PROMPT, MISSING_DATA_PROMPT, STANDARDS_CHECK_PROMPT
-from .standards import validate_solution_against_standards, get_applicable_standards
 from .models import ErrorLog, Solution
+from .prompts import ACCOUNTING_ERROR_PROMPT
+from .standards import get_applicable_standards, validate_solution_against_standards
 
 
 class AIAccountingAnalyzer:
@@ -43,13 +46,15 @@ class AIAccountingAnalyzer:
             # بناء الحلول المقترحة
             solutions = self._generate_solutions(error_data, context, standards_check)
 
-            analyzed_errors.append({
-                'error': error_log,
-                'context': context,
-                'prompt': prompt,
-                'standards_check': standards_check,
-                'solutions': solutions,
-            })
+            analyzed_errors.append(
+                {
+                    'error': error_log,
+                    'context': context,
+                    'prompt': prompt,
+                    'standards_check': standards_check,
+                    'solutions': solutions,
+                }
+            )
 
         return analyzed_errors
 
@@ -94,10 +99,7 @@ class AIAccountingAnalyzer:
 
     def _validate_data_completeness(self, error_data):
         """التحقق من اكتمال البيانات"""
-        required_fields = {
-            'error_type': 'نوع الخطأ',
-            'description': 'الوصف',
-        }
+        required_fields = {'error_type': 'نوع الخطأ', 'description': 'الوصف'}
         missing = []
         for field, label in required_fields.items():
             if not error_data.get(field):
@@ -106,7 +108,7 @@ class AIAccountingAnalyzer:
 
     def _generate_missing_data_message(self, missing_fields):
         """إنشاء رسالة البيانات المفقودة"""
-        fields_text = '\n'.join([f"- {f['label']}" for f in missing_fields])
+        fields_text = '\n'.join([f'- {f["label"]}' for f in missing_fields])
         return f"""
 ## بيانات مطلوبة إضافياً
 
@@ -146,12 +148,7 @@ class AIAccountingAnalyzer:
 
     def _build_accounting_context(self, error_data):
         """بناء السياق المحاسبي"""
-        context = {
-            'account_balances': {},
-            'recent_entries': [],
-            'fiscal_year_info': {},
-            'vat_status': {},
-        }
+        context = {'account_balances': {}, 'recent_entries': [], 'fiscal_year_info': {}, 'vat_status': {}}
 
         # أرصدة الحسابات الرئيسية
         main_accounts = ['1100', '1200', '1300', '1350', '2300', '3100', '3200', '3300', '4100', '5100']
@@ -169,35 +166,29 @@ class AIAccountingAnalyzer:
         # آخر 10 قيود
         recent = JournalEntry.objects.filter(is_posted=True).order_by('-date')[:10]
         for entry in recent:
-            context['recent_entries'].append({
-                'number': entry.entry_number,
-                'date': str(entry.date),
-                'type': entry.entry_type,
-                'debit': str(entry.total_debit),
-                'credit': str(entry.total_credit),
-            })
+            context['recent_entries'].append(
+                {
+                    'number': entry.entry_number,
+                    'date': str(entry.date),
+                    'type': entry.entry_type,
+                    'debit': str(entry.total_debit),
+                    'credit': str(entry.total_credit),
+                }
+            )
 
         # معلومات السنة المالية
         today = datetime.now().date()
-        context['fiscal_year_info'] = {
-            'current_date': str(today),
-            'year': today.year,
-            'month': today.month,
-        }
+        context['fiscal_year_info'] = {'current_date': str(today), 'year': today.year, 'month': today.month}
 
         # حالة VAT
-        vat_output = SalesInvoice.objects.filter(
-            is_posted=True, is_tax_invoice=True
-        ).aggregate(total=Sum('vat_amount'))['total'] or Decimal('0')
-        vat_input = PurchaseInvoice.objects.filter(
-            is_posted=True, is_tax_invoice=True
-        ).aggregate(total=Sum('vat_amount'))['total'] or Decimal('0')
+        vat_output = SalesInvoice.objects.filter(is_posted=True, is_tax_invoice=True).aggregate(
+            total=Sum('vat_amount')
+        )['total'] or Decimal('0')
+        vat_input = PurchaseInvoice.objects.filter(is_posted=True, is_tax_invoice=True).aggregate(
+            total=Sum('vat_amount')
+        )['total'] or Decimal('0')
 
-        context['vat_status'] = {
-            'output': str(vat_output),
-            'input': str(vat_input),
-            'net': str(vat_output - vat_input),
-        }
+        context['vat_status'] = {'output': str(vat_output), 'input': str(vat_input), 'net': str(vat_output - vat_input)}
 
         return context
 
@@ -254,15 +245,10 @@ class AIAccountingAnalyzer:
         else:
             raw_solutions = self._solutions_generic(error_data, context)
 
-        error_log = ErrorLog.objects.filter(
-            error_type=error_type,
-            status='pending',
-        ).order_by('-created_at').first()
+        error_log = ErrorLog.objects.filter(error_type=error_type, status='pending').order_by('-created_at').first()
 
         if not error_log:
-            error_log = ErrorLog.objects.filter(
-                error_type=error_type,
-            ).order_by('-created_at').first()
+            error_log = ErrorLog.objects.filter(error_type=error_type).order_by('-created_at').first()
 
         for sol_data in raw_solutions:
             sol = Solution.objects.create(
@@ -311,11 +297,7 @@ class AIAccountingAnalyzer:
                 'priority': 3,
                 'title': 'تسوية عبر حساب التسوية',
                 'description': 'تسجيل الفرق في حساب تسوية خاص',
-                'steps': [
-                    'إنشاء حساب تسوية جديد',
-                    'تسجيل الفرق في حساب التسوية',
-                    'مراجعة الحساب في نهاية الفترة',
-                ],
+                'steps': ['إنشاء حساب تسوية جديد', 'تسجيل الفرق في حساب التسوية', 'مراجعة الحساب في نهاية الفترة'],
                 'financial_impact': 'يؤثر بشكل مؤقت على الميزانية',
                 'risk_level': 'high',
             },
@@ -328,12 +310,7 @@ class AIAccountingAnalyzer:
                 'priority': 1,
                 'title': 'عكس القيد المكرر',
                 'description': 'عكس أحد القيدين المكررين وتسجيل ملاحظة',
-                'steps': [
-                    'تحديد القيد المكرر',
-                    'عكس القيد المكرر',
-                    'إضافة ملاحظة توضيحية',
-                    'مراجعة الأرصدة',
-                ],
+                'steps': ['تحديد القيد المكرر', 'عكس القيد المكرر', 'إضافة ملاحظة توضيحية', 'مراجعة الأرصدة'],
                 'financial_impact': 'سيتم إزالة التأثير المكرر على الأرصدة',
                 'risk_level': 'low',
             },
@@ -341,11 +318,7 @@ class AIAccountingAnalyzer:
                 'priority': 2,
                 'title': 'حذف القيد المكرر',
                 'description': 'حذف القيد المكرر نهائياً',
-                'steps': [
-                    'التأكد من أن القيد مكرر فعلاً',
-                    'حذف القيد المكرر',
-                    'مراجعة الأرصدة',
-                ],
+                'steps': ['التأكد من أن القيد مكرر فعلاً', 'حذف القيد المكرر', 'مراجعة الأرصدة'],
                 'financial_impact': 'سيتم إزالة التأثير المكرر على الأرصدة',
                 'risk_level': 'medium',
             },
@@ -360,7 +333,7 @@ class AIAccountingAnalyzer:
                 'title': f'إنشاء الحساب المفقود: {account_code}',
                 'description': f'إنشاء حساب جديد بالكود {account_code} في دليل الحسابات',
                 'steps': [
-                    f'الذهاب إلى دليل الحسابات',
+                    'الذهاب إلى دليل الحسابات',
                     f'إنشاء حساب جديد بالكود {account_code}',
                     'تحديد نوع الحساب المناسب',
                     'تحديد الحساب الأب',
@@ -368,7 +341,7 @@ class AIAccountingAnalyzer:
                 ],
                 'financial_impact': 'لا يؤثر مباشرة على القوائم المالية',
                 'risk_level': 'low',
-            },
+            }
         ]
 
     def _solutions_negative_balance(self, error_data, context):
@@ -391,11 +364,7 @@ class AIAccountingAnalyzer:
                 'priority': 2,
                 'title': 'تسجيل تسوية تعويضية',
                 'description': 'تسجيل قيد تعويضي لتصحيح الرصيد',
-                'steps': [
-                    'تحديد الحساب المعوض',
-                    'إنشاء قيد تعويضي',
-                    'مراجعة الأرصدة',
-                ],
+                'steps': ['تحديد الحساب المعوض', 'إنشاء قيد تعويضي', 'مراجعة الأرصدة'],
                 'financial_impact': 'سيؤثر على أرصدة الحسابات المتأثرة',
                 'risk_level': 'low',
             },
@@ -422,11 +391,7 @@ class AIAccountingAnalyzer:
                 'priority': 2,
                 'title': 'تسجيل قيود التسوية',
                 'description': 'تسجيل قيود تسوية للفروقات',
-                'steps': [
-                    'تحديد طبيعة الفروق',
-                    'إنشاء قيود تسوية مناسبة',
-                    'مراجعة الأرصدة',
-                ],
+                'steps': ['تحديد طبيعة الفروق', 'إنشاء قيود تسوية مناسبة', 'مراجعة الأرصدة'],
                 'financial_impact': 'سيتم تعديل أرصدة البنوك والخزائن',
                 'risk_level': 'medium',
             },
@@ -481,7 +446,7 @@ class AIAccountingAnalyzer:
                 ],
                 'financial_impact': 'سيؤثر على الميزانية العمومية',
                 'risk_level': 'low',
-            },
+            }
         ]
 
     def _solutions_salary_deductions(self, error_data, context):
@@ -500,7 +465,7 @@ class AIAccountingAnalyzer:
                 ],
                 'financial_impact': 'سيؤثر على قائمة الدخل والميزانية العمومية',
                 'risk_level': 'low',
-            },
+            }
         ]
 
     def _solutions_generic(self, error_data, context):
@@ -518,7 +483,7 @@ class AIAccountingAnalyzer:
                 ],
                 'financial_impact': 'يعتمد على طبيعة الخطأ',
                 'risk_level': 'medium',
-            },
+            }
         ]
 
     def apply_solution(self, solution_id, user):
@@ -528,6 +493,7 @@ class AIAccountingAnalyzer:
             solution.applied = True
             solution.applied_by = user
             from django.utils import timezone
+
             solution.applied_at = timezone.now()
             solution.save()
 

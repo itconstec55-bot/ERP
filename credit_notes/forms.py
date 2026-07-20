@@ -1,4 +1,5 @@
 from django import forms
+
 from .models import CreditNote
 
 
@@ -6,9 +7,18 @@ class CreditNoteForm(forms.ModelForm):
     class Meta:
         model = CreditNote
         fields = [
-            'note_type', 'note_number', 'date', 'customer', 'supplier',
-            'original_invoice_number', 'original_sales_invoice', 'original_purchase_invoice',
-            'subtotal', 'vat_amount', 'reason', 'notes',
+            'note_type',
+            'note_number',
+            'date',
+            'customer',
+            'supplier',
+            'original_invoice_number',
+            'original_sales_invoice',
+            'original_purchase_invoice',
+            'subtotal',
+            'vat_amount',
+            'reason',
+            'notes',
         ]
         widgets = {
             'note_type': forms.Select(attrs={'class': 'form-select', 'id': 'noteType', 'onchange': 'toggleParties()'}),

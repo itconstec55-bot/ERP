@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
-from accounts.models import AccountType, Account
+
+from accounts.models import Account, AccountType
 
 
 class Command(BaseCommand):
@@ -24,8 +25,7 @@ class Command(BaseCommand):
         types = {}
         for code, name, acc_type in account_types:
             obj, created = AccountType.objects.get_or_create(
-                code=code,
-                defaults={'name': name, 'account_type': acc_type}
+                code=code, defaults={'name': name, 'account_type': acc_type}
             )
             types[code] = obj
             if created:
@@ -48,7 +48,6 @@ class Command(BaseCommand):
             ('1620', 'بنك CIB', 'AT01', '1600', True),
             ('1700', 'أوداع وضمانات', 'AT01', None),
             ('1800', 'أرباح معلقة', 'AT01', None),
-
             # الأصول غير المتداولة
             ('2100', 'أصول ثابتة', 'AT02', None),
             ('2110', 'أراضي', 'AT02', '2100'),
@@ -56,9 +55,8 @@ class Command(BaseCommand):
             ('2130', 'آلات ومعدات', 'AT02', '2100'),
             ('2140', 'أدوات مكتبية', 'AT02', '2100'),
             ('2150', 'سيارات', 'AT02', '2100'),
-                        ('2200', 'أصول غير مادية', 'AT02', None),
+            ('2200', 'أصول غير مادية', 'AT02', None),
             ('2300', 'مواقع إلكترونية', 'AT02', None),
-
             # الخصوم المتداولة
             ('3100', 'الموردين / حسابات دائنة', 'AT03', None),
             ('3110', 'أرصدة دائنة - موردين', 'AT03', '3100'),
@@ -70,27 +68,22 @@ class Command(BaseCommand):
             ('3610', 'تأمين اجتماعي مستحق', 'AT03', None),
             ('3620', 'ضريبة دخل مستحقة', 'AT03', None),
             ('3700', 'أرباح مستحقة', 'AT03', None),
-
             # الخصوم غير المتداولة
             ('4100', 'قروض طويلة الأجل', 'AT04', None),
             ('4200', 'أخرى', 'AT04', None),
-
             # حقوق الملكية
             ('5100', 'رأس المال', 'AT05', None),
             ('5200', 'احتياطيات', 'AT05', None),
             ('5300', 'أرباح محتجزة', 'AT05', None),
             ('5400', 'صافي أرباح/خسائر السنة', 'AT05', None),
-
             # الإيرادات
             ('6100', 'إيرادات المبيعات', 'AT06', None),
             ('6200', 'إيرادات خدمات', 'AT06', None),
             ('6300', 'خصم مكتسب', 'AT06', None),
             ('6400', 'مرتجعات مبيعات', 'AT06', None),
-
             # تكلفة البضاعة المباعة
             ('7100', 'تكلفة البضاعة المباعة', 'AT07', None),
             ('7200', 'مرتجعات مشتريات', 'AT07', None),
-
             # المصروفات التشغيلية
             ('8100', 'إيجارات', 'AT08', None),
             ('8200', 'رواتب وأجور', 'AT08', None),
@@ -106,12 +99,10 @@ class Command(BaseCommand):
             ('8840', 'مصاريف مكتبية', 'AT08', None),
             ('8850', 'رسوم وتصاريح', 'AT08', None),
             ('8860', 'استشارات قانونية ومحاسبية', 'AT08', None),
-
             # مصروفات أخرى
             ('9100', 'فوائد بنكية', 'AT09', None),
             ('9200', 'خسائر غير عادية', 'AT09', None),
             ('9300', 'غرامات', 'AT09', None),
-
             # إيرادات أخرى
             ('10100', 'فوائد مركبة', 'AT10', None),
             ('10200', 'أرباح استثمارات', 'AT10', None),
@@ -142,7 +133,7 @@ class Command(BaseCommand):
                     'is_bank': is_bank,
                     'is_safe': is_safe,
                     'tax_account': is_tax,
-                }
+                },
             )
             if created:
                 self.stdout.write(f'  تم إنشاء الحساب: {code} - {name}')

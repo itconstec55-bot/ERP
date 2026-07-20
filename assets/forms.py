@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+
 from .models import Asset, AssetCategory, DepreciationEntry
 
 
@@ -12,9 +13,20 @@ def _non_negative(value, field_name):
 class AssetForm(forms.ModelForm):
     class Meta:
         model = Asset
-        fields = ['code', 'name', 'category', 'description', 'purchase_date',
-                  'purchase_price', 'salvage_value', 'useful_life_years',
-                  'depreciation_method', 'location', 'asset_account', 'depr_account']
+        fields = [
+            'code',
+            'name',
+            'category',
+            'description',
+            'purchase_date',
+            'purchase_price',
+            'salvage_value',
+            'useful_life_years',
+            'depreciation_method',
+            'location',
+            'asset_account',
+            'depr_account',
+        ]
         widgets = {
             'purchase_date': forms.DateInput(attrs={'type': 'date'}),
             'description': forms.Textarea(attrs={'rows': 3}),
@@ -57,10 +69,7 @@ class DepreciationEntryForm(forms.ModelForm):
     class Meta:
         model = DepreciationEntry
         fields = ['date', 'months', 'notes']
-        widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'notes': forms.Textarea(attrs={'rows': 3}),
-        }
+        widgets = {'date': forms.DateInput(attrs={'type': 'date'}), 'notes': forms.Textarea(attrs={'rows': 3})}
 
     def clean_months(self):
         months = self.cleaned_data.get('months')

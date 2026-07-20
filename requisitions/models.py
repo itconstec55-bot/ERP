@@ -1,12 +1,12 @@
+import uuid
 from decimal import Decimal
 
 from django.conf import settings
 from django.db import models
-import uuid
 
-from common.models import SequenceNumber
-from common.decimal_utils import quantize_10, safe_mul
 from budget.models import CostCenter
+from common.decimal_utils import quantize_10, safe_mul
+from common.models import SequenceNumber
 from purchases.models import Product, UnitOfMeasure
 
 
@@ -20,31 +20,32 @@ class Requisition(models.Model):
         ('cancelled', 'ملغي'),
     ]
 
-    PRIORITY_CHOICES = [
-        ('low', 'منخفض'),
-        ('medium', 'متوسط'),
-        ('high', 'عالي'),
-    ]
+    PRIORITY_CHOICES = [('low', 'منخفض'), ('medium', 'متوسط'), ('high', 'عالي')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    number = models.CharField(max_length=50, unique=True, blank=True,
-                              verbose_name='رقم طلب الشراء')
+    number = models.CharField(max_length=50, unique=True, blank=True, verbose_name='رقم طلب الشراء')
     requested_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-        related_name='requisitions_requested', verbose_name='طالب الشراء')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='requisitions_requested',
+        verbose_name='طالب الشراء',
+    )
     cost_center = models.ForeignKey(
-        CostCenter, on_delete=models.SET_NULL, null=True, blank=True,
-        verbose_name='مركز التكلفة')
+        CostCenter, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='مركز التكلفة'
+    )
     date = models.DateField(verbose_name='التاريخ')
     need_by_date = models.DateField(null=True, blank=True, verbose_name='تاريخ الحاجة')
-    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium',
-                                verbose_name='الأولوية')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft',
-                              verbose_name='الحالة')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium', verbose_name='الأولوية')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft', verbose_name='الحالة')
     notes = models.TextField(blank=True, verbose_name='ملاحظات')
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-        related_name='requisitions_created', verbose_name='أنشئ بواسطة')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='requisitions_created',
+        verbose_name='أنشئ بواسطة',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -68,6 +69,7 @@ class Requisition(models.Model):
             self.number = SequenceNumber.get_next_number('requisition')
         if not self.date:
             from datetime import date
+
             self.date = date.today()
         super().save(*args, **kwargs)
 
@@ -77,19 +79,21 @@ class Requisition(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
+
         return reverse('requisitions:req_detail', args=[self.pk])
 
 
 class RequisitionLine(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    requisition = models.ForeignKey(Requisition, on_delete=models.CASCADE,
-                                    related_name='lines', verbose_name='طلب الشراء')
+    requisition = models.ForeignKey(
+        Requisition, on_delete=models.CASCADE, related_name='lines', verbose_name='طلب الشراء'
+    )
     product = models.ForeignKey(Product, on_delete=models.PROTECT, verbose_name='المنتج')
     quantity = models.DecimalField(max_digits=15, decimal_places=3, verbose_name='الكمية')
-    uom = models.ForeignKey(UnitOfMeasure, on_delete=models.SET_NULL, null=True, blank=True,
-                            verbose_name='وحدة القياس')
-    estimated_unit_price = models.DecimalField(max_digits=20, decimal_places=10, null=True,
-                                               blank=True, verbose_name='السعر التقديري للوحدة')
+    uom = models.ForeignKey(UnitOfMeasure, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='وحدة القياس')
+    estimated_unit_price = models.DecimalField(
+        max_digits=20, decimal_places=10, null=True, blank=True, verbose_name='السعر التقديري للوحدة'
+    )
     required_date = models.DateField(null=True, blank=True, verbose_name='تاريخ التوريد المطلوب')
     notes = models.CharField(max_length=255, blank=True, verbose_name='ملاحظات')
 

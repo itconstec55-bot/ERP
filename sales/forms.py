@@ -1,18 +1,28 @@
 from django import forms
 from django.utils import timezone
+
 from .models import Customer, SalesInvoice, SalesInvoiceLine
 
 
 class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
-        fields = ['code', 'name', 'customer_type', 'tax_number', 'commercial_register',
-                  'address', 'city', 'phone', 'mobile', 'email', 'account',
-                  'credit_limit', 'notes']
-        widgets = {
-            'address': forms.Textarea(attrs={'rows': 3}),
-            'notes': forms.Textarea(attrs={'rows': 3}),
-        }
+        fields = [
+            'code',
+            'name',
+            'customer_type',
+            'tax_number',
+            'commercial_register',
+            'address',
+            'city',
+            'phone',
+            'mobile',
+            'email',
+            'account',
+            'credit_limit',
+            'notes',
+        ]
+        widgets = {'address': forms.Textarea(attrs={'rows': 3}), 'notes': forms.Textarea(attrs={'rows': 3})}
 
     def clean_credit_limit(self):
         limit = self.cleaned_data.get('credit_limit', 0)
@@ -24,9 +34,19 @@ class CustomerForm(forms.ModelForm):
 class SalesInvoiceForm(forms.ModelForm):
     class Meta:
         model = SalesInvoice
-        fields = ['invoice_number', 'file_number', 'customer', 'date', 'due_date',
-                  'payment_method', 'is_tax_invoice', 'withholding_tax_type',
-                  'discount_amount', 'paid_amount', 'notes']
+        fields = [
+            'invoice_number',
+            'file_number',
+            'customer',
+            'date',
+            'due_date',
+            'payment_method',
+            'is_tax_invoice',
+            'withholding_tax_type',
+            'discount_amount',
+            'paid_amount',
+            'notes',
+        ]
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'due_date': forms.DateInput(attrs={'type': 'date'}),
@@ -76,10 +96,5 @@ class SalesInvoiceLineForm(forms.ModelForm):
 
 
 SalesInvoiceLineFormSet = forms.inlineformset_factory(
-    SalesInvoice, SalesInvoiceLine,
-    form=SalesInvoiceLineForm,
-    extra=3,
-    can_delete=True,
-    min_num=1,
-    validate_min=True,
+    SalesInvoice, SalesInvoiceLine, form=SalesInvoiceLineForm, extra=3, can_delete=True, min_num=1, validate_min=True
 )

@@ -1,26 +1,21 @@
 """
 اختبارات الأدوات المساعدة والـ Middleware والعمليات المالية الحرجة
 """
+
+from datetime import date
 from decimal import Decimal
-from datetime import date, timedelta
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-from django.test import TestCase, RequestFactory, override_settings
 from django.contrib.auth.models import User
-from django.contrib.sessions.middleware import SessionMiddleware
-from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.messages.storage.fallback import FallbackStorage
-from django.contrib import messages
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse
+from django.test import RequestFactory, TestCase
 
-from accounts.models import AccountType, Account, JournalEntry, JournalEntryLine
-from common.utils import parse_date, parse_date_range, SAFE_ERROR_MESSAGES
-from common.accounting_service import JournalEntryService
-from common.exceptions import (
-    AccountingError, UnbalancedEntryError, AccountNotFoundError,
-    EntryAlreadyPostedError, InsufficientStockError
-)
 from accounting_system.middleware import ErrorHandlingMiddleware, RequestLoggingMiddleware
+from accounts.models import Account, AccountType
+from common.accounting_service import JournalEntryService
+from common.exceptions import AccountNotFoundError, UnbalancedEntryError
+from common.utils import SAFE_ERROR_MESSAGES, parse_date, parse_date_range
 
 
 # ============================================================
@@ -73,8 +68,8 @@ class ParseDateRangeTest(TestCase):
 
     def _make_request(self, **params):
         request = self.factory.get('/', params)
-        setattr(request, 'session', 'session')
-        setattr(request, '_messages', FallbackStorage(request))
+        request.session = 'session'
+        request._messages = FallbackStorage(request)
         return request
 
     def test_valid_range(self):
@@ -132,8 +127,8 @@ class ErrorHandlingMiddlewareTest(TestCase):
         user.is_authenticated = True
         user.pk = 1
         request.user = user
-        setattr(request, 'session', 'session')
-        setattr(request, '_messages', FallbackStorage(request))
+        request.session = 'session'
+        request._messages = FallbackStorage(request)
         return request
 
     def test_accounting_error_json_response(self):
@@ -176,7 +171,7 @@ class ErrorHandlingMiddlewareTest(TestCase):
 # اختبارات RequestLoggingMiddleware
 # ============================================================
 class RequestLoggingMiddlewareTest(TestCase):
-    """ اختبار middleware تسجيل الطلبات"""
+    """اختبار middleware تسجيل الطلبات"""
 
     def setUp(self):
         self.factory = RequestFactory()
@@ -218,24 +213,12 @@ class CriticalFinancialOperationsTest(TestCase):
         self.equity_type = AccountType.objects.update_or_create(
             code='equity', defaults={'name': 'حقوق ملكية', 'account_type': 'equity'}
         )[0]
-        self.cash = Account.objects.create(
-            code='1100', name='النقدية', account_type=self.asset_type,
-        )
-        self.bank = Account.objects.create(
-            code='1200', name='البنك', account_type=self.asset_type,
-        )
-        self.revenue = Account.objects.create(
-            code='4100', name='إيرادات مبيعات', account_type=self.rev_type,
-        )
-        self.expense = Account.objects.create(
-            code='5100', name='مصاريف إدارية', account_type=self.exp_type,
-        )
-        self.supplier_acc = Account.objects.create(
-            code='3100', name='موردون', account_type=self.liab_type,
-        )
-        self.customer_acc = Account.objects.create(
-            code='1120', name='عملاء', account_type=self.asset_type,
-        )
+        self.cash = Account.objects.create(code='1100', name='النقدية', account_type=self.asset_type)
+        self.bank = Account.objects.create(code='1200', name='البنك', account_type=self.asset_type)
+        self.revenue = Account.objects.create(code='4100', name='إيرادات مبيعات', account_type=self.rev_type)
+        self.expense = Account.objects.create(code='5100', name='مصاريف إدارية', account_type=self.exp_type)
+        self.supplier_acc = Account.objects.create(code='3100', name='موردون', account_type=self.liab_type)
+        self.customer_acc = Account.objects.create(code='1120', name='عملاء', account_type=self.asset_type)
 
     def test_journal_entry_balance_integrity(self):
         """اختبار التوازن الدقيق للقيد المحاسبي"""
@@ -244,8 +227,7 @@ class CriticalFinancialOperationsTest(TestCase):
             {'account': '4100', 'debit': Decimal('0.00'), 'credit': Decimal('5000.00')},
         ]
         entry = JournalEntryService.create_entry(
-            entry_type='general', date='2024-06-15',
-            description='اختبار التوازن', lines=lines, created_by=self.user,
+            entry_type='general', date='2024-06-15', description='اختبار التوازن', lines=lines, created_by=self.user
         )
         self.assertEqual(entry.total_debit, entry.total_credit)
         self.assertEqual(entry.total_debit, Decimal('5000.00'))
@@ -260,8 +242,7 @@ class CriticalFinancialOperationsTest(TestCase):
             {'account': '4100', 'debit': Decimal('0.00'), 'credit': Decimal('1000.00')},
         ]
         JournalEntryService.create_entry(
-            entry_type='general', date='2024-06-15',
-            description='اختبار الأرصدة', lines=lines, created_by=self.user,
+            entry_type='general', date='2024-06-15', description='اختبار الأرصدة', lines=lines, created_by=self.user
         )
 
         self.cash.refresh_from_db()
@@ -277,8 +258,7 @@ class CriticalFinancialOperationsTest(TestCase):
         ]
         with self.assertRaises(UnbalancedEntryError):
             JournalEntryService.create_entry(
-                entry_type='general', date='2024-06-15',
-                description='قيد غير متوازن', lines=lines, created_by=self.user,
+                entry_type='general', date='2024-06-15', description='قيد غير متوازن', lines=lines, created_by=self.user
             )
 
     def test_rejects_zero_value_entry(self):
@@ -289,16 +269,14 @@ class CriticalFinancialOperationsTest(TestCase):
         ]
         with self.assertRaises(UnbalancedEntryError):
             JournalEntryService.create_entry(
-                entry_type='general', date='2024-06-15',
-                description='قيد صفري', lines=lines, created_by=self.user,
+                entry_type='general', date='2024-06-15', description='قيد صفري', lines=lines, created_by=self.user
             )
 
     def test_rejects_empty_lines(self):
         """اختبار رفض القيد بدون بنود"""
         with self.assertRaises(UnbalancedEntryError):
             JournalEntryService.create_entry(
-                entry_type='general', date='2024-06-15',
-                description='قيد فارغ', lines=[], created_by=self.user,
+                entry_type='general', date='2024-06-15', description='قيد فارغ', lines=[], created_by=self.user
             )
 
     def test_rejects_missing_account(self):
@@ -309,8 +287,11 @@ class CriticalFinancialOperationsTest(TestCase):
         ]
         with self.assertRaises(AccountNotFoundError):
             JournalEntryService.create_entry(
-                entry_type='general', date='2024-06-15',
-                description='قيد بحساب مفقود', lines=lines, created_by=self.user,
+                entry_type='general',
+                date='2024-06-15',
+                description='قيد بحساب مفقود',
+                lines=lines,
+                created_by=self.user,
             )
 
     def test_multi_line_balanced_entry(self):
@@ -321,8 +302,7 @@ class CriticalFinancialOperationsTest(TestCase):
             {'account': '4100', 'debit': Decimal('0.00'), 'credit': Decimal('5000.00')},
         ]
         entry = JournalEntryService.create_entry(
-            entry_type='general', date='2024-06-15',
-            description='قيد متعدد البنود', lines=lines, created_by=self.user,
+            entry_type='general', date='2024-06-15', description='قيد متعدد البنود', lines=lines, created_by=self.user
         )
         self.assertEqual(entry.total_debit, Decimal('5000.00'))
         self.assertEqual(entry.total_credit, Decimal('5000.00'))
@@ -335,8 +315,7 @@ class CriticalFinancialOperationsTest(TestCase):
             {'account': '4100', 'debit': Decimal('0.00'), 'credit': Decimal('500.00')},
         ]
         entry = JournalEntryService.create_entry(
-            entry_type='general', date='2024-06-15',
-            description='اختبار القفل', lines=lines, created_by=self.user,
+            entry_type='general', date='2024-06-15', description='اختبار القفل', lines=lines, created_by=self.user
         )
         self.cash.refresh_from_db()
         self.assertEqual(self.cash.current_balance, Decimal('500.00'))
@@ -350,10 +329,12 @@ class CriticalFinancialOperationsTest(TestCase):
                 {'account': '4100', 'debit': Decimal('0.00'), 'credit': amount},
             ]
             JournalEntryService.create_entry(
-                entry_type='general', date=f'2024-06-{i+1:02d}',
-                description=f'قيد رقم {i+1}',
-                entry_number=f'TEST-{i+1:04d}',
-                lines=lines, created_by=self.user,
+                entry_type='general',
+                date=f'2024-06-{i + 1:02d}',
+                description=f'قيد رقم {i + 1}',
+                entry_number=f'TEST-{i + 1:04d}',
+                lines=lines,
+                created_by=self.user,
             )
 
         self.cash.refresh_from_db()
@@ -366,9 +347,18 @@ class SAFE_ERROR_MESSAGESTest(TestCase):
     """اختبار رسائل الخطأ الآمنة"""
 
     def test_all_messages_exist(self):
-        required_keys = ['import', 'post', 'backup_create', 'backup_restore',
-                         'backup_export', 'backup_import', 'sync', 'connection',
-                         'email', 'generic']
+        required_keys = [
+            'import',
+            'post',
+            'backup_create',
+            'backup_restore',
+            'backup_export',
+            'backup_import',
+            'sync',
+            'connection',
+            'email',
+            'generic',
+        ]
         for key in required_keys:
             self.assertIn(key, SAFE_ERROR_MESSAGES)
             self.assertTrue(len(SAFE_ERROR_MESSAGES[key]) > 0)

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import RFQ, RFQLine, Quotation, QuotationLine
+
+from .models import RFQ, Quotation, QuotationLine, RFQLine
 
 
 @admin.register(RFQ)

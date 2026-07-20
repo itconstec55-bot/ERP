@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from audit.models import AuditLog
 from budget.models import CostCenter
+
 from . import factory_reset as fr
 from .models import Backup, FactoryResetRequest
 
@@ -36,8 +37,7 @@ class FactoryResetWorkflowTests(TestCase):
         self.checker.is_superuser = True
         self.checker.save()
         with self.assertRaises(fr.FactoryResetError):
-            fr.execute_request(req.id, self.checker, token, fr.CONFIRM_PHRASE,
-                               'pw-check-123', META)
+            fr.execute_request(req.id, self.checker, token, fr.CONFIRM_PHRASE, 'pw-check-123', META)
 
     def test_only_one_active_request(self):
         self._new_request()
@@ -49,15 +49,13 @@ class FactoryResetWorkflowTests(TestCase):
         req = self._new_request()
         _r, token = fr.approve_request(req.id, self.checker, META)
         with self.assertRaises(fr.FactoryResetError):
-            fr.execute_request(req.id, self.maker, token, fr.CONFIRM_PHRASE,
-                               'pw-maker-123', META)
+            fr.execute_request(req.id, self.maker, token, fr.CONFIRM_PHRASE, 'pw-maker-123', META)
 
     def test_wrong_token_rejected(self):
         req = self._new_request()
         fr.approve_request(req.id, self.checker, META)
         with self.assertRaises(fr.FactoryResetError):
-            fr.execute_request(req.id, self.executor, 'BAD', fr.CONFIRM_PHRASE,
-                               'pw-root-123', META)
+            fr.execute_request(req.id, self.executor, 'BAD', fr.CONFIRM_PHRASE, 'pw-root-123', META)
 
     def test_wrong_phrase_rejected(self):
         req = self._new_request()
@@ -69,8 +67,7 @@ class FactoryResetWorkflowTests(TestCase):
         req = self._new_request()
         _r, token = fr.approve_request(req.id, self.checker, META)
         with self.assertRaises(fr.FactoryResetError):
-            fr.execute_request(req.id, self.executor, token, fr.CONFIRM_PHRASE,
-                               'wrong', META)
+            fr.execute_request(req.id, self.executor, token, fr.CONFIRM_PHRASE, 'wrong', META)
 
     def test_expired_approval_rejected(self):
         req = self._new_request()
@@ -79,8 +76,7 @@ class FactoryResetWorkflowTests(TestCase):
         req.approval_expires_at = timezone.now() - timedelta(minutes=1)
         req.save()
         with self.assertRaises(fr.FactoryResetError):
-            fr.execute_request(req.id, self.executor, token, fr.CONFIRM_PHRASE,
-                               'pw-root-123', META)
+            fr.execute_request(req.id, self.executor, token, fr.CONFIRM_PHRASE, 'pw-root-123', META)
         req.refresh_from_db()
         self.assertEqual(req.status, FactoryResetRequest.STATUS_EXPIRED)
 
@@ -94,11 +90,17 @@ class FactoryResetWorkflowTests(TestCase):
         _r, token = fr.approve_request(req.id, self.checker, META)
         # قاعدة بيانات الاختبار في الذاكرة لا يوجد لها ملف يُضغط؛ نستبدل نسخة الأمان
         fake_backup = Backup.objects.create(
-            name='نسخة أمان اختبارية', backup_type='full',
-            file_path='x', file_size=1, status='completed', created_by=self.executor)
+            name='نسخة أمان اختبارية',
+            backup_type='full',
+            file_path='x',
+            file_size=1,
+            status='completed',
+            created_by=self.executor,
+        )
         with mock.patch.object(fr, '_create_safety_backup', return_value=fake_backup):
             result_req, deleted = fr.execute_request(
-                req.id, self.executor, token, fr.CONFIRM_PHRASE, 'pw-root-123', META)
+                req.id, self.executor, token, fr.CONFIRM_PHRASE, 'pw-root-123', META
+            )
 
         self.assertEqual(result_req.status, FactoryResetRequest.STATUS_COMPLETED)
         # بيانات المعاملات مُسحت
@@ -114,8 +116,7 @@ class FactoryResetWorkflowTests(TestCase):
         self.assertEqual(result_req.executed_by, self.executor)
         self.assertIsNotNone(result_req.executed_at)
         # أثر تدقيق للحذف موجود
-        self.assertTrue(AuditLog.objects.filter(
-            model_name='backups.FactoryResetRequest', action='delete').exists())
+        self.assertTrue(AuditLog.objects.filter(model_name='backups.FactoryResetRequest', action='delete').exists())
 
     def test_reject_blocks_execution(self):
         req = self._new_request()

@@ -1,22 +1,27 @@
-from decimal import Decimal
-from django.db import models, transaction
-from django.contrib.auth.models import User
-from accounts.models import Account, JournalEntry
-from django.utils import timezone
 import uuid
-from datetime import timedelta
-import math
+from decimal import Decimal
+
+from django.contrib.auth.models import User
+from django.db import models, transaction
+
+from accounts.models import Account, JournalEntry
 
 
 class AssetCategory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, verbose_name='اسم التصنيف')
-    depreciation_rate = models.DecimalField(max_digits=5, decimal_places=2, default=10,
-                                             verbose_name='نسبة الإهلاك السنوية %')
-    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True,
-                                verbose_name='حساب الأصل')
-    depreciation_account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True,
-                                              verbose_name='حساب مجمع الإهلاك', related_name='depr_categories')
+    depreciation_rate = models.DecimalField(
+        max_digits=5, decimal_places=2, default=10, verbose_name='نسبة الإهلاك السنوية %'
+    )
+    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='حساب الأصل')
+    depreciation_account = models.ForeignKey(
+        Account,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='حساب مجمع الإهلاك',
+        related_name='depr_categories',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -29,15 +34,8 @@ class AssetCategory(models.Model):
 
 
 class Asset(models.Model):
-    DEPRECIATION_METHOD_CHOICES = [
-        ('straight_line', 'القسط الثابت'),
-        ('declining', 'القسط المتناقص'),
-    ]
-    STATUS_CHOICES = [
-        ('active', 'نشط'),
-        ('depreciated', 'مستهلك بالكامل'),
-        ('disposed', 'تم التخلص منه'),
-    ]
+    DEPRECIATION_METHOD_CHOICES = [('straight_line', 'القسط الثابت'), ('declining', 'القسط المتناقص')]
+    STATUS_CHOICES = [('active', 'نشط'), ('depreciated', 'مستهلك بالكامل'), ('disposed', 'تم التخلص منه')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=20, unique=True, verbose_name='كود الأصل')
@@ -46,22 +44,32 @@ class Asset(models.Model):
     description = models.TextField(blank=True, null=True, verbose_name='الوصف')
     purchase_date = models.DateField(verbose_name='تاريخ الشراء')
     purchase_price = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='سعر الشراء')
-    salvage_value = models.DecimalField(max_digits=15, decimal_places=2, default=0,
-                                         verbose_name='القيمة التخليصية')
+    salvage_value = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name='القيمة التخليصية')
     useful_life_years = models.IntegerField(default=5, verbose_name='العمر الإنتاجي بالسنوات')
-    depreciation_method = models.CharField(max_length=20, choices=DEPRECIATION_METHOD_CHOICES,
-                                            default='straight_line', verbose_name='طريقة الإهلاك')
-    accumulated_depreciation = models.DecimalField(max_digits=15, decimal_places=2, default=0,
-                                                    verbose_name='مجمع الإهلاك')
-    net_book_value = models.DecimalField(max_digits=15, decimal_places=2, default=0,
-                                          verbose_name='القيمة الدفترية الصافية')
+    depreciation_method = models.CharField(
+        max_length=20, choices=DEPRECIATION_METHOD_CHOICES, default='straight_line', verbose_name='طريقة الإهلاك'
+    )
+    accumulated_depreciation = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0, verbose_name='مجمع الإهلاك'
+    )
+    net_book_value = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0, verbose_name='القيمة الدفترية الصافية'
+    )
     location = models.CharField(max_length=200, blank=True, null=True, verbose_name='الموقع')
-    asset_account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True,
-                                       verbose_name='حساب الأصل', related_name='assets')
-    depr_account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True,
-                                      verbose_name='حساب مجمع الإهلاك', related_name='accum_depr')
-    journal_entry = models.ForeignKey(JournalEntry, on_delete=models.SET_NULL, null=True, blank=True,
-                                       verbose_name='قيد الشراء')
+    asset_account = models.ForeignKey(
+        Account, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='حساب الأصل', related_name='assets'
+    )
+    depr_account = models.ForeignKey(
+        Account,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='حساب مجمع الإهلاك',
+        related_name='accum_depr',
+    )
+    journal_entry = models.ForeignKey(
+        JournalEntry, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='قيد الشراء'
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='الحالة')
     is_active = models.BooleanField(default=True, verbose_name='نشط')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة')
@@ -118,11 +126,13 @@ class DepreciationEntry(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.PROTECT, verbose_name='الأصل')
     date = models.DateField(verbose_name='التاريخ')
     amount = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='مبلغ الإهلاك')
-    accumulated_after = models.DecimalField(max_digits=15, decimal_places=2, default=0,
-                                             verbose_name='المجمع بعد الإهلاك')
+    accumulated_after = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0, verbose_name='المجمع بعد الإهلاك'
+    )
     months = models.IntegerField(default=1, verbose_name='عدد الأشهر')
-    journal_entry = models.ForeignKey(JournalEntry, on_delete=models.SET_NULL, null=True, blank=True,
-                                       verbose_name='القيد المحاسبي')
+    journal_entry = models.ForeignKey(
+        JournalEntry, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القيد المحاسبي'
+    )
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -137,13 +147,22 @@ class DepreciationEntry(models.Model):
 
     def post_depreciation(self):
         from common.accounting_service import JournalEntryService
+
         depr_expense_account = self.asset.category.depreciation_account or JournalEntryService.get_account('5200')
         accum_depr_account = self.asset.depr_account or JournalEntryService.get_account('1400')
         lines = [
-            {'account': depr_expense_account, 'debit': self.amount, 'credit': 0,
-             'description': f'مصروف إهلاك - {self.asset.name}'},
-            {'account': accum_depr_account, 'debit': 0, 'credit': self.amount,
-             'description': f'مجمع إهلاك - {self.asset.name}'},
+            {
+                'account': depr_expense_account,
+                'debit': self.amount,
+                'credit': 0,
+                'description': f'مصروف إهلاك - {self.asset.name}',
+            },
+            {
+                'account': accum_depr_account,
+                'debit': 0,
+                'credit': self.amount,
+                'description': f'مجمع إهلاك - {self.asset.name}',
+            },
         ]
         with transaction.atomic():
             asset = Asset.objects.select_for_update().get(pk=self.asset.pk)

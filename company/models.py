@@ -1,4 +1,5 @@
 import uuid
+
 from django.db import models
 
 
@@ -33,36 +34,68 @@ class Company(models.Model):
 
     # حسابات محاسبية افتراضية
     purchases_account = models.ForeignKey(
-        'accounts.Account', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', verbose_name='حساب المشتريات'
+        'accounts.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        verbose_name='حساب المشتريات',
     )
     vat_account = models.ForeignKey(
-        'accounts.Account', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', verbose_name='حساب ضريبة القيمة المضافة'
+        'accounts.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        verbose_name='حساب ضريبة القيمة المضافة',
     )
     withholding_tax_account = models.ForeignKey(
-        'accounts.Account', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', verbose_name='حساب الخصم والتحصيل'
+        'accounts.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        verbose_name='حساب الخصم والتحصيل',
     )
     supplier_account = models.ForeignKey(
-        'accounts.Account', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', verbose_name='حساب الموردين الافتراضي'
+        'accounts.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        verbose_name='حساب الموردين الافتراضي',
     )
     customer_account = models.ForeignKey(
-        'accounts.Account', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', verbose_name='حساب العملاء الافتراضي'
+        'accounts.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        verbose_name='حساب العملاء الافتراضي',
     )
     sales_revenue_account = models.ForeignKey(
-        'accounts.Account', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', verbose_name='حساب إيرادات المبيعات'
+        'accounts.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        verbose_name='حساب إيرادات المبيعات',
     )
     cogs_account = models.ForeignKey(
-        'accounts.Account', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', verbose_name='حساب تكلفة البضاعة المباعة'
+        'accounts.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        verbose_name='حساب تكلفة البضاعة المباعة',
     )
     inventory_account = models.ForeignKey(
-        'accounts.Account', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', verbose_name='حساب المخزون'
+        'accounts.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        verbose_name='حساب المخزون',
     )
 
     class Meta:

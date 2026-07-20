@@ -1,15 +1,17 @@
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.shortcuts import render, redirect, get_object_or_404
+import logging
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from .models import StockAdjustment, StockAdjustmentLine
-from warehouses.models import Warehouse
-from purchases.models import Product
+from django.views.decorators.http import require_POST
+
 from common.permissions import screen_permission_required
-import logging
+from purchases.models import Product
+from warehouses.models import Warehouse
+
+from .models import StockAdjustment, StockAdjustmentLine
 
 logger = logging.getLogger('accounting')
 
@@ -29,6 +31,7 @@ def adjustment_create(request):
     products = Product.objects.filter(is_active=True)
     if request.method == 'POST':
         from decimal import Decimal, InvalidOperation
+
         errors = []
         adjustment_number = request.POST.get('adjustment_number', '').strip()
         date_val = request.POST.get('date', '').strip()
@@ -64,9 +67,11 @@ def adjustment_create(request):
             for e in errors:
                 messages.error(request, e)
             next_number = f'ADJ-{timezone.now().strftime("%Y%m%d")}-{StockAdjustment.objects.count() + 1:04d}'
-            return render(request, 'stock_adjustments/adjustment_form.html', {
-                'warehouses': warehouses, 'products': products, 'next_number': next_number,
-            })
+            return render(
+                request,
+                'stock_adjustments/adjustment_form.html',
+                {'warehouses': warehouses, 'products': products, 'next_number': next_number},
+            )
 
         with transaction.atomic():
             adj = StockAdjustment.objects.create(
@@ -79,22 +84,21 @@ def adjustment_create(request):
                 created_by=request.user,
             )
             from warehouses.models import WarehouseProduct
+
             for pid, qty, note in parsed_lines:
                 wp = WarehouseProduct.objects.filter(warehouse_id=warehouse_id, product_id=pid).first()
                 current = wp.quantity if wp else 0
                 StockAdjustmentLine.objects.create(
-                    adjustment=adj,
-                    product_id=pid,
-                    quantity=qty,
-                    current_stock=current,
-                    notes=note,
+                    adjustment=adj, product_id=pid, quantity=qty, current_stock=current, notes=note
                 )
         messages.success(request, f'تم إنشاء جرد {adj.adjustment_number} بنجاح')
         return redirect('stock_adjustments:detail', pk=adj.pk)
     next_number = f'ADJ-{timezone.now().strftime("%Y%m%d")}-{StockAdjustment.objects.count() + 1:04d}'
-    return render(request, 'stock_adjustments/adjustment_form.html', {
-        'warehouses': warehouses, 'products': products, 'next_number': next_number,
-    })
+    return render(
+        request,
+        'stock_adjustments/adjustment_form.html',
+        {'warehouses': warehouses, 'products': products, 'next_number': next_number},
+    )
 
 
 @screen_permission_required('stock_adjustments.adjustment', 'view')
@@ -112,7 +116,7 @@ def adjustment_approve(request, pk):
         try:
             adj.approve()
             messages.success(request, f'تم اعتماد وتنفيذ جرد {adj.adjustment_number}')
-        except ValueError as e:
+        except ValueError:
             messages.error(request, 'حدث خطأ أثناء الترحيل. تأكد من صحة البيانات وحاول مرة أخرى.')
             logger.exception('Posting failed for StockAdjustment %s', pk)
     return redirect('stock_adjustments:detail', pk=pk)

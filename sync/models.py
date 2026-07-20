@@ -1,8 +1,7 @@
-import uuid
-import hashlib
 import secrets
+import uuid
+
 from django.db import models
-from django.conf import settings
 
 
 class MachineInfo(models.Model):
@@ -15,7 +14,9 @@ class MachineInfo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     machine_id = models.CharField(max_length=50, unique=True, verbose_name='معرف الجهاز')
     name = models.CharField(max_length=200, verbose_name='اسم الجهاز')
-    machine_type = models.CharField(max_length=20, choices=MACHINE_TYPES, default='standalone', verbose_name='نوع الجهاز')
+    machine_type = models.CharField(
+        max_length=20, choices=MACHINE_TYPES, default='standalone', verbose_name='نوع الجهاز'
+    )
     api_key = models.CharField(max_length=64, verbose_name='مفتاح API')
     is_active = models.BooleanField(default=True, verbose_name='نشط')
     last_sync_at = models.DateTimeField(null=True, blank=True, verbose_name='آخر مزامنة')
@@ -45,21 +46,21 @@ class MachineInfo(models.Model):
 
 
 class SyncLog(models.Model):
-    SYNC_TYPES = [
-        ('push', 'إرسال'),
-        ('pull', 'استلام'),
-        ('full', 'مزامنة كاملة'),
-    ]
-    STATUS_CHOICES = [
-        ('pending', 'قيد التنفيذ'),
-        ('completed', 'مكتملة'),
-        ('failed', 'فشل'),
-        ('partial', 'جزئية'),
-    ]
+    SYNC_TYPES = [('push', 'إرسال'), ('pull', 'استلام'), ('full', 'مزامنة كاملة')]
+    STATUS_CHOICES = [('pending', 'قيد التنفيذ'), ('completed', 'مكتملة'), ('failed', 'فشل'), ('partial', 'جزئية')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    source_machine = models.ForeignKey(MachineInfo, on_delete=models.CASCADE, related_name='sync_logs_sent', verbose_name='الجهاز المصدر')
-    target_machine = models.ForeignKey(MachineInfo, on_delete=models.CASCADE, related_name='sync_logs_received', null=True, blank=True, verbose_name='الجهاز الهدف')
+    source_machine = models.ForeignKey(
+        MachineInfo, on_delete=models.CASCADE, related_name='sync_logs_sent', verbose_name='الجهاز المصدر'
+    )
+    target_machine = models.ForeignKey(
+        MachineInfo,
+        on_delete=models.CASCADE,
+        related_name='sync_logs_received',
+        null=True,
+        blank=True,
+        verbose_name='الجهاز الهدف',
+    )
     sync_type = models.CharField(max_length=20, choices=SYNC_TYPES, verbose_name='نوع المزامنة')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='الحالة')
     records_sent = models.IntegerField(default=0, verbose_name='السجلات المرسلة')

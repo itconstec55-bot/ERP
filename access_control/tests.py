@@ -1,6 +1,7 @@
 import pytest
 from django.contrib.auth.models import User
-from access_control.models import Role, Screen, ScreenAccessMixin, UserRoleAssignment, UserBranch, UserWarehouse, UserAccountTypeScope
+
+from access_control.models import Role, Screen, ScreenAccessMixin, UserRoleAssignment
 
 
 @pytest.mark.django_db
@@ -19,11 +20,7 @@ class TestRole:
 @pytest.mark.django_db
 class TestScreen:
     def test_create_screen(self):
-        screen = Screen.objects.create(
-            code='sales.invoice',
-            name='فاتورة مبيعات',
-            module='sales',
-        )
+        screen = Screen.objects.create(code='sales.invoice', name='فاتورة مبيعات', module='sales')
         assert screen.pk is not None
         assert 'فاتورة مبيعات' in str(screen)
 
@@ -37,11 +34,7 @@ class TestScreenAccess:
         assert access.can_delete is False
 
     def test_grant_permissions(self):
-        access = ScreenAccessMixin.objects.create(
-            can_view=True,
-            can_add=True,
-            can_edit=True,
-        )
+        access = ScreenAccessMixin.objects.create(can_view=True, can_add=True, can_edit=True)
         assert access.can_view is True
         assert access.can_add is True
         assert access.can_edit is True
@@ -52,10 +45,6 @@ class TestUserRoleAssignment:
     def test_assign_role(self):
         user = User.objects.create_user('u1', 'u1@test.com', 'pass')
         role = Role.objects.create(name='مشرف', code='supervisor')
-        assignment = UserRoleAssignment.objects.create(
-            user=user,
-            role=role,
-            grant_type='allow',
-        )
+        assignment = UserRoleAssignment.objects.create(user=user, role=role, grant_type='allow')
         assert assignment.pk is not None
         assert assignment.is_active is True

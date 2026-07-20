@@ -1,6 +1,5 @@
 import pytest
 from django.contrib.auth.models import User
-from django.test.utils import setup_test_environment
 
 
 @pytest.fixture(autouse=True)
@@ -25,6 +24,7 @@ def regular_user(db):
 def api_client():
     """عميل API مع مصادقة"""
     from rest_framework.test import APIClient
+
     return APIClient()
 
 
@@ -32,6 +32,7 @@ def api_client():
 def auth_api_client(api_client, admin_user):
     """عميل API مع مصادقة المسؤول"""
     from rest_framework.authtoken.models import Token
+
     token, _ = Token.objects.get_or_create(user=admin_user)
     api_client.credentials(HTTP_AUTHORIZATION=f'Token {token.key}')
     return api_client

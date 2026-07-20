@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Warehouse, WarehouseProduct, StockMovement
+
+from .models import StockMovement, Warehouse, WarehouseProduct
 
 
 def _non_negative_decimal(value, field_name):
@@ -13,9 +14,7 @@ class WarehouseForm(forms.ModelForm):
     class Meta:
         model = Warehouse
         fields = ['code', 'name', 'location', 'manager', 'phone', 'notes', 'is_active']
-        widgets = {
-            'notes': forms.Textarea(attrs={'rows': 3}),
-        }
+        widgets = {'notes': forms.Textarea(attrs={'rows': 3})}
 
 
 class WarehouseProductForm(forms.ModelForm):
@@ -44,12 +43,18 @@ class WarehouseProductForm(forms.ModelForm):
 class StockMovementForm(forms.ModelForm):
     class Meta:
         model = StockMovement
-        fields = ['movement_type', 'warehouse', 'to_warehouse', 'product', 'quantity',
-                  'unit_cost', 'reference_number', 'notes', 'date']
-        widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'notes': forms.Textarea(attrs={'rows': 2}),
-        }
+        fields = [
+            'movement_type',
+            'warehouse',
+            'to_warehouse',
+            'product',
+            'quantity',
+            'unit_cost',
+            'reference_number',
+            'notes',
+            'date',
+        ]
+        widgets = {'date': forms.DateInput(attrs={'type': 'date'}), 'notes': forms.Textarea(attrs={'rows': 2})}
 
     def clean_quantity(self):
         qty = self.cleaned_data.get('quantity')

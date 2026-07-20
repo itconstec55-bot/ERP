@@ -1,8 +1,10 @@
 from django import forms
-from purchases.models import Supplier, Product
+
 from purchase_orders.models import PurchaseOrder, PurchaseOrderLine
+from purchases.models import Product, Supplier
 from warehouses.models import Warehouse
-from .models import GoodsReceivedNote, GoodsReceivedLine
+
+from .models import GoodsReceivedLine, GoodsReceivedNote
 
 
 class GoodsReceivedNoteForm(forms.ModelForm):
@@ -55,7 +57,8 @@ class GoodsReceivedLineForm(forms.ModelForm):
 
 
 GoodsReceivedLineFormSet = forms.inlineformset_factory(
-    GoodsReceivedNote, GoodsReceivedLine,
+    GoodsReceivedNote,
+    GoodsReceivedLine,
     form=GoodsReceivedLineForm,
     extra=3,
     can_delete=True,

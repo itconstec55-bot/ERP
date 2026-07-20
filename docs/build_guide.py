@@ -6,24 +6,30 @@ Usage:
   python build_pdf.py ar input.md output.pdf      (custom paths)
   python build_pdf.py en                          (English mode)
 """
-import io, os, re, sys, html as html_mod
+
+import html as html_mod
+import os
+import re
+import sys
 
 import arabic_reshaper
+
 try:
     from bidi.algorithm import get_display
+
     HAS_BIDI = True
 except ImportError:
     HAS_BIDI = False
 
 # ── PDF imports (ReportLab) ──
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_LEFT, TA_RIGHT
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import cm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, Table,
-                                TableStyle, HRFlowable, Image as RLImage)
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.enums import TA_RIGHT, TA_LEFT
-from reportlab.lib import colors
-from reportlab.lib.units import cm
+from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.platypus import Image as RLImage
 
 # ── Fonts ──
 FONT_PATH = r'C:\Windows\Fonts\arial.ttf'
@@ -32,11 +38,11 @@ if not os.path.exists(BOLD_PATH):
     BOLD_PATH = FONT_PATH
 pdfmetrics.registerFont(TTFont('Arabic', FONT_PATH))
 pdfmetrics.registerFont(TTFont('Arabic-Bold', BOLD_PATH))
-pdfmetrics.registerFontFamily('Arabic', normal='Arabic', bold='Arabic-Bold',
-                              italic='Arabic', boldItalic='Arabic-Bold')
+pdfmetrics.registerFontFamily('Arabic', normal='Arabic', bold='Arabic-Bold', italic='Arabic', boldItalic='Arabic-Bold')
 
 # ── Language ──
 LANG = sys.argv[1] if len(sys.argv) > 1 else 'ar'
+
 
 # ═══════════════════════════════════════════════════════
 #  Arabic Text Processing
@@ -56,9 +62,11 @@ def ar(text):
             pass
     return shaped
 
+
 def ar_html(text):
     """Keep original Arabic for HTML (browser handles BiDi natively)."""
     return text
+
 
 # ═══════════════════════════════════════════════════════
 #  SVG to PNG (optional)
@@ -66,10 +74,12 @@ def ar_html(text):
 def svg_to_png(svg_path, png_path, width_pt=450):
     try:
         import cairosvg
+
         cairosvg.svg2png(url=svg_path, write_to=png_path, output_width=width_pt * 2)
         return True
     except Exception:
         return False
+
 
 def get_image_or_placeholder_rlab(img_path, width_pt=450, codest=None):
     if os.path.exists(img_path):
@@ -78,16 +88,15 @@ def get_image_or_placeholder_rlab(img_path, width_pt=450, codest=None):
             if svg_to_png(img_path, png_path, width_pt):
                 img_path = png_path
             else:
-                return Table([[Paragraph('[SVG: ' + os.path.basename(img_path) + ']', codest)]],
-                           colWidths=[width_pt])
+                return Table([[Paragraph('[SVG: ' + os.path.basename(img_path) + ']', codest)]], colWidths=[width_pt])
         try:
             img = RLImage(img_path, width=width_pt, height=width_pt * 0.5)
             img.hAlign = 'CENTER'
             return img
         except Exception:
             pass
-    return Table([[Paragraph('[image: ' + os.path.basename(img_path) + ']', codest)]],
-               colWidths=[width_pt])
+    return Table([[Paragraph('[image: ' + os.path.basename(img_path) + ']', codest)]], colWidths=[width_pt])
+
 
 # ═══════════════════════════════════════════════════════
 #  PDF Styles
@@ -96,30 +105,62 @@ PAGE_W = 21 * cm
 MARGIN = 2 * cm
 AVAIL = PAGE_W - 2 * MARGIN
 
-body_st = ParagraphStyle('body', fontName='Arabic', fontSize=10.5, leading=16,
-                         alignment=TA_RIGHT, wordWrap='RTL')
-h1_st = ParagraphStyle('h1', parent=body_st, fontName='Arabic-Bold', fontSize=16,
-                       leading=22, spaceBefore=14, spaceAfter=6, alignment=TA_RIGHT)
-h2_st = ParagraphStyle('h2', parent=body_st, fontName='Arabic-Bold', fontSize=13,
-                       leading=19, spaceBefore=10, spaceAfter=4, alignment=TA_RIGHT)
-h3_st = ParagraphStyle('h3', parent=body_st, fontName='Arabic-Bold', fontSize=11.5,
-                       leading=17, spaceBefore=6, spaceAfter=3, alignment=TA_RIGHT)
-quote_st = ParagraphStyle('quote', parent=body_st, leftIndent=12, rightIndent=12,
-                          backColor=colors.HexColor('#eef2f7'), borderPadding=5)
-cell_st = ParagraphStyle('cell', parent=body_st, fontSize=8.6, leading=12,
-                         alignment=TA_RIGHT, wordWrap='RTL')
-code_st = ParagraphStyle('code', fontName='Arabic', fontSize=8, leading=11,
-                         alignment=TA_LEFT, wordWrap='LTR',
-                         backColor=colors.HexColor('#f4f4f4'), borderPadding=5,
-                         textColor=colors.HexColor('#222222'))
+body_st = ParagraphStyle('body', fontName='Arabic', fontSize=10.5, leading=16, alignment=TA_RIGHT, wordWrap='RTL')
+h1_st = ParagraphStyle(
+    'h1',
+    parent=body_st,
+    fontName='Arabic-Bold',
+    fontSize=16,
+    leading=22,
+    spaceBefore=14,
+    spaceAfter=6,
+    alignment=TA_RIGHT,
+)
+h2_st = ParagraphStyle(
+    'h2',
+    parent=body_st,
+    fontName='Arabic-Bold',
+    fontSize=13,
+    leading=19,
+    spaceBefore=10,
+    spaceAfter=4,
+    alignment=TA_RIGHT,
+)
+h3_st = ParagraphStyle(
+    'h3',
+    parent=body_st,
+    fontName='Arabic-Bold',
+    fontSize=11.5,
+    leading=17,
+    spaceBefore=6,
+    spaceAfter=3,
+    alignment=TA_RIGHT,
+)
+quote_st = ParagraphStyle(
+    'quote', parent=body_st, leftIndent=12, rightIndent=12, backColor=colors.HexColor('#eef2f7'), borderPadding=5
+)
+cell_st = ParagraphStyle('cell', parent=body_st, fontSize=8.6, leading=12, alignment=TA_RIGHT, wordWrap='RTL')
+code_st = ParagraphStyle(
+    'code',
+    fontName='Arabic',
+    fontSize=8,
+    leading=11,
+    alignment=TA_LEFT,
+    wordWrap='LTR',
+    backColor=colors.HexColor('#f4f4f4'),
+    borderPadding=5,
+    textColor=colors.HexColor('#222222'),
+)
 
 if LANG == 'en':
     for _st in (body_st, h1_st, h2_st, h3_st, quote_st, cell_st):
         _st.alignment = TA_LEFT
         _st.wordWrap = 'LTR'
 
+
 def md_inline(s):
     return s.replace('`', '')
+
 
 # ═══════════════════════════════════════════════════════
 #  Markdown -> PDF flowables
@@ -143,9 +184,14 @@ def parse_pdf(md_lines):
                 txt = '\n'.join(code_buf)
                 safe = txt.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
                 t = Table([[Paragraph(safe, code_st)]], colWidths=[AVAIL])
-                t.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f4f4f4')),
-                    ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc'))]))
+                t.setStyle(
+                    TableStyle(
+                        [
+                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f4f4f4')),
+                            ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
+                        ]
+                    )
+                )
                 flow.append(t)
                 flow.append(Spacer(1, 4))
             i += 1
@@ -165,9 +211,9 @@ def parse_pdf(md_lines):
 
         # Horizontal rule
         if re.match(r'^(-{3,}|\*{3,})$', stripped):
-            flow.append(HRFlowable(width='100%', thickness=0.6,
-                                   color=colors.HexColor('#bbbbbb'),
-                                   spaceBefore=4, spaceAfter=4))
+            flow.append(
+                HRFlowable(width='100%', thickness=0.6, color=colors.HexColor('#bbbbbb'), spaceBefore=4, spaceAfter=4)
+            )
             i += 1
             continue
 
@@ -224,22 +270,25 @@ def parse_pdf(md_lines):
                 cells = [c.strip() for c in r.strip('|').split('|')]
                 data.append([Paragraph(ar(md_inline(c)), cell_st) for c in cells])
             if data:
-                colw = [AVAIL * 0.18, AVAIL * 0.30, AVAIL * 0.52][:len(data[0])]
+                colw = [AVAIL * 0.18, AVAIL * 0.30, AVAIL * 0.52][: len(data[0])]
                 if len(colw) < len(data[0]):
                     colw = [AVAIL / len(data[0])] * len(data[0])
                 tbl = Table(data, colWidths=colw, repeatRows=1)
-                tbl.setStyle(TableStyle([
-                    ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#cccccc')),
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a237e')),
-                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-                    ('LEFTPADDING', (0, 0), (-1, -1), 4),
-                    ('RIGHTPADDING', (0, 0), (-1, -1), 4),
-                    ('TOPPADDING', (0, 0), (-1, -1), 3),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-                    ('ROWBACKGROUNDS', (0, 1), (-1, -1),
-                     [colors.white, colors.HexColor('#f6f8fc')]),
-                ]))
+                tbl.setStyle(
+                    TableStyle(
+                        [
+                            ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#cccccc')),
+                            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a237e')),
+                            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                            ('LEFTPADDING', (0, 0), (-1, -1), 4),
+                            ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+                            ('TOPPADDING', (0, 0), (-1, -1), 3),
+                            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+                            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f6f8fc')]),
+                        ]
+                    )
+                )
                 flow.append(tbl)
                 flow.append(Spacer(1, 5))
             continue
@@ -325,7 +374,7 @@ def md_to_html(md_text, doc_title):
             return ''
         header = table_rows[0]
         sep_idx = 1 if len(table_rows) > 1 and re.match(r'^[\s|:-]+$', table_rows[1]) else 0
-        data_rows = table_rows[sep_idx + 1:] if sep_idx else table_rows[1:]
+        data_rows = table_rows[sep_idx + 1 :] if sep_idx else table_rows[1:]
         hdr_cells = [c.strip() for c in header.strip('|').split('|')]
         h_html = ''.join(f'<th>{html_mod.escape(c)}</th>' for c in hdr_cells)
         body_html = ''
@@ -460,19 +509,25 @@ else:
     pdf_out = r'D:\accounting_system\docs\دليل_الإجراءات_التقنية_الموحدة.pdf'
     doc_title = 'دليل الإجراءات التقنية الموحدة'
 
-md_text = io.open(src, encoding='utf-8').read()
+md_text = open(src, encoding='utf-8').read()
 
 # ── Build PDF ──
 md_lines = md_text.split('\n')
-doc = SimpleDocTemplate(pdf_out, pagesize=(21 * cm, 29.7 * cm),
-                        leftMargin=MARGIN, rightMargin=MARGIN,
-                        topMargin=MARGIN, bottomMargin=MARGIN,
-                        title=doc_title, author='Engineering')
+doc = SimpleDocTemplate(
+    pdf_out,
+    pagesize=(21 * cm, 29.7 * cm),
+    leftMargin=MARGIN,
+    rightMargin=MARGIN,
+    topMargin=MARGIN,
+    bottomMargin=MARGIN,
+    title=doc_title,
+    author='Engineering',
+)
 doc.build(parse_pdf(md_lines))
 print('PDF OK:', os.path.getsize(pdf_out), 'bytes')
 
 # ── Build HTML ──
 html_out = pdf_out.rsplit('.', 1)[0] + '.html'
 html_content = md_to_html(md_text, doc_title)
-io.open(html_out, 'w', encoding='utf-8').write(html_content)
+open(html_out, 'w', encoding='utf-8').write(html_content)
 print('HTML OK:', os.path.getsize(html_out), 'bytes')

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Warehouse, WarehouseProduct, StockMovement
+
+from .models import StockMovement, Warehouse, WarehouseProduct
 
 
 class WarehouseProductInline(admin.TabularInline):
@@ -21,8 +22,16 @@ class WarehouseProductAdmin(admin.ModelAdmin):
 
 
 class StockMovementAdmin(admin.ModelAdmin):
-    list_display = ('movement_number', 'movement_type', 'warehouse', 'to_warehouse',
-                    'product', 'quantity', 'date', 'performed_by')
+    list_display = (
+        'movement_number',
+        'movement_type',
+        'warehouse',
+        'to_warehouse',
+        'product',
+        'quantity',
+        'date',
+        'performed_by',
+    )
     list_filter = ('movement_type', 'warehouse')
     search_fields = ('movement_number', 'product__name')
     readonly_fields = ('total_cost',)

@@ -6,7 +6,8 @@
 
 import re
 import urllib.parse
-from typing import Dict, Any, Optional
+from typing import Any
+
 from django.conf import settings
 from django.utils import timezone
 
@@ -30,13 +31,13 @@ class WhatsAppService:
     def __init__(self):
         self.api_token = getattr(settings, 'WHATSAPP_API_TOKEN', None)
         self.api_phone_id = getattr(settings, 'WHATSAPP_API_PHONE_ID', None)
-        self.api_url = f"https://graph.facebook.com/v18.0/{self.api_phone_id}/messages" if self.api_phone_id else None
+        self.api_url = f'https://graph.facebook.com/v18.0/{self.api_phone_id}/messages' if self.api_phone_id else None
 
     @staticmethod
     def clean_phone_number(phone: str) -> str:
         """تنظيف رقم الهاتف وإرجاعه بالصيغة الدولية"""
         if not phone:
-            return ""
+            return ''
 
         # إزالة جميع الرموز غير الرقمية
         digits = re.sub(r'\D', '', phone)
@@ -83,7 +84,7 @@ class WhatsAppService:
         إرجاع: (is_valid, cleaned_phone_or_error_message)
         """
         if not phone:
-            return False, "رقم الهاتف فارغ"
+            return False, 'رقم الهاتف فارغ'
 
         cleaned = cls.clean_phone_number(phone)
 
@@ -99,7 +100,7 @@ class WhatsAppService:
             if cls.EGYPT_MOBILE_PATTERN.match(local_format) or cls.EGYPT_LANDLINE_PATTERN.match(local_format):
                 return True, cleaned
 
-        return False, f"رقم الهاتف غير صالح للواتساب: {phone}"
+        return False, f'رقم الهاتف غير صالح للواتساب: {phone}'
 
     @staticmethod
     def generate_wa_link(phone: str, message: str) -> str:
@@ -109,9 +110,9 @@ class WhatsAppService:
         message: نص الرسالة (سيتم ترميزه URL)
         """
         encoded_message = urllib.parse.quote(message)
-        return f"https://wa.me/{phone}?text={encoded_message}"
+        return f'https://wa.me/{phone}?text={encoded_message}'
 
-    def send_via_api(self, phone: str, message: str) -> Dict[str, Any]:
+    def send_via_api(self, phone: str, message: str) -> dict[str, Any]:
         """
         إرسال عبر WhatsApp Business API الرسمي
         يتطلب: WHATSAPP_API_TOKEN و WHATSAPP_API_PHONE_ID في settings
@@ -122,17 +123,9 @@ class WhatsAppService:
         try:
             import requests
 
-            payload = {
-                "messaging_product": "whatsapp",
-                "to": phone,
-                "type": "text",
-                "text": {"body": message}
-            }
+            payload = {'messaging_product': 'whatsapp', 'to': phone, 'type': 'text', 'text': {'body': message}}
 
-            headers = {
-                "Authorization": f"Bearer {self.api_token}",
-                "Content-Type": "application/json"
-            }
+            headers = {'Authorization': f'Bearer {self.api_token}', 'Content-Type': 'application/json'}
 
             response = requests.post(self.api_url, json=payload, headers=headers, timeout=10)
 
@@ -147,104 +140,99 @@ class WhatsAppService:
             return {'success': False, 'error': str(e)}
 
     @staticmethod
-    def format_invoice_message(invoice, party_name: str, party_type: str = "customer") -> str:
+    def format_invoice_message(invoice, party_name: str, party_type: str = 'customer') -> str:
         """
         تنسيق رسالة فاتورة جاهزة للإرسال
         party_type: 'customer' للمبيعات، 'supplier' للمشتريات
         """
-        invoice_type = "مبيعات" if party_type == "customer" else "مشتريات"
-        party_label = "العميل" if party_type == "customer" else "المورد"
+        invoice_type = 'مبيعات' if party_type == 'customer' else 'مشتريات'
+        party_label = 'العميل' if party_type == 'customer' else 'المورد'
 
         lines = [
-            f"📄 *فاتورة {invoice_type}*",
-            f"📌 رقم الفاتورة: {invoice.invoice_number}",
-            f"🔖 رقم الملف: {invoice.file_number or 'غير محدد'}",
-            f"👤 {party_label}: {party_name}",
-            f"📅 التاريخ: {invoice.date.strftime('%d/%m/%Y')}",
-            "",
-            "📋 *التفاصيل المالية:*",
-            f"• المبلغ قبل الضريبة: {invoice.subtotal:,.2f} ج.م",
+            f'📄 *فاتورة {invoice_type}*',
+            f'📌 رقم الفاتورة: {invoice.invoice_number}',
+            f'🔖 رقم الملف: {invoice.file_number or "غير محدد"}',
+            f'👤 {party_label}: {party_name}',
+            f'📅 التاريخ: {invoice.date.strftime("%d/%m/%Y")}',
+            '',
+            '📋 *التفاصيل المالية:*',
+            f'• المبلغ قبل الضريبة: {invoice.subtotal:,.2f} ج.م',
         ]
 
         if hasattr(invoice, 'vat_amount') and invoice.vat_amount:
-            lines.append(f"• ضريبة القيمة المضافة (14%): {invoice.vat_amount:,.2f} ج.م")
+            lines.append(f'• ضريبة القيمة المضافة (14%): {invoice.vat_amount:,.2f} ج.م')
 
         if hasattr(invoice, 'discount_amount') and invoice.discount_amount:
-            lines.append(f"• الخصم: {invoice.discount_amount:,.2f} ج.م")
+            lines.append(f'• الخصم: {invoice.discount_amount:,.2f} ج.م')
 
         if hasattr(invoice, 'withholding_tax_amount') and invoice.withholding_tax_amount:
-            lines.append(f"• الخصم والتحصيل: {invoice.withholding_tax_amount:,.2f} ج.م")
+            lines.append(f'• الخصم والتحصيل: {invoice.withholding_tax_amount:,.2f} ج.م')
 
-        lines.extend([
-            f"• *الإجمالي: {invoice.total_amount:,.2f} ج.م*",
-            "",
-        ])
+        lines.extend([f'• *الإجمالي: {invoice.total_amount:,.2f} ج.م*', ''])
 
         if hasattr(invoice, 'paid_amount'):
-            lines.extend([
-                f"💰 المحصل/المدفوع: {invoice.paid_amount:,.2f} ج.م",
-                f"⏳ المتبقي: {invoice.remaining_amount:,.2f} ج.م",
-                "",
-            ])
+            lines.extend(
+                [
+                    f'💰 المحصل/المدفوع: {invoice.paid_amount:,.2f} ج.م',
+                    f'⏳ المتبقي: {invoice.remaining_amount:,.2f} ج.م',
+                    '',
+                ]
+            )
 
-        lines.append("📍 *نظام تواريدات المحاسبي*")
-        lines.append(f"⏰ {timezone.now().strftime('%d/%m/%Y %H:%M')}")
+        lines.append('📍 *نظام تواريدات المحاسبي*')
+        lines.append(f'⏰ {timezone.now().strftime("%d/%m/%Y %H:%M")}')
 
-        return "\n".join(lines)
+        return '\n'.join(lines)
 
     @staticmethod
-    def format_statement_message(party, invoices, party_type: str = "customer") -> str:
+    def format_statement_message(party, invoices, party_type: str = 'customer') -> str:
         """
         تنسيق رسالة كشف حساب
         party: Customer أو Supplier
         invoices: queryset من الفواتير
         party_type: 'customer' أو 'supplier'
         """
-        party_label = "عميل" if party_type == "customer" else "مورد"
-        invoice_label = "مبيعات" if party_type == "customer" else "مشتريات"
+        party_label = 'عميل' if party_type == 'customer' else 'مورد'
+        invoice_label = 'مبيعات' if party_type == 'customer' else 'مشتريات'
 
         total_amount = sum(inv.total_amount for inv in invoices)
         total_paid = sum(inv.paid_amount for inv in invoices if hasattr(inv, 'paid_amount'))
         total_remaining = sum(inv.remaining_amount for inv in invoices if hasattr(inv, 'remaining_amount'))
 
         lines = [
-            f"📊 *كشف حساب {party_label}*",
-            f"👤 الاسم: {party.name}",
-            f"📞 الهاتف: {party.mobile or party.phone or 'غير مسجل'}",
-            f"🔖 رقم الملف: {getattr(party, 'file_number', 'غير محدد') or 'غير محدد'}",
-            "",
-            f"📋 *ملخص فواتير {invoice_label}:*",
-            f"• عدد الفواتير: {invoices.count()}",
-            f"• إجمالي المبالغ: {total_amount:,.2f} ج.م",
-            f"• إجمالي المدفوع/المحصّل: {total_paid:,.2f} ج.م",
-            f"• *إجمالي المتبقي: {total_remaining:,.2f} ج.م*",
-            "",
-            "📝 *تفاصيل الفواتير:*",
+            f'📊 *كشف حساب {party_label}*',
+            f'👤 الاسم: {party.name}',
+            f'📞 الهاتف: {party.mobile or party.phone or "غير مسجل"}',
+            f'🔖 رقم الملف: {getattr(party, "file_number", "غير محدد") or "غير محدد"}',
+            '',
+            f'📋 *ملخص فواتير {invoice_label}:*',
+            f'• عدد الفواتير: {invoices.count()}',
+            f'• إجمالي المبالغ: {total_amount:,.2f} ج.م',
+            f'• إجمالي المدفوع/المحصّل: {total_paid:,.2f} ج.م',
+            f'• *إجمالي المتبقي: {total_remaining:,.2f} ج.م*',
+            '',
+            '📝 *تفاصيل الفواتير:*',
         ]
 
         for inv in invoices[:15]:  # أول 15 فاتورة فقط لتجنب طول الرسالة
-            status = "✅" if getattr(inv, 'is_posted', False) else "⏳"
+            status = '✅' if getattr(inv, 'is_posted', False) else '⏳'
             lines.append(
-                f"{status} {inv.invoice_number} | "
-                f"{inv.date.strftime('%d/%m/%Y')} | "
-                f"إجمالي: {inv.total_amount:,.2f} | "
-                f"متبقي: {getattr(inv, 'remaining_amount', 0):,.2f}"
+                f'{status} {inv.invoice_number} | '
+                f'{inv.date.strftime("%d/%m/%Y")} | '
+                f'إجمالي: {inv.total_amount:,.2f} | '
+                f'متبقي: {getattr(inv, "remaining_amount", 0):,.2f}'
             )
 
         if invoices.count() > 15:
-            lines.append(f"... و {invoices.count() - 15} فاتورة أخرى")
+            lines.append(f'... و {invoices.count() - 15} فاتورة أخرى')
 
-        lines.extend([
-            "",
-            "📍 *نظام تواريدات المحاسبي*",
-            f"⏰ {timezone.now().strftime('%d/%m/%Y %H:%M')}",
-        ])
+        lines.extend(['', '📍 *نظام تواريدات المحاسبي*', f'⏰ {timezone.now().strftime("%d/%m/%Y %H:%M")}'])
 
-        return "\n".join(lines)
+        return '\n'.join(lines)
 
 
 # دالة مساعدة سريعة للاستخدام في Views
-def send_invoice_whatsapp(invoice, phone: str, party_name: str, party_type: str = "customer") -> Dict[str, Any]:
+def send_invoice_whatsapp(invoice, phone: str, party_name: str, party_type: str = 'customer') -> dict[str, Any]:
     """
     دالة مساعدة لإرسال فاتورة عبر واتساب
     تستخدم في Views مباشرة
@@ -270,7 +258,7 @@ def send_invoice_whatsapp(invoice, phone: str, party_name: str, party_type: str 
     return {'success': True, 'method': 'wa.me', 'link': wa_link}
 
 
-def send_statement_whatsapp(party, invoices, phone: str, party_type: str = "customer") -> Dict[str, Any]:
+def send_statement_whatsapp(party, invoices, phone: str, party_type: str = 'customer') -> dict[str, Any]:
     """
     دالة مساعدة لإرسال كشف حساب عبر واتساب
     """

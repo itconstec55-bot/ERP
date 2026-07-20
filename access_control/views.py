@@ -1,21 +1,24 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib import messages
 from django.db import transaction
 from django.db.models import Count
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 
 from .models import (
-    Role, Screen, RoleScreenPermission, UserRoleAssignment,
-    UserBranch, UserWarehouse, UserAccountTypeScope, UserScreenPermission,
+    Role,
+    RoleScreenPermission,
+    Screen,
+    UserAccountTypeScope,
+    UserBranch,
+    UserRoleAssignment,
+    UserScreenPermission,
+    UserWarehouse,
 )
-from .resolver import resolve, LEVELS, bump_global_version, invalidate_user
+from .resolver import LEVELS, bump_global_version, invalidate_user, resolve
 
-LEVEL_LABELS = {
-    'view': 'مشاهدة', 'add': 'إضافة', 'edit': 'تعديل',
-    'delete': 'حذف', 'print': 'طباعة', 'export': 'تصدير',
-}
+LEVEL_LABELS = {'view': 'مشاهدة', 'add': 'إضافة', 'edit': 'تعديل', 'delete': 'حذف', 'print': 'طباعة', 'export': 'تصدير'}
 
 
 def _require_superuser(request):
@@ -30,14 +33,16 @@ def permission_dashboard(request):
     """لوحة موحّدة: قائمة المستخدمين وأدوارهم ونطاقاتهم."""
     if not _require_superuser(request):
         return redirect('dashboard')
-    users = User.objects.all().prefetch_related(
-        'role_assignments__role', 'allowed_branches', 'allowed_warehouses',
-    ).order_by('username')
-    return render(request, 'access_control/dashboard.html', {
-        'users': users,
-        'roles_count': Role.objects.count(),
-        'screens_count': Screen.objects.count(),
-    })
+    users = (
+        User.objects.all()
+        .prefetch_related('role_assignments__role', 'allowed_branches', 'allowed_warehouses')
+        .order_by('username')
+    )
+    return render(
+        request,
+        'access_control/dashboard.html',
+        {'users': users, 'roles_count': Role.objects.count(), 'screens_count': Screen.objects.count()},
+    )
 
 
 @login_required
@@ -51,21 +56,18 @@ def user_permission_detail(request, pk):
     screens = Screen.objects.filter(is_active=True)
     screen_rows = []
     for screen in screens:
-        eff = perms.screens.get(screen.code, {}) if not perms.is_superuser else {
-            l: True for l in LEVELS}
-        screen_rows.append({
-            'screen': screen,
-            'cells': [bool(eff.get(l, False)) for l in LEVELS],
-        })
+        eff = perms.screens.get(screen.code, {}) if not perms.is_superuser else {l: True for l in LEVELS}
+        screen_rows.append({'screen': screen, 'cells': [bool(eff.get(l, False)) for l in LEVELS]})
 
     profile = getattr(target, 'userprofile', None)
     assignments = target.role_assignments.select_related('role').all()
     assigned_ids = [a.role_id for a in assignments]
     available_roles = Role.objects.filter(is_active=True).exclude(pk__in=assigned_ids).order_by('name')
 
+    from accounts.models import AccountType
     from company.models import CompanyBranch
     from warehouses.models import Warehouse
-    from accounts.models import AccountType
+
     branch_ids = [b.branch_id for b in target.allowed_branches.all()]
     warehouse_ids = [w.warehouse_id for w in target.allowed_warehouses.all()]
     account_type_ids = [a.account_type_id for a in target.allowed_account_types.all()]
@@ -74,31 +76,34 @@ def user_permission_detail(request, pk):
     available_account_types = AccountType.objects.exclude(pk__in=account_type_ids).order_by('name')
 
     exceptions = target.screen_permissions.select_related('screen').order_by('screen__module', 'screen__order')
-    exception_rows = [{
-        'perm': p,
-        'cells': [{'level': l, 'checked': getattr(p, f'can_{l}')} for l in LEVELS],
-    } for p in exceptions]
+    exception_rows = [
+        {'perm': p, 'cells': [{'level': l, 'checked': getattr(p, f'can_{l}')} for l in LEVELS]} for p in exceptions
+    ]
     all_screens = Screen.objects.filter(is_active=True).order_by('module', 'order', 'name')
 
-    return render(request, 'access_control/user_detail.html', {
-        'target': target,
-        'perms': perms,
-        'profile': profile,
-        'levels': LEVELS,
-        'screen_rows': screen_rows,
-        'assignments': assignments,
-        'available_roles': available_roles,
-        'roles': [a.role for a in assignments],
-        'branches': target.allowed_branches.select_related('branch').all(),
-        'warehouses': target.allowed_warehouses.select_related('warehouse').all(),
-        'account_types': target.allowed_account_types.select_related('account_type').all(),
-        'available_branches': available_branches,
-        'available_warehouses': available_warehouses,
-        'available_account_types': available_account_types,
-        'exception_rows': exception_rows,
-        'all_screens': all_screens,
-        'level_headers': [(l, LEVEL_LABELS[l]) for l in LEVELS],
-    })
+    return render(
+        request,
+        'access_control/user_detail.html',
+        {
+            'target': target,
+            'perms': perms,
+            'profile': profile,
+            'levels': LEVELS,
+            'screen_rows': screen_rows,
+            'assignments': assignments,
+            'available_roles': available_roles,
+            'roles': [a.role for a in assignments],
+            'branches': target.allowed_branches.select_related('branch').all(),
+            'warehouses': target.allowed_warehouses.select_related('warehouse').all(),
+            'account_types': target.allowed_account_types.select_related('account_type').all(),
+            'available_branches': available_branches,
+            'available_warehouses': available_warehouses,
+            'available_account_types': available_account_types,
+            'exception_rows': exception_rows,
+            'all_screens': all_screens,
+            'level_headers': [(l, LEVEL_LABELS[l]) for l in LEVELS],
+        },
+    )
 
 
 @login_required
@@ -114,12 +119,9 @@ def user_assign_role(request, pk):
     if not role:
         messages.error(request, 'اختر مجموعة صحيحة')
         return redirect('access_control:user_detail', pk=target.pk)
-    _, created = UserRoleAssignment.objects.get_or_create(
-        user=target, role=role, defaults={'granted_by': request.user})
+    _, created = UserRoleAssignment.objects.get_or_create(user=target, role=role, defaults={'granted_by': request.user})
     invalidate_user(target.pk)
-    messages.success(
-        request,
-        'تم إسناد المجموعة' if created else 'المجموعة مُسنَدة بالفعل لهذا المستخدم')
+    messages.success(request, 'تم إسناد المجموعة' if created else 'المجموعة مُسنَدة بالفعل لهذا المستخدم')
     return redirect('access_control:user_detail', pk=target.pk)
 
 
@@ -153,6 +155,7 @@ def user_add_branch(request, pk):
     if resp:
         return resp
     from company.models import CompanyBranch
+
     branch = CompanyBranch.objects.filter(pk=request.POST.get('branch'), is_active=True).first()
     if not branch:
         messages.error(request, 'اختر فرعاً صحيحاً')
@@ -160,8 +163,7 @@ def user_add_branch(request, pk):
     is_default = bool(request.POST.get('is_default'))
     if is_default:
         target.allowed_branches.update(is_default=False)
-    UserBranch.objects.get_or_create(
-        user=target, branch=branch, defaults={'is_default': is_default})
+    UserBranch.objects.get_or_create(user=target, branch=branch, defaults={'is_default': is_default})
     invalidate_user(target.pk)
     messages.success(request, 'تم إسناد الفرع')
     return redirect('access_control:user_detail', pk=target.pk)
@@ -185,18 +187,21 @@ def user_add_warehouse(request, pk):
     if resp:
         return resp
     from warehouses.models import Warehouse
+
     warehouse = Warehouse.objects.filter(pk=request.POST.get('warehouse'), is_active=True).first()
     if not warehouse:
         messages.error(request, 'اختر مخزناً صحيحاً')
         return redirect('access_control:user_detail', pk=target.pk)
     UserWarehouse.objects.update_or_create(
-        user=target, warehouse=warehouse,
+        user=target,
+        warehouse=warehouse,
         defaults={
             'can_receive': bool(request.POST.get('can_receive')),
             'can_issue': bool(request.POST.get('can_issue')),
             'can_count': bool(request.POST.get('can_count')),
             'can_transfer': bool(request.POST.get('can_transfer')),
-        })
+        },
+    )
     invalidate_user(target.pk)
     messages.success(request, 'تم إسناد المخزن')
     return redirect('access_control:user_detail', pk=target.pk)
@@ -220,16 +225,19 @@ def user_add_account_type(request, pk):
     if resp:
         return resp
     from accounts.models import AccountType
+
     account_type = AccountType.objects.filter(pk=request.POST.get('account_type')).first()
     if not account_type:
         messages.error(request, 'اختر نوع حساب صحيحاً')
         return redirect('access_control:user_detail', pk=target.pk)
     UserAccountTypeScope.objects.update_or_create(
-        user=target, account_type=account_type,
+        user=target,
+        account_type=account_type,
         defaults={
             'can_view': bool(request.POST.get('can_view')),
             'can_transact': bool(request.POST.get('can_transact')),
-        })
+        },
+    )
     invalidate_user(target.pk)
     messages.success(request, 'تم إسناد نوع الحساب')
     return redirect('access_control:user_detail', pk=target.pk)
@@ -253,6 +261,7 @@ def user_update_scope_flags(request, pk):
     if resp:
         return resp
     from common.models import UserProfile
+
     profile, _ = UserProfile.objects.get_or_create(user=target)
     profile.view_all_branches = bool(request.POST.get('view_all_branches'))
     profile.view_all_warehouses = bool(request.POST.get('view_all_warehouses'))
@@ -280,12 +289,18 @@ def user_set_screen_exception(request, pk):
         messages.error(request, 'حدّد مستوى واحداً على الأقل')
         return redirect('access_control:user_detail', pk=target.pk)
     UserScreenPermission.objects.update_or_create(
-        user=target, screen=screen,
+        user=target,
+        screen=screen,
         defaults={
             'grant_type': grant,
-            'can_view': flags['view'], 'can_add': flags['add'], 'can_edit': flags['edit'],
-            'can_delete': flags['delete'], 'can_print': flags['print'], 'can_export': flags['export'],
-        })
+            'can_view': flags['view'],
+            'can_add': flags['add'],
+            'can_edit': flags['edit'],
+            'can_delete': flags['delete'],
+            'can_print': flags['print'],
+            'can_export': flags['export'],
+        },
+    )
     invalidate_user(target.pk)
     label = 'حرمان' if grant == 'deny' else 'سماح'
     messages.success(request, f'تم حفظ استثناء ({label}) على {screen.name}')
@@ -308,14 +323,8 @@ def role_list(request):
     """قائمة المجموعات (الأدوار) القابلة للتعديل."""
     if not _require_superuser(request):
         return redirect('dashboard')
-    roles = Role.objects.annotate(
-        screens=Count('screen_permissions'),
-        users=Count('user_assignments'),
-    ).order_by('name')
-    rows = [
-        {'role': role, 'screens': role.screens, 'users': role.users}
-        for role in roles
-    ]
+    roles = Role.objects.annotate(screens=Count('screen_permissions'), users=Count('user_assignments')).order_by('name')
+    rows = [{'role': role, 'screens': role.screens, 'users': role.users} for role in roles]
     return render(request, 'access_control/role_list.html', {'rows': rows})
 
 
@@ -335,15 +344,12 @@ def role_create(request):
         if Role.objects.filter(code=code).exists():
             messages.error(request, f'الكود "{code}" مستخدم بالفعل')
             return redirect('access_control:role_create')
-        role = Role.objects.create(
-            name=name, code=code,
-            description=(request.POST.get('description') or '').strip(),
-        )
+        role = Role.objects.create(name=name, code=code, description=(request.POST.get('description') or '').strip())
         messages.success(request, 'تم إنشاء المجموعة، حدّد صلاحياتها الآن')
         return redirect('access_control:role_edit', pk=role.pk)
-    return render(request, 'access_control/role_form.html', {
-        'creating': True, 'levels': LEVELS, 'level_labels': LEVEL_LABELS,
-    })
+    return render(
+        request, 'access_control/role_form.html', {'creating': True, 'levels': LEVELS, 'level_labels': LEVEL_LABELS}
+    )
 
 
 @login_required
@@ -365,10 +371,7 @@ def role_edit(request, pk):
 
             existing = {p.screen_id: p for p in role.screen_permissions.all()}
             for screen in Screen.objects.filter(is_active=True):
-                flags = {
-                    l: bool(request.POST.get(f'perm_{screen.id}_{l}'))
-                    for l in LEVELS
-                }
+                flags = {l: bool(request.POST.get(f'perm_{screen.id}_{l}')) for l in LEVELS}
                 grant = request.POST.get(f'grant_{screen.id}') or 'allow'
                 perm = existing.get(screen.id)
                 if not any(flags.values()):
@@ -393,20 +396,24 @@ def role_edit(request, pk):
     modules = {}
     for screen in Screen.objects.filter(is_active=True):
         perm = existing.get(screen.id)
-        cells = [{'level': l, 'checked': bool(perm and getattr(perm, f'can_{l}'))}
-                 for l in LEVELS]
-        modules.setdefault(screen.module or 'أخرى', []).append({
-            'screen': screen,
-            'cells': cells,
-            'grant': perm.grant_type if perm else 'allow',
-        })
+        cells = [{'level': l, 'checked': bool(perm and getattr(perm, f'can_{l}'))} for l in LEVELS]
+        modules.setdefault(screen.module or 'أخرى', []).append(
+            {'screen': screen, 'cells': cells, 'grant': perm.grant_type if perm else 'allow'}
+        )
     module_rows = [{'module': m, 'screens': rows} for m, rows in modules.items()]
 
-    return render(request, 'access_control/role_form.html', {
-        'creating': False, 'role': role, 'module_rows': module_rows,
-        'levels': LEVELS, 'level_labels': LEVEL_LABELS,
-        'level_headers': [(l, LEVEL_LABELS[l]) for l in LEVELS],
-    })
+    return render(
+        request,
+        'access_control/role_form.html',
+        {
+            'creating': False,
+            'role': role,
+            'module_rows': module_rows,
+            'levels': LEVELS,
+            'level_labels': LEVEL_LABELS,
+            'level_headers': [(l, LEVEL_LABELS[l]) for l in LEVELS],
+        },
+    )
 
 
 @login_required

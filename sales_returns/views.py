@@ -1,15 +1,17 @@
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.shortcuts import render, redirect, get_object_or_404
+import logging
+
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db import transaction, models
+from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from .models import SalesReturn, SalesReturnLine
-from sales.models import Customer
-from purchases.models import Product
+from django.views.decorators.http import require_POST
+
 from common.permissions import screen_permission_required
-import logging
+from purchases.models import Product
+from sales.models import Customer
+
+from .models import SalesReturn, SalesReturnLine
 
 logger = logging.getLogger('accounting')
 
@@ -29,6 +31,7 @@ def sales_return_create(request):
     products = Product.objects.filter(is_active=True)
     if request.method == 'POST':
         from decimal import Decimal, InvalidOperation
+
         errors = []
         return_number = request.POST.get('return_number', '').strip()
         date_val = request.POST.get('date', '').strip()
@@ -73,9 +76,11 @@ def sales_return_create(request):
             for e in errors:
                 messages.error(request, e)
             next_number = f'RET-S-{timezone.now().strftime("%Y%m%d")}-{SalesReturn.objects.count() + 1:04d}'
-            return render(request, 'sales_returns/return_form.html', {
-                'customers': customers, 'products': products, 'next_number': next_number,
-            })
+            return render(
+                request,
+                'sales_returns/return_form.html',
+                {'customers': customers, 'products': products, 'next_number': next_number},
+            )
 
         with transaction.atomic():
             sr = SalesReturn.objects.create(
@@ -87,19 +92,16 @@ def sales_return_create(request):
                 created_by=request.user,
             )
             for pid, qty, price in parsed_lines:
-                SalesReturnLine.objects.create(
-                    sales_return=sr,
-                    product_id=pid,
-                    quantity=qty,
-                    unit_price=price,
-                )
+                SalesReturnLine.objects.create(sales_return=sr, product_id=pid, quantity=qty, unit_price=price)
             sr.calculate_totals()
         messages.success(request, f'تم إنشاء المرتجع {sr.return_number} بنجاح')
         return redirect('sales_returns:detail', pk=sr.pk)
     next_number = f'RET-S-{timezone.now().strftime("%Y%m%d")}-{SalesReturn.objects.count() + 1:04d}'
-    return render(request, 'sales_returns/return_form.html', {
-        'customers': customers, 'products': products, 'next_number': next_number,
-    })
+    return render(
+        request,
+        'sales_returns/return_form.html',
+        {'customers': customers, 'products': products, 'next_number': next_number},
+    )
 
 
 @screen_permission_required('sales_returns.salesreturn', 'view')
@@ -115,9 +117,11 @@ def sales_return_post(request, pk):
     sr = get_object_or_404(SalesReturn, pk=pk)
     try:
         sr.create_journal_entry()
-        from warehouses.models import WarehouseProduct, StockMovement, Warehouse
-        from decimal import Decimal
         import uuid as _uuid
+        from decimal import Decimal
+
+        from warehouses.models import StockMovement, Warehouse, WarehouseProduct
+
         lines = sr.lines.select_related('product').all()
         for line in lines:
             if line.quantity <= 0:
@@ -126,7 +130,7 @@ def sales_return_post(request, pk):
             if not warehouse:
                 continue
             StockMovement.objects.create(
-                movement_number=f"SR-{sr.return_number}-{line.product.code}-{_uuid.uuid4().hex[:6]}",
+                movement_number=f'SR-{sr.return_number}-{line.product.code}-{_uuid.uuid4().hex[:6]}',
                 movement_type='in',
                 warehouse=warehouse,
                 product=line.product,
@@ -138,13 +142,12 @@ def sales_return_post(request, pk):
                 performed_by=request.user,
             )
             wp, _ = WarehouseProduct.objects.get_or_create(
-                warehouse=warehouse, product=line.product,
-                defaults={'quantity': Decimal('0')},
+                warehouse=warehouse, product=line.product, defaults={'quantity': Decimal('0')}
             )
             wp.quantity = (wp.quantity or Decimal('0')) + line.quantity
             wp.save(update_fields=['quantity'])
         messages.success(request, f'تم ترحيل المرتجع {sr.return_number} وتحديث المخزون بنجاح')
-    except Exception as e:
+    except Exception:
         messages.error(request, 'حدث خطأ أثناء الترحيل. تأكد من صحة البيانات وحاول مرة أخرى.')
         logger.exception('Posting failed for SalesReturn %s', pk)
     return redirect('sales_returns:detail', pk=pk)

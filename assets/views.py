@@ -1,15 +1,17 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404, redirect
+import logging
+from datetime import date
+
 from django.contrib import messages
-from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.db.models import Count
-from datetime import date
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
 from common.excel_utils import export_to_excel, import_from_excel
-from .models import Asset, AssetCategory, DepreciationEntry
-from .forms import AssetForm, AssetCategoryForm, DepreciationEntryForm
-import logging
 from common.permissions import screen_permission_required
+
+from .forms import AssetCategoryForm, AssetForm, DepreciationEntryForm
+from .models import Asset, AssetCategory, DepreciationEntry
 
 logger = logging.getLogger('accounting')
 
@@ -21,10 +23,7 @@ def asset_list(request):
     if category:
         assets = assets.filter(category_id=category)
     categories = AssetCategory.objects.all()
-    return render(request, 'assets/asset_list.html', {
-        'assets': assets,
-        'categories': categories,
-    })
+    return render(request, 'assets/asset_list.html', {'assets': assets, 'categories': categories})
 
 
 @screen_permission_required('assets.asset', 'add')
@@ -47,10 +46,7 @@ def asset_create(request):
 def asset_detail(request, pk):
     asset = get_object_or_404(Asset, pk=pk)
     depreciation_entries = DepreciationEntry.objects.filter(asset=asset).order_by('-date')
-    return render(request, 'assets/asset_detail.html', {
-        'asset': asset,
-        'depreciation_entries': depreciation_entries,
-    })
+    return render(request, 'assets/asset_detail.html', {'asset': asset, 'depreciation_entries': depreciation_entries})
 
 
 @screen_permission_required('assets.asset', 'edit')
@@ -86,10 +82,7 @@ def depreciation_create(request, asset_id):
             return redirect('assets:asset_detail', pk=asset_id)
     else:
         form = DepreciationEntryForm()
-    return render(request, 'assets/depreciation_form.html', {
-        'form': form,
-        'asset': asset,
-    })
+    return render(request, 'assets/depreciation_form.html', {'form': form, 'asset': asset})
 
 
 @require_POST
@@ -102,51 +95,63 @@ def asset_dispose(request, pk):
         return redirect('assets:asset_detail', pk=pk)
 
     from decimal import Decimal
+
     proceeds = Decimal(request.POST.get('proceeds', '0'))
     expense_note = request.POST.get('notes', f'التخلص من الأصل {asset.name}')
 
     from common.accounting_service import JournalEntryService
+
     with transaction.atomic():
         asset = Asset.objects.select_for_update().get(pk=asset.pk)
 
         gain_loss = proceeds - asset.net_book_value
         lines = []
-        lines.append({
-            'account': asset.asset_account,
-            'debit': 0,
-            'credit': asset.net_book_value,
-            'description': f'إلغاء الأصل {asset.name}',
-        })
-        if asset.accumulated_depreciation > 0:
-            lines.append({
-                'account': asset.depr_account or JournalEntryService.get_account('1400'),
-                'debit': asset.accumulated_depreciation,
-                'credit': 0,
-                'description': f'إلغاء مجمع إهلاك {asset.name}',
-            })
-        if proceeds > 0:
-            lines.append({
-                'account': JournalEntryService.get_account('1100'),  # cash/bank
-                'debit': proceeds,
-                'credit': 0,
-                'description': f'متحصلات بيع {asset.name}',
-            })
-        if gain_loss > 0:
-            lines.append({
-                'account': JournalEntryService.get_account('3400'),  # gain on disposal
+        lines.append(
+            {
+                'account': asset.asset_account,
                 'debit': 0,
-                'credit': abs(gain_loss),
-                'description': f'أرباح بيع {asset.name}',
-            })
+                'credit': asset.net_book_value,
+                'description': f'إلغاء الأصل {asset.name}',
+            }
+        )
+        if asset.accumulated_depreciation > 0:
+            lines.append(
+                {
+                    'account': asset.depr_account or JournalEntryService.get_account('1400'),
+                    'debit': asset.accumulated_depreciation,
+                    'credit': 0,
+                    'description': f'إلغاء مجمع إهلاك {asset.name}',
+                }
+            )
+        if proceeds > 0:
+            lines.append(
+                {
+                    'account': JournalEntryService.get_account('1100'),  # cash/bank
+                    'debit': proceeds,
+                    'credit': 0,
+                    'description': f'متحصلات بيع {asset.name}',
+                }
+            )
+        if gain_loss > 0:
+            lines.append(
+                {
+                    'account': JournalEntryService.get_account('3400'),  # gain on disposal
+                    'debit': 0,
+                    'credit': abs(gain_loss),
+                    'description': f'أرباح بيع {asset.name}',
+                }
+            )
         elif gain_loss < 0:
-            lines.append({
-                'account': JournalEntryService.get_account('5300'),  # loss on disposal
-                'debit': abs(gain_loss),
-                'credit': 0,
-                'description': f'خسائر بيع {asset.name}',
-            })
+            lines.append(
+                {
+                    'account': JournalEntryService.get_account('5300'),  # loss on disposal
+                    'debit': abs(gain_loss),
+                    'credit': 0,
+                    'description': f'خسائر بيع {asset.name}',
+                }
+            )
 
-        entry = JournalEntryService.create_entry(
+        JournalEntryService.create_entry(
             entry_type='journal',
             date=date.today(),
             description=expense_note,
@@ -185,14 +190,18 @@ def asset_category_create(request):
 @screen_permission_required('assets.asset', 'export')
 def export_assets(request):
     assets = Asset.objects.filter(is_active=True).select_related('category')
-    return export_to_excel(assets, [
-        {'field': 'code', 'header': 'كود الأصل', 'width': 15},
-        {'field': 'name', 'header': 'اسم الأصل', 'width': 25},
-        {'field': 'category', 'header': 'التصنيف', 'width': 20},
-        {'field': 'purchase_price', 'header': 'سعر الشراء', 'width': 18},
-        {'field': 'accumulated_depreciation', 'header': 'الإهلاك المتراكم', 'width': 18},
-        {'field': 'status', 'header': 'الحالة', 'width': 15},
-    ], filename="assets")
+    return export_to_excel(
+        assets,
+        [
+            {'field': 'code', 'header': 'كود الأصل', 'width': 15},
+            {'field': 'name', 'header': 'اسم الأصل', 'width': 25},
+            {'field': 'category', 'header': 'التصنيف', 'width': 20},
+            {'field': 'purchase_price', 'header': 'سعر الشراء', 'width': 18},
+            {'field': 'accumulated_depreciation', 'header': 'الإهلاك المتراكم', 'width': 18},
+            {'field': 'status', 'header': 'الحالة', 'width': 15},
+        ],
+        filename='assets',
+    )
 
 
 @screen_permission_required('assets.asset', 'add')
@@ -207,7 +216,9 @@ def import_assets(request):
         import uuid
         from datetime import date
         from decimal import Decimal
+
         from django.db import transaction
+
         columns = [
             {'field': 'code', 'header': 'كود الأصل'},
             {'field': 'name', 'header': 'اسم الأصل'},
@@ -240,7 +251,7 @@ def import_assets(request):
                 )
                 created += 1
         messages.success(request, f'تم استيراد {created} أصل بنجاح')
-    except Exception as e:
+    except Exception:
         messages.error(request, 'حدث خطأ أثناء الاستيراد. تأكد من صحة بيانات الملف وحاول مرة أخرى.')
         logger.exception('Import failed')
     return redirect('assets:asset_list')

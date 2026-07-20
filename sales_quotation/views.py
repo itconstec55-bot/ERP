@@ -1,16 +1,19 @@
-from django.shortcuts import render, get_object_or_404, redirect
+import logging
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from .models import SalesQuotation, SalesQuotationLine
-from .forms import SalesQuotationForm, SalesQuotationLineFormSet
-from sales.models import Customer, SalesInvoice, SalesInvoiceLine
-from purchases.models import Product
+from django.views.decorators.http import require_POST
+
 from common.models import SequenceNumber
 from common.permissions import screen_permission_required
-import logging
+from purchases.models import Product
+from sales.models import SalesInvoice, SalesInvoiceLine
+
+from .forms import SalesQuotationForm, SalesQuotationLineFormSet
+from .models import SalesQuotation
 
 logger = logging.getLogger('accounting')
 
@@ -24,7 +27,9 @@ def quotation_list(request):
     paginator = Paginator(quotations, 25)
     page = request.GET.get('page')
     quotations_page = paginator.get_page(page)
-    return render(request, 'sales_quotation/quotation_list.html', {'quotations': quotations_page, 'status_filter': status})
+    return render(
+        request, 'sales_quotation/quotation_list.html', {'quotations': quotations_page, 'status_filter': status}
+    )
 
 
 @screen_permission_required('sales.salesinvoice', 'add')
@@ -46,9 +51,11 @@ def quotation_create(request):
         form = SalesQuotationForm()
         formset = SalesQuotationLineFormSet()
     products = Product.objects.filter(is_active=True)
-    return render(request, 'sales_quotation/quotation_form.html', {
-        'form': form, 'formset': formset, 'products': products, 'title': 'عرض سعر جديد',
-    })
+    return render(
+        request,
+        'sales_quotation/quotation_form.html',
+        {'form': form, 'formset': formset, 'products': products, 'title': 'عرض سعر جديد'},
+    )
 
 
 @screen_permission_required('sales.salesinvoice', 'view')
@@ -78,10 +85,17 @@ def quotation_edit(request, pk):
         form = SalesQuotationForm(instance=quotation)
         formset = SalesQuotationLineFormSet(instance=quotation)
     products = Product.objects.filter(is_active=True)
-    return render(request, 'sales_quotation/quotation_form.html', {
-        'form': form, 'formset': formset, 'products': products, 'quotation': quotation,
-        'title': f'تعديل عرض السعر {quotation.quotation_number}',
-    })
+    return render(
+        request,
+        'sales_quotation/quotation_form.html',
+        {
+            'form': form,
+            'formset': formset,
+            'products': products,
+            'quotation': quotation,
+            'title': f'تعديل عرض السعر {quotation.quotation_number}',
+        },
+    )
 
 
 @require_POST

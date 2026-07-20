@@ -1,6 +1,8 @@
 from django import forms
-from purchases.models import Product, UnitOfMeasure
+
 from budget.models import CostCenter
+from purchases.models import Product, UnitOfMeasure
+
 from .models import Requisition, RequisitionLine
 
 
@@ -43,10 +45,5 @@ class RequisitionLineForm(forms.ModelForm):
 
 
 RequisitionLineFormSet = forms.inlineformset_factory(
-    Requisition, RequisitionLine,
-    form=RequisitionLineForm,
-    extra=3,
-    can_delete=True,
-    min_num=1,
-    validate_min=True,
+    Requisition, RequisitionLine, form=RequisitionLineForm, extra=3, can_delete=True, min_num=1, validate_min=True
 )

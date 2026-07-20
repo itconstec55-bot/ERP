@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+
 from django.core.management.utils import get_random_secret_key
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,9 +16,9 @@ if not SECRET_KEY:
         SECRET_KEY = get_random_secret_key()
     else:
         raise RuntimeError(
-            'DJANGO_SECRET_KEY environment variable is required in production. '
-            'Set it before starting the server.'
+            'DJANGO_SECRET_KEY environment variable is required in production. Set it before starting the server.'
         )
+
 
 # ---------------------------------------------------------------------------
 # ربط الشبكة (Network Binding) — LAN + خارجي
@@ -44,9 +45,7 @@ _internal_ip = _net_cfg.get('INTERNAL_IP', '192.168.1.31')
 _external_ip = _net_cfg.get('EXTERNAL_IP', '196.218.24.45')
 _default_bind = f'{_internal_ip},{_external_ip}'
 
-_bind_hosts = [
-    h.strip() for h in os.environ.get('DJANGO_BIND_HOSTS', _default_bind).split(',') if h.strip()
-]
+_bind_hosts = [h.strip() for h in os.environ.get('DJANGO_BIND_HOSTS', _default_bind).split(',') if h.strip()]
 # نضيف اللووباك دائماً ليكون الوصول من نفس الجهاز عبر localhost متاحاً دون جدار ناري
 _bind_hosts = sorted(set(_bind_hosts) | {'127.0.0.1'})
 SERVER_BIND_HOSTS = _bind_hosts
@@ -54,9 +53,7 @@ SERVER_BIND_PORT = int(os.environ.get('DJANGO_BIND_PORT', _net_cfg.get('PORT', '
 
 # المضيفات المسموح بها (Host header) = التطوير الافتراضي + عناوين الربط.
 _allowed_extra = {
-    h.strip() for h in os.environ.get(
-        'DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost,testserver'
-    ).split(',') if h.strip()
+    h.strip() for h in os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost,testserver').split(',') if h.strip()
 }
 _allowed_extra.update(SERVER_BIND_HOSTS)
 ALLOWED_HOSTS = sorted(_allowed_extra)
@@ -130,9 +127,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.StandardResultsPagination',
     'PAGE_SIZE': 50,
@@ -145,11 +140,7 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle',
     ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/hour',
-        'user': '1000/hour',
-        'auth': '20/hour',
-    },
+    'DEFAULT_THROTTLE_RATES': {'anon': '100/hour', 'user': '1000/hour', 'auth': '20/hour'},
     'DATETIME_FORMAT': '%Y-%m-%dT%H:%M:%S',
     'DATE_FORMAT': '%Y-%m-%d',
     'DEFAULT_RENDERER_CLASSES': [
@@ -197,9 +188,9 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'company.context_processors.company_context',
                 'common.context_processors.user_permissions_context',
-            ],
+            ]
         },
-    },
+    }
 ]
 
 WSGI_APPLICATION = 'accounting_system.wsgi.application'
@@ -225,9 +216,7 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
             # timeout مقبول مباشرة من sqlite3.connect. إعدادات WAL/buszy_timeout
             # تُطبَّق عبر إشارة connection_created (انظر أسفل) لأنها PRAGMA لا تُقبل كـ OPTIONS.
-            'OPTIONS': {
-                'timeout': 30,
-            },
+            'OPTIONS': {'timeout': 30},
             'CONN_MAX_AGE': 60,
         }
     }
@@ -241,9 +230,10 @@ else:
     def _configure_sqlite(connection, **kwargs):
         if connection.vendor == 'sqlite':
             cursor = connection.cursor()
-            cursor.execute("PRAGMA journal_mode=WAL;")
-            cursor.execute("PRAGMA busy_timeout=30000;")
-            cursor.execute("PRAGMA synchronous=NORMAL;")
+            cursor.execute('PRAGMA journal_mode=WAL;')
+            cursor.execute('PRAGMA busy_timeout=30000;')
+            cursor.execute('PRAGMA synchronous=NORMAL;')
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}},
@@ -263,30 +253,13 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-        'request': {
-            'format': '{asctime} {levelname} [{module}] {message}',
-            'style': '{',
-        },
+        'verbose': {'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}', 'style': '{'},
+        'simple': {'format': '{levelname} {message}', 'style': '{'},
+        'request': {'format': '{asctime} {levelname} [{module}] {message}', 'style': '{'},
     },
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse',
-        },
-    },
+    'filters': {'require_debug_false': {'()': 'django.utils.log.RequireDebugFalse'}},
     'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
+        'console': {'level': 'DEBUG', 'class': 'logging.StreamHandler', 'formatter': 'verbose'},
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
@@ -322,31 +295,11 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'django.request': {
-            'handlers': ['error_file', 'request_file'],
-            'level': 'WARNING',
-            'propagate': False,
-        },
-        'django.db.backends': {
-            'handlers': ['console'],
-            'level': 'WARNING',
-            'propagate': False,
-        },
-        'accounting': {
-            'handlers': ['console', 'file', 'error_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'accounting.request': {
-            'handlers': ['request_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
+        'django': {'handlers': ['console', 'file'], 'level': 'INFO', 'propagate': True},
+        'django.request': {'handlers': ['error_file', 'request_file'], 'level': 'WARNING', 'propagate': False},
+        'django.db.backends': {'handlers': ['console'], 'level': 'WARNING', 'propagate': False},
+        'accounting': {'handlers': ['console', 'file', 'error_file'], 'level': 'INFO', 'propagate': False},
+        'accounting.request': {'handlers': ['request_file'], 'level': 'INFO', 'propagate': False},
     },
 }
 
@@ -398,7 +351,7 @@ SESSION_COOKIE_AGE = 86400 * 7  # 7 days
 SESSION_SAVE_EVERY_REQUEST = False
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_HTTPONLY = True  # منع الوصول للكوكيز عبر JavaScript (حماية XSS)
-CSRF_COOKIE_HTTPONLY = True     # منع الوصول لـ CSRF cookie عبر JavaScript
+CSRF_COOKIE_HTTPONLY = True  # منع الوصول لـ CSRF cookie عبر JavaScript
 
 # Security Settings (for production)
 if not DEBUG:
@@ -407,16 +360,10 @@ if not DEBUG:
     X_FRAME_OPTIONS = 'DENY'
     SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1', 'yes')
     # الكوكيز آمنة افتراضياً في الإنتاج — يمكن تعطيلها عبر متغيرات البيئة
-    SESSION_COOKIE_SECURE = os.environ.get(
-        'DJANGO_SESSION_COOKIE_SECURE', 'True'
-    ).lower() in ('true', '1', 'yes')
-    CSRF_COOKIE_SECURE = os.environ.get(
-        'DJANGO_CSRF_COOKIE_SECURE', 'True'
-    ).lower() in ('true', '1', 'yes')
+    SESSION_COOKIE_SECURE = os.environ.get('DJANGO_SESSION_COOKIE_SECURE', 'True').lower() in ('true', '1', 'yes')
+    CSRF_COOKIE_SECURE = os.environ.get('DJANGO_CSRF_COOKIE_SECURE', 'True').lower() in ('true', '1', 'yes')
     SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_HSTS_SECONDS', '31536000'))
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get(
-        'DJANGO_HSTS_SUBDOMAINS', 'True'
-    ).lower() in ('true', '1', 'yes')
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get('DJANGO_HSTS_SUBDOMAINS', 'True').lower() in ('true', '1', 'yes')
     SECURE_HSTS_PRELOAD = SECURE_HSTS_INCLUDE_SUBDOMAINS
 
 # ---------------------------------------------------------------------------
@@ -448,157 +395,154 @@ WHATSAPP_APP_ID = os.environ.get('WHATSAPP_APP_ID')
 WHATSAPP_APP_SECRET = os.environ.get('WHATSAPP_APP_SECRET')
 WHATSAPP_PHONE_ID = os.environ.get('WHATSAPP_PHONE_ID')
 WHATSAPP_API_TOKEN = os.environ.get('WHATSAPP_API_TOKEN')
-WHATSAPP_API_BASE_URL = "https://graph.facebook.com/v18.0"
+WHATSAPP_API_BASE_URL = 'https://graph.facebook.com/v18.0'
 WHATSAPP_WEBHOOK_VERIFY_TOKEN = os.environ.get('WHATSAPP_WEBHOOK_VERIFY_TOKEN')
 
 WHATSAPP_RATE_LIMITS = {
-    "messages_per_second": 80,
-    "messages_per_minute": 1000,
-    "messages_per_hour": 50000,
-    "messages_per_day": 1000000,
+    'messages_per_second': 80,
+    'messages_per_minute': 1000,
+    'messages_per_hour': 50000,
+    'messages_per_day': 1000000,
 }
 
 # Jazzmin Settings
 JAZZMIN_SETTINGS = {
-    "site_title": "نظام المحاسبة",
-    "site_header": "نظام المحاسبة - شركة تواريدات",
-    "site_brand": "تواريدات",
-    "welcome_sign": "مرحباً بك في لوحة التحكم",
-    "copyright": "شركة تواريدات",
-    "site_logo_classes": "img-circle",
-    "show_ui_title": True,
-    "topmenu_links": [
-        {"name": "الرئيسية", "url": "admin:index", "icon": "fas fa-home"},
-        {"name": "لوحة التحكم", "url": "/", "icon": "fas fa-tachometer-alt", "new_window": True},
+    'site_title': 'نظام المحاسبة',
+    'site_header': 'نظام المحاسبة - شركة تواريدات',
+    'site_brand': 'تواريدات',
+    'welcome_sign': 'مرحباً بك في لوحة التحكم',
+    'copyright': 'شركة تواريدات',
+    'site_logo_classes': 'img-circle',
+    'show_ui_title': True,
+    'topmenu_links': [
+        {'name': 'الرئيسية', 'url': 'admin:index', 'icon': 'fas fa-home'},
+        {'name': 'لوحة التحكم', 'url': '/', 'icon': 'fas fa-tachometer-alt', 'new_window': True},
     ],
-    "show_sidebar": True,
-    "navigation_expanded": True,
-    "hide_apps": ["ai_analysis"],
-    "hide_models": [],
-    "order_with_respect_to": [
-        "auth",
-        "accounts",
-        "purchases",
-        "sales",
-        "treasury",
-        "assets",
-        "hr",
-        "reports",
-        "documents",
-        "warehouses",
-        "company",
-        "notifications",
-        "backups",
-        "audit",
-        "sync",
-        "ai_analysis",
-        "concrete_production",
-        "contractors",
+    'show_sidebar': True,
+    'navigation_expanded': True,
+    'hide_apps': ['ai_analysis'],
+    'hide_models': [],
+    'order_with_respect_to': [
+        'auth',
+        'accounts',
+        'purchases',
+        'sales',
+        'treasury',
+        'assets',
+        'hr',
+        'reports',
+        'documents',
+        'warehouses',
+        'company',
+        'notifications',
+        'backups',
+        'audit',
+        'sync',
+        'ai_analysis',
+        'concrete_production',
+        'contractors',
     ],
-    "icons": {
-        "auth": "fas fa-users-cog",
-        "auth.Group": "fas fa-users",
-        "auth.User": "fas fa-user-circle",
-        "accounts.account": "fas fa-sitemap",
-        "accounts.accounttype": "fas fa-layer-group",
-        "accounts.journalentry": "fas fa-book",
-        "accounts.journalentryline": "fas fa-book-open",
-        "purchases.supplier": "fas fa-truck",
-        "purchases.product": "fas fa-box",
-        "purchases.productcategory": "fas fa-tags",
-        "purchases.unitofmeasure": "fas fa-ruler",
-        "purchases.purchaseinvoice": "fas fa-shopping-cart",
-        "purchases.purchaseinvoiceline": "fas fa-cart-plus",
-        "sales.customer": "fas fa-user-tie",
-        "sales.salesinvoice": "fas fa-cash-register",
-        "sales.salesinvoiceline": "fas fa-receipt",
-        "treasury.bank": "fas fa-university",
-        "treasury.safe": "fas fa-lock",
-        "treasury.banktransaction": "fas fa-exchange-alt",
-        "treasury.safetransaction": "fas fa-money-bill-wave",
-        "assets.asset": "fas fa-building",
-        "assets.assetcategory": "fas fa-tags",
-        "assets.depreciationentry": "fas fa-chart-line",
-        "hr.employee": "fas fa-id-badge",
-        "hr.department": "fas fa-sitemap",
-        "hr.salary": "fas fa-money-check-alt",
-        "hr.attendance": "fas fa-calendar-check",
-        "documents.document": "fas fa-file-alt",
-        "documents.documenttype": "fas fa-folder",
-        "documents.documenttemplate": "fas fa-file-medical-alt",
-        "documents.documentflow": "fas fa-exchange-alt",
-        "documents.documentattachment": "fas fa-paperclip",
-        "warehouses.warehouse": "fas fa-warehouse",
-        "warehouses.warehouseproduct": "fas fa-boxes",
-        "warehouses.stockmovement": "fas fa-exchange-alt",
-        "company.company": "fas fa-building",
-        "company.companybranch": "fas fa-code-branch",
-        "notifications.notificationcategory": "fas fa-tags",
-        "notifications.notificationtemplate": "fas fa-file-alt",
-        "notifications.notificationlog": "fas fa-bell",
-        "backups.backup": "fas fa-cloud-upload-alt",
-        "backups.backupsettings": "fas fa-cog",
-        "audit.auditlog": "fas fa-history",
-        "sync.machineinfo": "fas fa-desktop",
-        "sync.synclog": "fas fa-sync",
-        "sync.syncsettings": "fas fa-cogs",
-        "concrete_production.concretemixdesign": "fas fa-flask",
-        "concrete_production.mixcomponent": "fas fa-puzzle-piece",
-        "concrete_production.customerrequest": "fas fa-file-alt",
-        "concrete_production.productionorder": "fas fa-hard-hat",
-        "concrete_production.productionbatch": "fas fa-industry",
-        "concrete_production.deliveryschedule": "fas fa-calendar-check",
-        "concrete_production.truck": "fas fa-truck",
-        "concrete_production.productioncost": "fas fa-dollar-sign",
-        "contractors.contractor": "fas fa-hard-hat",
-        "contractors.contract": "fas fa-file-contract",
-        "contractors.contractitem": "fas fa-list",
-        "contractors.interimcertificate": "fas fa-file-alt",
-        "contractors.certificateitem": "fas fa-list-alt",
-        "contractors.contractorpayment": "fas fa-money-bill-wave",
+    'icons': {
+        'auth': 'fas fa-users-cog',
+        'auth.Group': 'fas fa-users',
+        'auth.User': 'fas fa-user-circle',
+        'accounts.account': 'fas fa-sitemap',
+        'accounts.accounttype': 'fas fa-layer-group',
+        'accounts.journalentry': 'fas fa-book',
+        'accounts.journalentryline': 'fas fa-book-open',
+        'purchases.supplier': 'fas fa-truck',
+        'purchases.product': 'fas fa-box',
+        'purchases.productcategory': 'fas fa-tags',
+        'purchases.unitofmeasure': 'fas fa-ruler',
+        'purchases.purchaseinvoice': 'fas fa-shopping-cart',
+        'purchases.purchaseinvoiceline': 'fas fa-cart-plus',
+        'sales.customer': 'fas fa-user-tie',
+        'sales.salesinvoice': 'fas fa-cash-register',
+        'sales.salesinvoiceline': 'fas fa-receipt',
+        'treasury.bank': 'fas fa-university',
+        'treasury.safe': 'fas fa-lock',
+        'treasury.banktransaction': 'fas fa-exchange-alt',
+        'treasury.safetransaction': 'fas fa-money-bill-wave',
+        'assets.asset': 'fas fa-building',
+        'assets.assetcategory': 'fas fa-tags',
+        'assets.depreciationentry': 'fas fa-chart-line',
+        'hr.employee': 'fas fa-id-badge',
+        'hr.department': 'fas fa-sitemap',
+        'hr.salary': 'fas fa-money-check-alt',
+        'hr.attendance': 'fas fa-calendar-check',
+        'documents.document': 'fas fa-file-alt',
+        'documents.documenttype': 'fas fa-folder',
+        'documents.documenttemplate': 'fas fa-file-medical-alt',
+        'documents.documentflow': 'fas fa-exchange-alt',
+        'documents.documentattachment': 'fas fa-paperclip',
+        'warehouses.warehouse': 'fas fa-warehouse',
+        'warehouses.warehouseproduct': 'fas fa-boxes',
+        'warehouses.stockmovement': 'fas fa-exchange-alt',
+        'company.company': 'fas fa-building',
+        'company.companybranch': 'fas fa-code-branch',
+        'notifications.notificationcategory': 'fas fa-tags',
+        'notifications.notificationtemplate': 'fas fa-file-alt',
+        'notifications.notificationlog': 'fas fa-bell',
+        'backups.backup': 'fas fa-cloud-upload-alt',
+        'backups.backupsettings': 'fas fa-cog',
+        'audit.auditlog': 'fas fa-history',
+        'sync.machineinfo': 'fas fa-desktop',
+        'sync.synclog': 'fas fa-sync',
+        'sync.syncsettings': 'fas fa-cogs',
+        'concrete_production.concretemixdesign': 'fas fa-flask',
+        'concrete_production.mixcomponent': 'fas fa-puzzle-piece',
+        'concrete_production.customerrequest': 'fas fa-file-alt',
+        'concrete_production.productionorder': 'fas fa-hard-hat',
+        'concrete_production.productionbatch': 'fas fa-industry',
+        'concrete_production.deliveryschedule': 'fas fa-calendar-check',
+        'concrete_production.truck': 'fas fa-truck',
+        'concrete_production.productioncost': 'fas fa-dollar-sign',
+        'contractors.contractor': 'fas fa-hard-hat',
+        'contractors.contract': 'fas fa-file-contract',
+        'contractors.contractitem': 'fas fa-list',
+        'contractors.interimcertificate': 'fas fa-file-alt',
+        'contractors.certificateitem': 'fas fa-list-alt',
+        'contractors.contractorpayment': 'fas fa-money-bill-wave',
     },
-    "default_icon_parents": "fas fa-folder-open",
-    "default_icon_children": "fas fa-circle",
-    "related_modal_active": True,
-    "custom_css": "css/admin_custom.css",
-    "custom_js": None,
-    "show_ui_builder": False,
-    "changeform_format": "horizontal_tabs",
-    "changeform_format_overrides": {
-        "auth.user": "vertical_tabs",
-        "accounts.account": "horizontal_tabs",
-    },
+    'default_icon_parents': 'fas fa-folder-open',
+    'default_icon_children': 'fas fa-circle',
+    'related_modal_active': True,
+    'custom_css': 'css/admin_custom.css',
+    'custom_js': None,
+    'show_ui_builder': False,
+    'changeform_format': 'horizontal_tabs',
+    'changeform_format_overrides': {'auth.user': 'vertical_tabs', 'accounts.account': 'horizontal_tabs'},
 }
 
 JAZZMIN_UI_TWEAKS = {
-    "navbar_small_text": False,
-    "footer_small_text": True,
-    "body_small_text": False,
-    "brand_small_text": False,
-    "brand_colour": False,
-    "accent": "accent-primary",
-    "navbar": "navbar-dark",
-    "no_navbar_border": False,
-    "navbar_fixed": True,
-    "layout_boxed": False,
-    "footer_fixed": False,
-    "sidebar_fixed": True,
-    "sidebar": "sidebar-dark-primary",
-    "sidebar_nav_small_text": False,
-    "sidebar_disable_expand": False,
-    "sidebar_nav_child_indent": True,
-    "sidebar_nav_compact_style": False,
-    "sidebar_nav_legacy_style": False,
-    "sidebar_nav_flat_style": False,
-    "theme": "darkly",
-    "default_theme_mode": "dark",
-    "button_classes": {
-        "primary": "btn-primary",
-        "secondary": "btn-secondary",
-        "info": "btn-info",
-        "warning": "btn-warning",
-        "danger": "btn-danger",
-        "success": "btn-success",
+    'navbar_small_text': False,
+    'footer_small_text': True,
+    'body_small_text': False,
+    'brand_small_text': False,
+    'brand_colour': False,
+    'accent': 'accent-primary',
+    'navbar': 'navbar-dark',
+    'no_navbar_border': False,
+    'navbar_fixed': True,
+    'layout_boxed': False,
+    'footer_fixed': False,
+    'sidebar_fixed': True,
+    'sidebar': 'sidebar-dark-primary',
+    'sidebar_nav_small_text': False,
+    'sidebar_disable_expand': False,
+    'sidebar_nav_child_indent': True,
+    'sidebar_nav_compact_style': False,
+    'sidebar_nav_legacy_style': False,
+    'sidebar_nav_flat_style': False,
+    'theme': 'darkly',
+    'default_theme_mode': 'dark',
+    'button_classes': {
+        'primary': 'btn-primary',
+        'secondary': 'btn-secondary',
+        'info': 'btn-info',
+        'warning': 'btn-warning',
+        'danger': 'btn-danger',
+        'success': 'btn-success',
     },
 }
 
@@ -632,6 +576,7 @@ CELERY_WORKER_CONCURRENCY = int(os.environ.get('DJANGO_CELERY_CONCURRENCY', '4')
 
 # ── Celery Beat Schedule ──
 from celery.schedules import crontab
+
 CELERY_BEAT_SCHEDULE = {
     'execute-recurring-journals-daily': {
         'task': 'recurring.execute_due_journals',
@@ -654,9 +599,7 @@ if os.environ.get('DJANGO_CACHE_BACKEND') == 'redis':
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
             'LOCATION': os.environ.get('DJANGO_CACHE_URL', 'redis://127.0.0.1:6379/2'),
             'TIMEOUT': 300,
-            'OPTIONS': {
-                'db': int(os.environ.get('DJANGO_CACHE_DB', '2')),
-            }
+            'OPTIONS': {'db': int(os.environ.get('DJANGO_CACHE_DB', '2'))},
         }
     }
 else:

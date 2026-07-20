@@ -1,16 +1,18 @@
-import io
 import base64
+import io
+
 import pyotp
 import qrcode
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from common.permissions import screen_permission_required
-from access_control.resolver import resolve
-from django.views.decorators.http import require_POST
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from django.contrib import messages
 from django import forms
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
+from access_control.resolver import resolve
+from common.permissions import screen_permission_required
+
 from .models import UserProfile
 
 
@@ -92,10 +94,11 @@ def user_edit(request, pk):
     else:
         form = CustomUserEditForm(instance=user_obj)
 
-    return render(request, 'users/user_form.html', {
-        'form': form,
-        'title': f'تعديل المستخدم: {user_obj.username}', 'edit_user': user_obj,
-    })
+    return render(
+        request,
+        'users/user_form.html',
+        {'form': form, 'title': f'تعديل المستخدم: {user_obj.username}', 'edit_user': user_obj},
+    )
 
 
 @screen_permission_required('system.users', 'delete')
@@ -136,6 +139,7 @@ def change_password(request, pk):
 
 # ── Two-Factor Authentication Views ──────────────────────────────────────
 
+
 @login_required
 def two_factor_setup(request):
     """إعداد المصادقة الثنائية — توليد QR code."""
@@ -169,10 +173,7 @@ def two_factor_setup(request):
         profile.save(update_fields=['totp_secret'])
 
     totp = pyotp.TOTP(profile.totp_secret)
-    uri = totp.provisioning_uri(
-        name=request.user.username,
-        issuer_name='نظام المحاسبة'
-    )
+    uri = totp.provisioning_uri(name=request.user.username, issuer_name='نظام المحاسبة')
 
     qr = qrcode.QRCode(version=1, box_size=8, border=2)
     qr.add_data(uri)
@@ -183,10 +184,7 @@ def two_factor_setup(request):
     img.save(buffer, format='PNG')
     qr_base64 = base64.b64encode(buffer.getvalue()).decode()
 
-    return render(request, 'users/two_factor_setup.html', {
-        'secret': profile.totp_secret,
-        'qr_code': qr_base64,
-    })
+    return render(request, 'users/two_factor_setup.html', {'secret': profile.totp_secret, 'qr_code': qr_base64})
 
 
 @login_required
@@ -237,31 +235,31 @@ def two_factor_disable(request):
 
 # ── Session Management Views ──────────────────────────────────────────────
 
+
 @login_required
 def session_list(request):
     """عرض جميع الجلسات النشطة للمستخدم."""
     from django.contrib.sessions.models import Session
     from django.utils import timezone
-    sessions = Session.objects.filter(
-        expire_date__gte=timezone.now()
-    ).order_by('-expire_date')
+
+    sessions = Session.objects.filter(expire_date__gte=timezone.now()).order_by('-expire_date')
 
     user_sessions = []
     current_session_key = request.session.session_key
     for session in sessions:
         data = session.get_decoded()
         if data.get('_auth_user_id') == str(request.user.pk):
-            user_sessions.append({
-                'session_key': session.session_key,
-                'expire_date': session.expire_date,
-                'is_current': session.session_key == current_session_key,
-                'ip': data.get('ip_address', 'غير معروف'),
-                'user_agent': data.get('user_agent', 'غير معروف'),
-            })
+            user_sessions.append(
+                {
+                    'session_key': session.session_key,
+                    'expire_date': session.expire_date,
+                    'is_current': session.session_key == current_session_key,
+                    'ip': data.get('ip_address', 'غير معروف'),
+                    'user_agent': data.get('user_agent', 'غير معروف'),
+                }
+            )
 
-    return render(request, 'users/session_list.html', {
-        'sessions': user_sessions,
-    })
+    return render(request, 'users/session_list.html', {'sessions': user_sessions})
 
 
 @login_required
@@ -269,7 +267,6 @@ def session_list(request):
 def session_revoke(request, session_key):
     """حذف جلسة محددة."""
     from django.contrib.sessions.models import Session
-    from django.utils import timezone
 
     if session_key == request.session.session_key:
         messages.error(request, 'لا يمكنك حذف جلستك الحالية.')

@@ -1,13 +1,11 @@
-from decimal import Decimal
-from django.db import models
 import uuid
+from decimal import Decimal
+
+from django.db import models
 
 
 class Cheque(models.Model):
-    CHEQUE_TYPE_CHOICES = [
-        ('received', 'شيك وارد'),
-        ('issued', 'شيك صادر'),
-    ]
+    CHEQUE_TYPE_CHOICES = [('received', 'شيك وارد'), ('issued', 'شيك صادر')]
     STATUS_CHOICES = [
         ('pending', 'قيد الانتظار'),
         ('deposited', 'ودع في البنك'),
@@ -26,17 +24,40 @@ class Cheque(models.Model):
     issue_date = models.DateField(verbose_name='تاريخ الإصدار')
     due_date = models.DateField(verbose_name='تاريخ الاستحقاق')
     payee_name = models.CharField(max_length=200, blank=True, null=True, verbose_name='المستفيد/الدافع')
-    customer = models.ForeignKey('sales.Customer', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='العميل')
-    supplier = models.ForeignKey('purchases.Supplier', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='المورد')
-    invoice = models.ForeignKey('sales.SalesInvoice', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='فاتورة مبيعات')
-    purchase_invoice = models.ForeignKey('purchases.PurchaseInvoice', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='فاتورة مشتريات')
-    bank_account = models.ForeignKey('accounts.Account', on_delete=models.SET_NULL, null=True, blank=True,
-                                      related_name='cheques', verbose_name='الحساب البنكي')
-    gl_account = models.ForeignKey('accounts.Account', on_delete=models.SET_NULL, null=True, blank=True,
-                                   related_name='cheque_gl_entries', verbose_name='حساب الشيكات المحاسبي')
-    journal_entry = models.ForeignKey('accounts.JournalEntry', on_delete=models.SET_NULL, null=True, blank=True,
-                                      verbose_name='القيد المحاسبي')
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending', db_index=True, verbose_name='الحالة')
+    customer = models.ForeignKey(
+        'sales.Customer', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='العميل'
+    )
+    supplier = models.ForeignKey(
+        'purchases.Supplier', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='المورد'
+    )
+    invoice = models.ForeignKey(
+        'sales.SalesInvoice', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='فاتورة مبيعات'
+    )
+    purchase_invoice = models.ForeignKey(
+        'purchases.PurchaseInvoice', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='فاتورة مشتريات'
+    )
+    bank_account = models.ForeignKey(
+        'accounts.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cheques',
+        verbose_name='الحساب البنكي',
+    )
+    gl_account = models.ForeignKey(
+        'accounts.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cheque_gl_entries',
+        verbose_name='حساب الشيكات المحاسبي',
+    )
+    journal_entry = models.ForeignKey(
+        'accounts.JournalEntry', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القيد المحاسبي'
+    )
+    status = models.CharField(
+        max_length=15, choices=STATUS_CHOICES, default='pending', db_index=True, verbose_name='الحالة'
+    )
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
     created_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -54,6 +75,7 @@ class Cheque(models.Model):
         if self.gl_account_id:
             return self.gl_account
         from common.accounting_service import JournalEntryService
+
         try:
             return JournalEntryService.get_account('2140')
         except Exception:
@@ -62,34 +84,23 @@ class Cheque(models.Model):
     def post_issuance(self, user=None):
         """ترحيل إصدار شيك صادر للاستاذ العام: مدين حساب الشيكات الصادرة، دائن حساب البنك."""
         from common.accounting_service import JournalEntryService
-        from common.models import SequenceNumber
         from common.exceptions import AccountingError
+        from common.models import SequenceNumber
+
         if self.journal_entry_id:
             return None
         gl = self._get_gl_account()
         bank = self.bank_account
         if not gl or not bank:
-            raise AccountingError(
-                'يجب ربط حساب بنكي وحساب شيكات صادرة بالشيك لترحيله للاستاذ العام.'
-            )
+            raise AccountingError('يجب ربط حساب بنكي وحساب شيكات صادرة بالشيك لترحيله للاستاذ العام.')
         entry = JournalEntryService.create_entry(
             entry_type='payment',
             date=self.issue_date,
             description=f'إصدار شيك صادر رقم {self.cheque_number} - {self.payee_name or ""}',
             reference=self.cheque_number,
             lines=[
-                {
-                    'account': gl,
-                    'debit': self.amount,
-                    'credit': Decimal('0'),
-                    'description': 'التزام شيك صادر (دفع)',
-                },
-                {
-                    'account': bank,
-                    'debit': Decimal('0'),
-                    'credit': self.amount,
-                    'description': 'خصم حساب البنك',
-                },
+                {'account': gl, 'debit': self.amount, 'credit': Decimal('0'), 'description': 'التزام شيك صادر (دفع)'},
+                {'account': bank, 'debit': Decimal('0'), 'credit': self.amount, 'description': 'خصم حساب البنك'},
             ],
             created_by=user,
             entry_number=SequenceNumber.get_next_number('journal_entry'),
@@ -102,6 +113,7 @@ class Cheque(models.Model):
         """عند التحصيل/الإيداع: عكس قيد الإصدار إن وُجد، وإلا إنشاء قيد تحصيل لشيك وارد."""
         from common.accounting_service import JournalEntryService
         from common.models import SequenceNumber
+
         if self.journal_entry_id and not self.journal_entry.is_reversed:
             self.journal_entry.reverse()
             return self.journal_entry

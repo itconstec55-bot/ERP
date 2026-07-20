@@ -14,12 +14,11 @@ Usage (management command):
     python manage.py seed_dummy_data --profile large --clear
     python manage.py seed_dummy_data --suppliers 50 --customers 100 --seed 42
 """
-import random
-import uuid
+
 import logging
+import random
 from datetime import date, timedelta
-from decimal import Decimal, ROUND_HALF_UP
-from typing import Optional
+from decimal import ROUND_HALF_UP, Decimal
 
 from faker import Faker
 
@@ -29,47 +28,123 @@ fake = Faker('ar_SA')
 
 PROFILES = {
     'tiny': {
-        'suppliers': 5, 'customers': 5, 'products': 10,
-        'product_categories': 4, 'purchase_invoices': 5, 'sales_invoices': 5,
-        'employees': 5, 'departments': 3, 'banks': 2, 'safes': 2,
-        'assets': 5, 'journals': 5, 'bank_transactions': 10, 'safe_transactions': 10,
-        'depreciation_entries': 5, 'salary_months': 1, 'attendance_weeks': 1,
+        'suppliers': 5,
+        'customers': 5,
+        'products': 10,
+        'product_categories': 4,
+        'purchase_invoices': 5,
+        'sales_invoices': 5,
+        'employees': 5,
+        'departments': 3,
+        'banks': 2,
+        'safes': 2,
+        'assets': 5,
+        'journals': 5,
+        'bank_transactions': 10,
+        'safe_transactions': 10,
+        'depreciation_entries': 5,
+        'salary_months': 1,
+        'attendance_weeks': 1,
     },
     'small': {
-        'suppliers': 10, 'customers': 15, 'products': 20,
-        'product_categories': 6, 'purchase_invoices': 15, 'sales_invoices': 20,
-        'employees': 10, 'departments': 4, 'banks': 3, 'safes': 2,
-        'assets': 10, 'journals': 10, 'bank_transactions': 20, 'safe_transactions': 15,
-        'depreciation_entries': 10, 'salary_months': 2, 'attendance_weeks': 2,
+        'suppliers': 10,
+        'customers': 15,
+        'products': 20,
+        'product_categories': 6,
+        'purchase_invoices': 15,
+        'sales_invoices': 20,
+        'employees': 10,
+        'departments': 4,
+        'banks': 3,
+        'safes': 2,
+        'assets': 10,
+        'journals': 10,
+        'bank_transactions': 20,
+        'safe_transactions': 15,
+        'depreciation_entries': 10,
+        'salary_months': 2,
+        'attendance_weeks': 2,
     },
     'medium': {
-        'suppliers': 20, 'customers': 30, 'products': 50,
-        'product_categories': 8, 'purchase_invoices': 40, 'sales_invoices': 50,
-        'employees': 25, 'departments': 6, 'banks': 4, 'safes': 3,
-        'assets': 20, 'journals': 30, 'bank_transactions': 40, 'safe_transactions': 30,
-        'depreciation_entries': 15, 'salary_months': 3, 'attendance_weeks': 4,
+        'suppliers': 20,
+        'customers': 30,
+        'products': 50,
+        'product_categories': 8,
+        'purchase_invoices': 40,
+        'sales_invoices': 50,
+        'employees': 25,
+        'departments': 6,
+        'banks': 4,
+        'safes': 3,
+        'assets': 20,
+        'journals': 30,
+        'bank_transactions': 40,
+        'safe_transactions': 30,
+        'depreciation_entries': 15,
+        'salary_months': 3,
+        'attendance_weeks': 4,
     },
     'large': {
-        'suppliers': 50, 'customers': 80, 'products': 120,
-        'product_categories': 10, 'purchase_invoices': 100, 'sales_invoices': 120,
-        'employees': 50, 'departments': 8, 'banks': 6, 'safes': 4,
-        'assets': 40, 'journals': 60, 'bank_transactions': 80, 'safe_transactions': 50,
-        'depreciation_entries': 30, 'salary_months': 6, 'attendance_weeks': 8,
+        'suppliers': 50,
+        'customers': 80,
+        'products': 120,
+        'product_categories': 10,
+        'purchase_invoices': 100,
+        'sales_invoices': 120,
+        'employees': 50,
+        'departments': 8,
+        'banks': 6,
+        'safes': 4,
+        'assets': 40,
+        'journals': 60,
+        'bank_transactions': 80,
+        'safe_transactions': 50,
+        'depreciation_entries': 30,
+        'salary_months': 6,
+        'attendance_weeks': 8,
     },
     'huge': {
-        'suppliers': 100, 'customers': 200, 'products': 300,
-        'product_categories': 12, 'purchase_invoices': 250, 'sales_invoices': 300,
-        'employees': 100, 'departments': 10, 'banks': 8, 'safes': 5,
-        'assets': 80, 'journals': 120, 'bank_transactions': 150, 'safe_transactions': 100,
-        'depreciation_entries': 60, 'salary_months': 12, 'attendance_weeks': 16,
+        'suppliers': 100,
+        'customers': 200,
+        'products': 300,
+        'product_categories': 12,
+        'purchase_invoices': 250,
+        'sales_invoices': 300,
+        'employees': 100,
+        'departments': 10,
+        'banks': 8,
+        'safes': 5,
+        'assets': 80,
+        'journals': 120,
+        'bank_transactions': 150,
+        'safe_transactions': 100,
+        'depreciation_entries': 60,
+        'salary_months': 12,
+        'attendance_weeks': 16,
     },
 }
 
 EGYPTIAN_CITIES = [
-    'القاهرة', 'الجيزة', 'الإسكندرية', 'المنصورة', 'طنطا',
-    'أسيوط', 'سوهاج', 'أسوان', 'الفيوم', 'بني سويف',
-    'الزقازيق', 'دمياط', 'الإسماعيلية', 'بورسعيد', 'السويس',
-    'كفر الشيخ', 'المحلة الكبرى', 'شرم الشيخ', 'حلوان', '6 أكتوبر',
+    'القاهرة',
+    'الجيزة',
+    'الإسكندرية',
+    'المنصورة',
+    'طنطا',
+    'أسيوط',
+    'سوهاج',
+    'أسوان',
+    'الفيوم',
+    'بني سويف',
+    'الزقازيق',
+    'دمياط',
+    'الإسماعيلية',
+    'بورسعيد',
+    'السويس',
+    'كفر الشيخ',
+    'المحلة الكبرى',
+    'شرم الشيخ',
+    'حلوان',
+    '6 أكتوبر',
 ]
 
 EGYPTIAN_BANKS = [
@@ -111,94 +186,212 @@ PRODUCT_CATEGORIES_DATA = [
 
 PRODUCT_NAMES_BY_CATEGORY = {
     'إلكترونيات': [
-        'لابتوب HP ProBook', 'شاشة Samsung 24 بوصة', 'لوحة مفاتيح لاسلكية',
-        'ماوس لاسلكي Logitech', 'طابعة Canon Laser', 'سماعات Sony',
-        'جهاز عرض Epson', 'كيبورد ميكانيكي', 'هارد ديسك خارجي 1TB',
-        'раутer TP-Link', 'سلسلة تغذية كهربائية', 'UPS احتياطي',
+        'لابتوب HP ProBook',
+        'شاشة Samsung 24 بوصة',
+        'لوحة مفاتيح لاسلكية',
+        'ماوس لاسلكي Logitech',
+        'طابعة Canon Laser',
+        'سماعات Sony',
+        'جهاز عرض Epson',
+        'كيبورد ميكانيكي',
+        'هارد ديسك خارجي 1TB',
+        'раутer TP-Link',
+        'سلسلة تغذية كهربائية',
+        'UPS احتياطي',
     ],
     'أثاث مكتبي': [
-        'كرسي مكتب مريح', 'طاولة إدارية', 'خزانة أوراق 4 درج',
-        'كرسي انتظار', 'طاولة اجتماعات', 'رف مrecords',
-        'مكتب موظف', 'خزانة زجاجية', 'ستارة شمسية',
+        'كرسي مكتب مريح',
+        'طاولة إدارية',
+        'خزانة أوراق 4 درج',
+        'كرسي انتظار',
+        'طاولة اجتماعات',
+        'رف مrecords',
+        'مكتب موظف',
+        'خزانة زجاجية',
+        'ستارة شمسية',
     ],
     'قرطاسية': [
-        'دفتر A4 مقوى', 'قلم تروسيلا 0.5', 'ورق طباعة A4 كرتون',
-        'ملفات فلوبية', 'استيكر ملون', 'قلم تعليمي ألوان',
-        'مسطرة معدنية', 'مقص مكتبي', 'دباسة مكتبية',
+        'دفتر A4 مقوى',
+        'قلم تروسيلا 0.5',
+        'ورق طباعة A4 كرتون',
+        'ملفات فلوبية',
+        'استيكر ملون',
+        'قلم تعليمي ألوان',
+        'مسطرة معدنية',
+        'مقص مكتبي',
+        'دباسة مكتبية',
     ],
     'ملابس': [
-        'قميص قطن رجالي', 'بنطلون جينز', 'جاكيت شتوي',
-        'فستان صيفي', 'تيشيرت قطن', 'حذاء رسمي',
-        'نظارة شمسية', 'حقيبة يد', 'ساعة يد',
+        'قميص قطن رجالي',
+        'بنطلون جينز',
+        'جاكيت شتوي',
+        'فستان صيفي',
+        'تيشيرت قطن',
+        'حذاء رسمي',
+        'نظارة شمسية',
+        'حقيبة يد',
+        'ساعة يد',
     ],
     'مواد غذائية': [
-        'أرز بسمتي 5 كجم', 'زيت زيتون نقي', 'سكر أبيض كرتون',
-        'مكرونة إيطالية', 'شاي أحمر علب', 'قهوة تركية',
-        'عسل طبيعي', 'تمر مجدول', 'حبة البركة',
+        'أرز بسمتي 5 كجم',
+        'زيت زيتون نقي',
+        'سكر أبيض كرتون',
+        'مكرونة إيطالية',
+        'شاي أحمر علب',
+        'قهوة تركية',
+        'عسل طبيعي',
+        'تمر مجدول',
+        'حبة البركة',
     ],
     'مواد خام': [
-        'خام قطن مصري', 'سلك نحاسي 2 مم', 'بلاستيك PE أكياس',
-        'حديد تسليح 12 مم', 'ألمنيوم صفائح', 'خشب زان قطع',
-        'جلد صناعي', 'foyton نسيج', 'رمل زجاجي',
+        'خام قطن مصري',
+        'سلك نحاسي 2 مم',
+        'بلاستيك PE أكياس',
+        'حديد تسليح 12 مم',
+        'ألمنيوم صفائح',
+        'خشب زان قطع',
+        'جلد صناعي',
+        'foyton نسيج',
+        'رمل زجاجي',
     ],
     'قطع غيار': [
-        'فرامل أمامية سيارة', 'فلتر زيت محرك', 'شمعات إشعال',
-        'بطارية سيارة 60 أمبير', 'مكيف سيارة', 'مruleة عادم',
-        'كمبروسر مكيف', 'دينام شحن', 'مساحات زجاج',
+        'فرامل أمامية سيارة',
+        'فلتر زيت محرك',
+        'شمعات إشعال',
+        'بطارية سيارة 60 أمبير',
+        'مكيف سيارة',
+        'مruleة عادم',
+        'كمبروسر مكيف',
+        'دينام شحن',
+        'مساحات زجاج',
     ],
     'أدوات صناعية': [
-        'مفتاح ربط هيدروليكي', 'مفك براغي كهربائي', 'شاكوش كهربائي',
-        'جهاز لحام', 'compressor هوائي', 'منشار دائري',
-        'زاوية حدادة', 'مقياس ضبط', 'toolsset صناعية',
+        'مفتاح ربط هيدروليكي',
+        'مفك براغي كهربائي',
+        'شاكوش كهربائي',
+        'جهاز لحام',
+        'compressor هوائي',
+        'منشار دائري',
+        'زاوية حدادة',
+        'مقياس ضبط',
+        'toolsset صناعية',
     ],
     'مواد بناء': [
-        'أسمنت بورتلاند', 'حديد تسليح', 'رمل بناء',
-        'حصى عقدة', 'بلاط أرضيات', 'طلاء جدران',
-        'عوازل مائية', 'أنابيب PVC', 'أسلاك كهربائية',
+        'أسمنت بورتلاند',
+        'حديد تسليح',
+        'رمل بناء',
+        'حصى عقدة',
+        'بلاط أرضيات',
+        'طلاء جدران',
+        'عوازل مائية',
+        'أنابيب PVC',
+        'أسلاك كهربائية',
     ],
     'كيماويات': [
-        'مادة تبييض كلور', 'مادة عازلة', 'مادة حافظة خشب',
-        'دهان زنك', 'مادة تنظيف صناعية', 'مذيب كيميائي',
-        'مادة لاصقة صناعية', 'مبيد حشري', 'سماد زراعي NPK',
+        'مادة تبييض كلور',
+        'مادة عازلة',
+        'مادة حافظة خشب',
+        'دهان زنك',
+        'مادة تنظيف صناعية',
+        'مذيب كيميائي',
+        'مادة لاصقة صناعية',
+        'مبيد حشري',
+        'سماد زراعي NPK',
     ],
 }
 
 SUPPLIER_NAMES = [
-    'شركة الأهرام للتجارة', 'مورد النيل للإلكترونيات', 'شركة البركة للمواد الغذائية',
-    'مؤسسة الرائد للأدوات المكتبية', 'شركة مصر للزيوت والشحوم', 'مورد الشرق للإلكترونيات',
-    'شركة السلام للمواد الأولية', 'مؤسسة الفجر للأدوات الصناعية', 'شركة النصر للأثاث',
-    'شركة الجيزة للبلاستيك', 'مؤسسة المروج للإلكترونيات', 'شركة الدلتا للملابس',
-    'مورد الصعيد للغزل والنسيج', 'شركة الإسكندرية للتجارة', 'مؤسسة البدر لل建材',
-    'شركة المجد للإلكترونيات', 'مورد الهرم للإلكترونيات', 'شركة السعيد للProducts',
-    'مؤسسة التكنو للخدمات', 'شركة رويال للتجارة العامة',
+    'شركة الأهرام للتجارة',
+    'مورد النيل للإلكترونيات',
+    'شركة البركة للمواد الغذائية',
+    'مؤسسة الرائد للأدوات المكتبية',
+    'شركة مصر للزيوت والشحوم',
+    'مورد الشرق للإلكترونيات',
+    'شركة السلام للمواد الأولية',
+    'مؤسسة الفجر للأدوات الصناعية',
+    'شركة النصر للأثاث',
+    'شركة الجيزة للبلاستيك',
+    'مؤسسة المروج للإلكترونيات',
+    'شركة الدلتا للملابس',
+    'مورد الصعيد للغزل والنسيج',
+    'شركة الإسكندرية للتجارة',
+    'مؤسسة البدر لل建材',
+    'شركة المجد للإلكترونيات',
+    'مورد الهرم للإلكترونيات',
+    'شركة السعيد للProducts',
+    'مؤسسة التكنو للخدمات',
+    'شركة رويال للتجارة العامة',
 ]
 
 CUSTOMER_NAMES = [
-    'شركة النيل للتجارة', 'مؤسسة الفجر للأفراد', 'شركة المجد للإلكترونيات',
-    'شركة الأمل للمواد الغذائية', 'مؤسسة البدر للملابس', 'شركة السماح للتجارة',
-    'شركة الكرمل للأثاث', 'مؤسسة تكنو مصر', 'شركة دلتا للتجارة العامة',
-    'مؤسسة النور للأدوات', 'شركة رويال للإلكترونيات', 'مؤسسة سمارت للخدمات',
-    'شركة بريمير للملابس', 'مؤسسة سفن ستار', 'شركة توب لاين',
-    'شركة الماس للتجارة', 'مؤسسة الزهراء', 'شركة الأمانة',
-    'مؤسسة الإبداع', 'شركة المستقبل',
+    'شركة النيل للتجارة',
+    'مؤسسة الفجر للأفراد',
+    'شركة المجد للإلكترونيات',
+    'شركة الأمل للمواد الغذائية',
+    'مؤسسة البدر للملابس',
+    'شركة السماح للتجارة',
+    'شركة الكرمل للأثاث',
+    'مؤسسة تكنو مصر',
+    'شركة دلتا للتجارة العامة',
+    'مؤسسة النور للأدوات',
+    'شركة رويال للإلكترونيات',
+    'مؤسسة سمارت للخدمات',
+    'شركة بريمير للملابس',
+    'مؤسسة سفن ستار',
+    'شركة توب لاين',
+    'شركة الماس للتجارة',
+    'مؤسسة الزهراء',
+    'شركة الأمانة',
+    'مؤسسة الإبداع',
+    'شركة المستقبل',
 ]
 
 ASSET_NAMES = [
-    'كمبيوتر مكتبي Dell OptiPlex', 'لابتوب Lenovo ThinkPad', 'طابعة HP LaserJet Pro',
-    'شاشة Samsung 24 بوصة', 'طاولة إدارية خشب', 'كرسي مدير مريح',
-    'خزانة أوراق 5 درج', 'جهاز عرض Epson', 'سبورة ذكية 75 بوصة',
-    'آلة تجليد', 'ماكينة تصوير Canon', 'فرن صناعي',
-    'شاحنة نقل 3.5 طن', 'سيارة إدارية', 'حفارة صغيرة',
-    'مكيف مركزي', 'جهاز تبريد صناعي', 'ماكينة خياطة صناعية',
-    'رافعة شوكية', 'compressor هوائي كبير',
+    'كمبيوتر مكتبي Dell OptiPlex',
+    'لابتوب Lenovo ThinkPad',
+    'طابعة HP LaserJet Pro',
+    'شاشة Samsung 24 بوصة',
+    'طاولة إدارية خشب',
+    'كرسي مدير مريح',
+    'خزانة أوراق 5 درج',
+    'جهاز عرض Epson',
+    'سبورة ذكية 75 بوصة',
+    'آلة تجليد',
+    'ماكينة تصوير Canon',
+    'فرن صناعي',
+    'شاحنة نقل 3.5 طن',
+    'سيارة إدارية',
+    'حفارة صغيرة',
+    'مكيف مركزي',
+    'جهاز تبريد صناعي',
+    'ماكينة خياطة صناعية',
+    'رافعة شوكية',
+    'compressor هوائي كبير',
 ]
 
 POSITIONS = [
-    'مدير عام', 'مدير مبيعات', 'محاسب رئيسي', 'مندوب مبيعات', 'مدير مشتريات',
-    'مسؤول مخزون', 'موظف إداري', 'مبرمج', 'مشرف إنتاج', 'كاتب',
-    'مدير موارد بشرية', 'مسؤول خدمة عملاء', 'سائق', 'عامل نقل',
-    'مدير تسويق', 'محلل بيانات', 'مهندس جودة', 'مشرف مستودع',
-    'محاسب', 'أمين صندوق', 'ممتحن جودة', 'فني صيانة',
+    'مدير عام',
+    'مدير مبيعات',
+    'محاسب رئيسي',
+    'مندوب مبيعات',
+    'مدير مشتريات',
+    'مسؤول مخزون',
+    'موظف إداري',
+    'مبرمج',
+    'مشرف إنتاج',
+    'كاتب',
+    'مدير موارد بشرية',
+    'مسؤول خدمة عملاء',
+    'سائق',
+    'عامل نقل',
+    'مدير تسويق',
+    'محلل بيانات',
+    'مهندس جودة',
+    'مشرف مستودع',
+    'محاسب',
+    'أمين صندوق',
+    'ممتحن جودة',
+    'فني صيانة',
 ]
 
 JOURNAL_DESCRIPTIONS = [
@@ -226,7 +419,7 @@ class DummyDataGenerator:
     def __init__(
         self,
         profile: str = 'medium',
-        seed: Optional[int] = None,
+        seed: int | None = None,
         clear_first: bool = False,
         progress_callback=None,
         **overrides,
@@ -276,7 +469,6 @@ class DummyDataGenerator:
 
     def generate(self):
         from django.contrib.auth.models import User
-        from accounts.models import AccountType, Account, JournalEntry, JournalEntryLine
 
         if self.clear_first:
             self._clear_all()
@@ -288,6 +480,7 @@ class DummyDataGenerator:
         admin_user = User.objects.filter(is_superuser=True).first()
         if not admin_user:
             import os
+
             admin_password = os.environ.get('DJANGO_ADMIN_PASSWORD', 'ChangeMe!2024')
             admin_user = User.objects.create_superuser('admin', 'admin@test.com', admin_password)
             self._report('  [OK] تم إنشاء مستخدم admin')
@@ -321,21 +514,36 @@ class DummyDataGenerator:
         return self.results
 
     def _clear_all(self):
-        from hr.models import Attendance, Salary, Employee, Department
-        from assets.models import DepreciationEntry, Asset, AssetCategory
-        from treasury.models import BankTransaction, SafeTransaction, Bank, Safe
-        from sales.models import SalesInvoiceLine, SalesInvoice, Customer
-        from purchases.models import PurchaseInvoiceLine, PurchaseInvoice, Product, ProductCategory, Supplier
-        from accounts.models import JournalEntryLine, JournalEntry
+        from accounts.models import JournalEntry, JournalEntryLine
+        from assets.models import Asset, AssetCategory, DepreciationEntry
+        from hr.models import Attendance, Department, Employee, Salary
+        from purchases.models import Product, ProductCategory, PurchaseInvoice, PurchaseInvoiceLine, Supplier
+        from sales.models import Customer, SalesInvoice, SalesInvoiceLine
+        from treasury.models import Bank, BankTransaction, Safe, SafeTransaction
 
         self._report('جاري مسح البيانات...')
         for model in [
-            Attendance, Salary, Employee, Department,
-            DepreciationEntry, Asset, AssetCategory,
-            BankTransaction, SafeTransaction, Bank, Safe,
-            SalesInvoiceLine, SalesInvoice, Customer,
-            PurchaseInvoiceLine, PurchaseInvoice, Product, ProductCategory, Supplier,
-            JournalEntryLine, JournalEntry,
+            Attendance,
+            Salary,
+            Employee,
+            Department,
+            DepreciationEntry,
+            Asset,
+            AssetCategory,
+            BankTransaction,
+            SafeTransaction,
+            Bank,
+            Safe,
+            SalesInvoiceLine,
+            SalesInvoice,
+            Customer,
+            PurchaseInvoiceLine,
+            PurchaseInvoice,
+            Product,
+            ProductCategory,
+            Supplier,
+            JournalEntryLine,
+            JournalEntry,
         ]:
             model.objects.all().delete()
         self._report('  [OK] تم مسح جميع البيانات')
@@ -347,15 +555,14 @@ class DummyDataGenerator:
         departments = []
         for name, mgr_key, desc in DEPARTMENT_DATA[:count]:
             dept, _ = Department.objects.get_or_create(
-                name=name,
-                defaults={'manager': fake.name_male(), 'description': desc},
+                name=name, defaults={'manager': fake.name_male(), 'description': desc}
             )
             departments.append(dept)
         self.results['departments'] = departments
         self._report(f'  [OK] {len(departments)} أقسام')
 
     def _seed_employees(self, user):
-        from hr.models import Employee, Department
+        from hr.models import Department, Employee
 
         count = self.config['employees']
         departments = list(Department.objects.all())
@@ -393,7 +600,7 @@ class DummyDataGenerator:
                     'tax_number': self._random_tax_number(3),
                     'bank_account': f'{random.randint(1000000000000000, 9999999999999999)}',
                     'status': 'active',
-                }
+                },
             )
             employees.append(emp)
         self.results['employees'] = employees
@@ -404,9 +611,9 @@ class DummyDataGenerator:
 
         try:
             acc_type = AccountType.objects.get(code='AT01')
-            Account.objects.get_or_create(code='1610', defaults={
-                'name': 'البنك الأهلي المصري', 'account_type': acc_type, 'is_bank': True,
-            })
+            Account.objects.get_or_create(
+                code='1610', defaults={'name': 'البنك الأهلي المصري', 'account_type': acc_type, 'is_bank': True}
+            )
         except Exception as e:
             logger.exception('Failed to ensure treasury accounts: %s', e)
 
@@ -437,7 +644,7 @@ class DummyDataGenerator:
                     'credit_limit': random.choice([50000, 100000, 200000, 500000]),
                     'current_balance': self._d(random.randint(0, 100000)),
                     'notes': random.choice([None, 'مورد موثوق', 'يوجد اتفاقية أسعار', '']),
-                }
+                },
             )
             suppliers.append(sup)
         self.results['suppliers'] = suppliers
@@ -449,9 +656,7 @@ class DummyDataGenerator:
         count = self.config['product_categories']
         categories = []
         for name, desc in PRODUCT_CATEGORIES_DATA[:count]:
-            cat, _ = ProductCategory.objects.get_or_create(
-                name=name, defaults={'description': desc}
-            )
+            cat, _ = ProductCategory.objects.get_or_create(name=name, defaults={'description': desc})
             categories.append(cat)
         self.results['categories'] = categories
         self._report(f'  [OK] {len(categories)} تصنيفات منتجات')
@@ -490,7 +695,7 @@ class DummyDataGenerator:
                     'current_stock': self._d(random.randint(0, 500)),
                     'minimum_stock': self._d(random.randint(5, 50)),
                     'vat_rate': Decimal('14.00'),
-                }
+                },
             )
             products.append(prod)
         self.results['products'] = products
@@ -519,7 +724,7 @@ class DummyDataGenerator:
                     'credit_limit': random.choice([100000, 200000, 500000, 1000000]),
                     'current_balance': self._d(random.randint(-50000, 200000)),
                     'notes': random.choice([None, 'عميل VIP', 'يوجد خصم خاص', '']),
-                }
+                },
             )
             customers.append(cust)
         self.results['customers'] = customers
@@ -546,7 +751,7 @@ class DummyDataGenerator:
                     'iban': self._random_iban(),
                     'swift_code': swift,
                     'current_balance': self._d(random.randint(50000, 1000000)),
-                }
+                },
             )
             banks.append(bank)
         self.results['banks'] = banks
@@ -578,14 +783,14 @@ class DummyDataGenerator:
                     'responsible_person': person,
                     'current_balance': self._d(random.randint(5000, limit // 2)),
                     'maximum_limit': self._d(limit),
-                }
+                },
             )
             safes.append(safe)
         self.results['safes'] = safes
         self._report(f'  [OK] {len(safes)} خزائن')
 
     def _seed_purchase_invoices(self, user):
-        from purchases.models import Supplier, Product, PurchaseInvoice, PurchaseInvoiceLine
+        from purchases.models import Product, PurchaseInvoice, PurchaseInvoiceLine, Supplier
 
         count = self.config['purchase_invoices']
         suppliers = list(Supplier.objects.all())
@@ -610,7 +815,9 @@ class DummyDataGenerator:
                 due_date=inv_date + timedelta(days=random.choice([15, 30, 60, 90])),
                 payment_method=random.choice(['cash', 'credit', 'credit', 'transfer']),
                 is_tax_invoice=is_tax,
-                subtotal=0, vat_amount=0, total_amount=0,
+                subtotal=0,
+                vat_amount=0,
+                total_amount=0,
                 paid_amount=Decimal('0'),
                 is_posted=False,
                 created_by=user,
@@ -621,17 +828,17 @@ class DummyDataGenerator:
             for prod in selected_products:
                 qty = Decimal(str(random.randint(1, 50)))
                 PurchaseInvoiceLine.objects.create(
-                    invoice=invoice, product=prod,
-                    quantity=qty, unit_price=prod.purchase_price,
+                    invoice=invoice,
+                    product=prod,
+                    quantity=qty,
+                    unit_price=prod.purchase_price,
                     discount_percent=random.choice([0, 0, 0, 5, 10]),
                 )
 
             invoice.calculate_totals()
-            paid = random.choice([
-                Decimal('0'),
-                (invoice.total_amount * self._d(random.uniform(0.3, 1.0))),
-                invoice.total_amount,
-            ])
+            paid = random.choice(
+                [Decimal('0'), (invoice.total_amount * self._d(random.uniform(0.3, 1.0))), invoice.total_amount]
+            )
             invoice.paid_amount = min(paid, invoice.total_amount)
             invoice.remaining_amount = invoice.total_amount - invoice.paid_amount
             invoice.save(update_fields=['paid_amount', 'remaining_amount'])
@@ -639,8 +846,8 @@ class DummyDataGenerator:
         self._report(f'  [OK] {created} فاتورة مشتريات')
 
     def _seed_sales_invoices(self, user):
-        from sales.models import Customer, SalesInvoice, SalesInvoiceLine
         from purchases.models import Product
+        from sales.models import Customer, SalesInvoice, SalesInvoiceLine
 
         count = self.config['sales_invoices']
         customers = list(Customer.objects.all())
@@ -665,9 +872,12 @@ class DummyDataGenerator:
                 due_date=inv_date + timedelta(days=random.choice([15, 30, 60])),
                 payment_method=random.choice(['cash', 'credit', 'transfer', 'cash']),
                 is_tax_invoice=is_tax,
-                subtotal=0, vat_amount=0, total_amount=0,
+                subtotal=0,
+                vat_amount=0,
+                total_amount=0,
                 paid_amount=Decimal('0'),
-                cost_of_goods=0, gross_profit=0,
+                cost_of_goods=0,
+                gross_profit=0,
                 is_posted=False,
                 created_by=user,
             )
@@ -677,7 +887,8 @@ class DummyDataGenerator:
             for prod in selected_products:
                 qty = Decimal(str(random.randint(1, 20)))
                 SalesInvoiceLine.objects.create(
-                    invoice=invoice, product=prod,
+                    invoice=invoice,
+                    product=prod,
                     quantity=qty,
                     unit_price=prod.selling_price,
                     cost_price=prod.purchase_price,
@@ -686,7 +897,7 @@ class DummyDataGenerator:
 
             invoice.calculate_totals()
             paid_pct = random.choice([0, 0.5, 0.8, 1.0])
-            invoice.paid_amount = (invoice.total_amount * self._d(paid_pct))
+            invoice.paid_amount = invoice.total_amount * self._d(paid_pct)
             invoice.remaining_amount = invoice.total_amount - invoice.paid_amount
             invoice.save(update_fields=['paid_amount', 'remaining_amount'])
             created += 1
@@ -705,9 +916,7 @@ class DummyDataGenerator:
         ]
         categories = []
         for name, rate in cats_data:
-            cat, _ = AssetCategory.objects.get_or_create(
-                name=name, defaults={'depreciation_rate': self._d(rate)}
-            )
+            cat, _ = AssetCategory.objects.get_or_create(name=name, defaults={'depreciation_rate': self._d(rate)})
             categories.append(cat)
         self.results['asset_categories'] = categories
         self._report(f'  [OK] {len(categories)} تصنيفات أصول')
@@ -728,7 +937,7 @@ class DummyDataGenerator:
             purchase_price = self._d(random.uniform(2000, 200000))
             useful_life = random.choice([3, 5, 7, 10])
             purchase_date = today - timedelta(days=random.randint(90, 365 * 3))
-            accumulated = (purchase_price * self._d(random.uniform(0.1, 0.7)))
+            accumulated = purchase_price * self._d(random.uniform(0.1, 0.7))
 
             asset, _ = Asset.objects.get_or_create(
                 code=f'AST{i + 1:04d}',
@@ -745,7 +954,7 @@ class DummyDataGenerator:
                     'location': random.choice(['المكتب الرئيسي', 'المستودع', 'الفرع', 'المصنع']),
                     'status': random.choice(['active', 'active', 'active', 'depreciated']),
                     'created_by': user,
-                }
+                },
             )
             assets.append(asset)
         self.results['assets'] = assets
@@ -844,7 +1053,7 @@ class DummyDataGenerator:
     def _seed_salaries(self, user):
         from hr.models import Employee, Salary
 
-        employees = list(Employee.objects.all()[:self.config['employees']])
+        employees = list(Employee.objects.all()[: self.config['employees']])
         salary_months = self.config.get('salary_months', 3)
         today = date.today()
         created = 0
@@ -858,17 +1067,19 @@ class DummyDataGenerator:
                     year -= 1
 
                 basic = emp.salary
-                allowances = (basic * self._d(random.uniform(0.1, 0.3)))
+                allowances = basic * self._d(random.uniform(0.1, 0.3))
                 overtime = self._d(random.randint(0, 2000))
                 bonus = self._d(random.randint(0, 1000))
-                deductions = (basic * self._d(random.uniform(0.02, 0.1)))
+                deductions = basic * self._d(random.uniform(0.02, 0.1))
                 social_ins = (basic * Decimal('0.11')).quantize(Decimal('0.01'))
-                income_tax = (basic * self._d(random.uniform(0.05, 0.15)))
+                income_tax = basic * self._d(random.uniform(0.05, 0.15))
                 net = basic + allowances + overtime + bonus - deductions - social_ins - income_tax
 
                 is_paid = random.choice([True, True, False])
                 Salary.objects.get_or_create(
-                    employee=emp, month=month, year=year,
+                    employee=emp,
+                    month=month,
+                    year=year,
                     defaults={
                         'basic_salary': basic,
                         'allowances': allowances,
@@ -880,15 +1091,15 @@ class DummyDataGenerator:
                         'net_salary': net,
                         'is_paid': is_paid,
                         'payment_date': today - timedelta(days=random.randint(0, 30)) if is_paid else None,
-                    }
+                    },
                 )
                 created += 1
         self._report(f'  [OK] {created} سجل رواتب')
 
     def _seed_attendance(self):
-        from hr.models import Employee, Attendance
+        from hr.models import Attendance, Employee
 
-        employees = list(Employee.objects.all()[:self.config['employees']])
+        employees = list(Employee.objects.all()[: self.config['employees']])
         weeks = self.config.get('attendance_weeks', 4)
         today = date.today()
         statuses = ['present', 'present', 'present', 'present', 'late', 'absent', 'leave', 'sick']
@@ -905,13 +1116,14 @@ class DummyDataGenerator:
                 check_out = f'{random.randint(16, 19)}:{random.randint(0, 59):02d}'
 
                 Attendance.objects.get_or_create(
-                    employee=emp, date=att_date,
+                    employee=emp,
+                    date=att_date,
                     defaults={
                         'check_in': check_in,
                         'check_out': check_out if status != 'absent' else None,
                         'status': status,
                         'overtime_hours': self._d(random.randint(0, 3)) if status == 'present' else Decimal('0'),
-                    }
+                    },
                 )
                 created += 1
         self._report(f'  [OK] {created} سجل حضور')
@@ -945,12 +1157,10 @@ class DummyDataGenerator:
                 credit_acc = Account.objects.filter(account_type__account_type='liability').first()
                 if debit_acc and credit_acc:
                     JournalEntryLine.objects.create(
-                        journal_entry=entry, account=debit_acc,
-                        debit=amount, credit=0, description='مدين'
+                        journal_entry=entry, account=debit_acc, debit=amount, credit=0, description='مدين'
                     )
                     JournalEntryLine.objects.create(
-                        journal_entry=entry, account=credit_acc,
-                        debit=0, credit=amount, description='دائن'
+                        journal_entry=entry, account=credit_acc, debit=0, credit=amount, description='دائن'
                     )
             except Exception as e:
                 logger.warning(f'Failed to create journal entry lines: {e}')
@@ -959,13 +1169,12 @@ class DummyDataGenerator:
         self._report(f'  [OK] {created} قيد محاسبي')
 
     def _print_summary(self):
-        from accounts.models import Account
-        from purchases.models import Supplier, Product, PurchaseInvoice
-        from sales.models import Customer, SalesInvoice
-        from treasury.models import Bank, Safe, BankTransaction, SafeTransaction
+        from accounts.models import Account, JournalEntry
         from assets.models import Asset
-        from hr.models import Employee, Salary, Attendance
-        from accounts.models import JournalEntry
+        from hr.models import Attendance, Employee, Salary
+        from purchases.models import Product, PurchaseInvoice, Supplier
+        from sales.models import Customer, SalesInvoice
+        from treasury.models import Bank, BankTransaction, Safe, SafeTransaction
 
         self._report('')
         self._report('  --- ملخص البيانات ---')

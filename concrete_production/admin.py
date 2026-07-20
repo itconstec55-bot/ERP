@@ -1,7 +1,16 @@
 from django.contrib import admin
+
 from .models import (
-    ConcreteMixDesign, MixComponent, CustomerRequest, ProductionOrder,
-    ProductionBatch, DeliverySchedule, Truck, ProductionCost, Silo, SiloTransaction
+    ConcreteMixDesign,
+    CustomerRequest,
+    DeliverySchedule,
+    MixComponent,
+    ProductionBatch,
+    ProductionCost,
+    ProductionOrder,
+    Silo,
+    SiloTransaction,
+    Truck,
 )
 
 
@@ -13,7 +22,15 @@ class MixComponentInline(admin.TabularInline):
 
 @admin.register(ConcreteMixDesign)
 class ConcreteMixDesignAdmin(admin.ModelAdmin):
-    list_display = ['code', 'name', 'strength_class', 'slump_cm', 'target_strength_mpa', 'selling_price_per_m3', 'is_active']
+    list_display = [
+        'code',
+        'name',
+        'strength_class',
+        'slump_cm',
+        'target_strength_mpa',
+        'selling_price_per_m3',
+        'is_active',
+    ]
     list_filter = ['is_active', 'strength_class']
     search_fields = ['code', 'name']
     inlines = [MixComponentInline]
@@ -43,7 +60,15 @@ class ProductionBatchInline(admin.TabularInline):
 
 @admin.register(ProductionOrder)
 class ProductionOrderAdmin(admin.ModelAdmin):
-    list_display = ['order_number', 'customer_name', 'mix_design', 'quantity_m3', 'priority', 'status', 'scheduled_date']
+    list_display = [
+        'order_number',
+        'customer_name',
+        'mix_design',
+        'quantity_m3',
+        'priority',
+        'status',
+        'scheduled_date',
+    ]
     list_filter = ['status', 'priority']
     search_fields = ['order_number', 'customer_request__customer__name']
     readonly_fields = ['order_number', 'total_price', 'created_at', 'updated_at']
@@ -51,18 +76,28 @@ class ProductionOrderAdmin(admin.ModelAdmin):
 
     def customer_name(self, obj):
         return obj.customer_request.customer.name
+
     customer_name.short_description = 'العميل'
 
 
 @admin.register(ProductionBatch)
 class ProductionBatchAdmin(admin.ModelAdmin):
-    list_display = ['batch_number', 'order_number', 'truck', 'quantity_m3', 'actual_quantity_m3', 'status', 'departure_time']
+    list_display = [
+        'batch_number',
+        'order_number',
+        'truck',
+        'quantity_m3',
+        'actual_quantity_m3',
+        'status',
+        'departure_time',
+    ]
     list_filter = ['status']
     search_fields = ['batch_number', 'production_order__order_number']
     readonly_fields = ['batch_number', 'mixing_time', 'departure_time', 'arrival_time', 'pouring_start', 'pouring_end']
 
     def order_number(self, obj):
         return obj.production_order.order_number
+
     order_number.short_description = 'أمر الإنتاج'
 
 
@@ -75,7 +110,15 @@ class TruckAdmin(admin.ModelAdmin):
 
 @admin.register(DeliverySchedule)
 class DeliveryScheduleAdmin(admin.ModelAdmin):
-    list_display = ['production_order', 'delivery_date', 'time_slot_from', 'time_slot_to', 'truck', 'status', 'sequence']
+    list_display = [
+        'production_order',
+        'delivery_date',
+        'time_slot_from',
+        'time_slot_to',
+        'truck',
+        'status',
+        'sequence',
+    ]
     list_filter = ['status', 'delivery_date']
     search_fields = ['production_order__order_number']
 
@@ -97,7 +140,15 @@ class SiloTransactionInline(admin.TabularInline):
 
 @admin.register(Silo)
 class SiloAdmin(admin.ModelAdmin):
-    list_display = ['code', 'name', 'capacity_tons', 'current_stock_tons', 'minimum_order_tons', 'critical_level_tons', 'is_active']
+    list_display = [
+        'code',
+        'name',
+        'capacity_tons',
+        'current_stock_tons',
+        'minimum_order_tons',
+        'critical_level_tons',
+        'is_active',
+    ]
     list_filter = ['is_active', 'cement_type']
     search_fields = ['code', 'name']
     inlines = [SiloTransactionInline]

@@ -1,18 +1,29 @@
 from datetime import date
 from decimal import Decimal
-from django.test import TestCase
+
 from django.contrib.auth.models import User
-from accounts.models import AccountType, Account
+from django.test import TestCase
+
+from accounts.models import Account, AccountType
+
 from .forms import ProductForm
-from .models import (ProductCategory, Product, Supplier, PurchaseInvoice, PurchaseInvoiceLine,
-                     UnitOfMeasure, CatalogSettings)
+from .models import (
+    CatalogSettings,
+    Product,
+    ProductCategory,
+    PurchaseInvoice,
+    PurchaseInvoiceLine,
+    Supplier,
+    UnitOfMeasure,
+)
 
 
 class ProductModelTest(TestCase):
     def setUp(self):
         self.category = ProductCategory.objects.create(code='CAT-001', name='فئة اختبار')
         self.product = Product.objects.create(
-            code='P001', name='منتج اختبار',
+            code='P001',
+            name='منتج اختبار',
             category=self.category,
             purchase_price=Decimal('50.00'),
             selling_price=Decimal('100.00'),
@@ -36,15 +47,20 @@ class PurchaseInvoiceCalculationTest(TestCase):
         self.user = User.objects.create_user(username='testuser', password='testpass123')
         self.supplier = Supplier.objects.create(code='S001', name='مورد تجريبي')
 
-        asset_type = AccountType.objects.update_or_create(code='asset', defaults={'name': 'أصول', 'account_type': 'asset'})[0]
-        expense_type = AccountType.objects.update_or_create(code='expense', defaults={'name': 'مصروفات', 'account_type': 'expense'})[0]
+        asset_type = AccountType.objects.update_or_create(
+            code='asset', defaults={'name': 'أصول', 'account_type': 'asset'}
+        )[0]
+        expense_type = AccountType.objects.update_or_create(
+            code='expense', defaults={'name': 'مصروفات', 'account_type': 'expense'}
+        )[0]
 
         Account.objects.create(code='1300', name='المشتريات', account_type=expense_type)
         Account.objects.create(code='1350', name='ضريبة المشتريات', account_type=expense_type)
 
         self.category = ProductCategory.objects.create(code='CAT-001', name='فئة اختبار')
         self.product = Product.objects.create(
-            code='P001', name='منتج اختبار',
+            code='P001',
+            name='منتج اختبار',
             category=self.category,
             purchase_price=Decimal('50.00'),
             selling_price=Decimal('100.00'),
@@ -61,8 +77,7 @@ class PurchaseInvoiceCalculationTest(TestCase):
             created_by=self.user,
         )
         PurchaseInvoiceLine.objects.create(
-            invoice=invoice, product=self.product,
-            quantity=Decimal('10'), unit_price=Decimal('50.00'),
+            invoice=invoice, product=self.product, quantity=Decimal('10'), unit_price=Decimal('50.00')
         )
         invoice.calculate_totals()
         return invoice
@@ -95,17 +110,13 @@ class PurchaseInvoiceCalculationTest(TestCase):
 
     def test_multi_line_invoice(self):
         invoice = PurchaseInvoice.objects.create(
-            invoice_number='PINV-002', supplier=self.supplier,
-            date=date.today(),
-            created_by=self.user,
+            invoice_number='PINV-002', supplier=self.supplier, date=date.today(), created_by=self.user
         )
         PurchaseInvoiceLine.objects.create(
-            invoice=invoice, product=self.product,
-            quantity=Decimal('5'), unit_price=Decimal('50.00'),
+            invoice=invoice, product=self.product, quantity=Decimal('5'), unit_price=Decimal('50.00')
         )
         PurchaseInvoiceLine.objects.create(
-            invoice=invoice, product=self.product,
-            quantity=Decimal('3'), unit_price=Decimal('70.00'),
+            invoice=invoice, product=self.product, quantity=Decimal('3'), unit_price=Decimal('70.00')
         )
         invoice.calculate_totals()
         self.assertEqual(invoice.subtotal, Decimal('460.00'))
@@ -118,8 +129,9 @@ class UnitOfMeasureTest(TestCase):
 
     def test_conversion_to_base(self):
         kg = UnitOfMeasure.objects.create(code='KG', name='كيلوجرام', symbol='kg')
-        g = UnitOfMeasure.objects.create(code='G', name='جرام', symbol='g',
-                                         base_unit=kg, conversion_factor=Decimal('0.001'))
+        g = UnitOfMeasure.objects.create(
+            code='G', name='جرام', symbol='g', base_unit=kg, conversion_factor=Decimal('0.001')
+        )
         # 1000 جرام = 1 كيلوجرام
         self.assertEqual(g.to_base(Decimal('1000')), Decimal('1'))
         # تحويل 500 جرام إلى كيلوجرام
@@ -153,10 +165,8 @@ class CatalogSettingsTest(TestCase):
         settings = CatalogSettings.get_settings()
         settings.enforce_unit = True
         settings.save()
-        form = ProductForm(data={
-            'code': 'P003', 'name': 'منتج بلا وحدة',
-            'purchase_price': '10', 'selling_price': '20',
-        })
+        form = ProductForm(
+            data={'code': 'P003', 'name': 'منتج بلا وحدة', 'purchase_price': '10', 'selling_price': '20'}
+        )
         self.assertFalse(form.is_valid())
         self.assertIn('يجب تحديد وحدة القياس', str(form.errors))
-

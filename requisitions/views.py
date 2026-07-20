@@ -1,21 +1,18 @@
 from datetime import date
 
-from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Q
-from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from common.permissions import screen_permission_required
-from common.models import SequenceNumber
-from purchases.models import Supplier
-from purchases.models import Product
-from budget.models import CostCenter
 from purchase_orders.models import PurchaseOrder, PurchaseOrderLine
-from .models import Requisition, RequisitionLine
+from purchases.models import Product, Supplier
+
 from .forms import RequisitionForm, RequisitionLineFormSet
+from .models import Requisition
 
 logger = __import__('logging').getLogger('accounting')
 
@@ -49,11 +46,9 @@ def req_list(request):
     paginator = Paginator(reqs, 25)
     page = request.GET.get('page')
     reqs_page = paginator.get_page(page)
-    return render(request, 'requisitions/req_list.html', {
-        'reqs': reqs_page,
-        'status_filter': status,
-        'priority_filter': priority,
-    })
+    return render(
+        request, 'requisitions/req_list.html', {'reqs': reqs_page, 'status_filter': status, 'priority_filter': priority}
+    )
 
 
 @screen_permission_required('requisitions.requisition', 'add')
@@ -79,28 +74,30 @@ def req_create(request):
         form = RequisitionForm(initial={'date': date.today()})
         formset = RequisitionLineFormSet()
     products = Product.objects.filter(is_active=True)
-    return render(request, 'requisitions/req_form.html', {
-        'form': form,
-        'formset': formset,
-        'products': products,
-        'title': 'إنشاء طلب شراء جديد',
-    })
+    return render(
+        request,
+        'requisitions/req_form.html',
+        {'form': form, 'formset': formset, 'products': products, 'title': 'إنشاء طلب شراء جديد'},
+    )
 
 
 @screen_permission_required('requisitions.requisition', 'view')
 def req_detail(request, pk):
-    req = get_object_or_404(
-        Requisition.objects.select_related('requested_by', 'cost_center', 'created_by'), pk=pk)
+    req = get_object_or_404(Requisition.objects.select_related('requested_by', 'cost_center', 'created_by'), pk=pk)
     lines = req.lines.select_related('product', 'uom').all()
     today = timezone.localdate()
     days = _days_pending(req.date, today)
-    return render(request, 'requisitions/req_detail.html', {
-        'req': req,
-        'lines': lines,
-        'days_pending': days,
-        'is_escalated': _is_escalated(days),
-        'threshold': RFQ_THRESHOLD,
-    })
+    return render(
+        request,
+        'requisitions/req_detail.html',
+        {
+            'req': req,
+            'lines': lines,
+            'days_pending': days,
+            'is_escalated': _is_escalated(days),
+            'threshold': RFQ_THRESHOLD,
+        },
+    )
 
 
 @screen_permission_required('requisitions.requisition', 'edit')
@@ -122,13 +119,11 @@ def req_edit(request, pk):
         form = RequisitionForm(instance=req)
         formset = RequisitionLineFormSet(instance=req)
     products = Product.objects.filter(is_active=True)
-    return render(request, 'requisitions/req_form.html', {
-        'form': form,
-        'formset': formset,
-        'products': products,
-        'req': req,
-        'title': f'تعديل طلب الشراء {req.number}',
-    })
+    return render(
+        request,
+        'requisitions/req_form.html',
+        {'form': form, 'formset': formset, 'products': products, 'req': req, 'title': f'تعديل طلب الشراء {req.number}'},
+    )
 
 
 @require_POST
@@ -186,8 +181,7 @@ def req_reject(request, pk):
 
 @screen_permission_required('requisitions.requisition', 'edit')
 def req_convert(request, pk):
-    req = get_object_or_404(
-        Requisition.objects.select_related('cost_center', 'created_by'), pk=pk)
+    req = get_object_or_404(Requisition.objects.select_related('cost_center', 'created_by'), pk=pk)
     if req.status != 'approved':
         messages.error(request, 'لا يمكن تحويل طلب شراء غير معتمد')
         return redirect('requisitions:req_detail', pk=req.pk)
@@ -205,7 +199,8 @@ def req_convert(request, pk):
                 messages.error(
                     request,
                     f'لا يمكن إنشاء أمر شراء مباشر لطلب تتجاوز قيمته {RFQ_THRESHOLD} ج.م — '
-                    f'يجب المرور بطلب عروض الأسعار (RFQ)')
+                    f'يجب المرور بطلب عروض الأسعار (RFQ)',
+                )
                 return redirect('requisitions:req_convert', pk=req.pk)
             supplier_id = request.POST.get('supplier')
             if not supplier_id:
@@ -215,13 +210,11 @@ def req_convert(request, pk):
         messages.error(request, 'إجراء تحويل غير صحيح')
         return redirect('requisitions:req_convert', pk=req.pk)
 
-    return render(request, 'requisitions/req_convert.html', {
-        'req': req,
-        'total': total,
-        'threshold': RFQ_THRESHOLD,
-        'force_rfq': force_rfq,
-        'suppliers': suppliers,
-    })
+    return render(
+        request,
+        'requisitions/req_convert.html',
+        {'req': req, 'total': total, 'threshold': RFQ_THRESHOLD, 'force_rfq': force_rfq, 'suppliers': suppliers},
+    )
 
 
 @transaction.atomic
@@ -283,10 +276,7 @@ def _convert_to_po(request, req, supplier_id):
     po.save()
     for line in req.lines.select_related('product').all():
         PurchaseOrderLine.objects.create(
-            order=po,
-            product=line.product,
-            quantity=line.quantity,
-            unit_price=line.estimated_unit_price or 0,
+            order=po, product=line.product, quantity=line.quantity, unit_price=line.estimated_unit_price or 0
         )
     req.status = 'ordered'
     req.save(update_fields=['status', 'updated_at'])
@@ -301,22 +291,25 @@ def workflow_dashboard(request):
     pending_reqs = []
     for r in Requisition.objects.filter(status='pending').select_related('requested_by', 'cost_center'):
         days = _days_pending(r.date, today)
-        pending_reqs.append({
-            'pk': r.pk,
-            'number': r.number,
-            'title': f'طلب شراء {r.number}',
-            'subtitle': f'بواسطة {r.requested_by}',
-            'status': r.status,
-            'status_display': r.get_status_display(),
-            'days': days,
-            'escalated': _is_escalated(days),
-            'url': r.get_absolute_url(),
-            'cost_center': r.cost_center,
-        })
+        pending_reqs.append(
+            {
+                'pk': r.pk,
+                'number': r.number,
+                'title': f'طلب شراء {r.number}',
+                'subtitle': f'بواسطة {r.requested_by}',
+                'status': r.status,
+                'status_display': r.get_status_display(),
+                'days': days,
+                'escalated': _is_escalated(days),
+                'url': r.get_absolute_url(),
+                'cost_center': r.cost_center,
+            }
+        )
 
     rfqs_overdue = []
     try:
         from rfq.models import RFQ
+
         rfq_qs = RFQ.objects.filter(status='sent', valid_until__lt=today)
         if hasattr(RFQ, 'requisition'):
             rfq_qs = rfq_qs.select_related('requisition')
@@ -324,45 +317,53 @@ def workflow_dashboard(request):
             ref = getattr(q, 'date', None) or getattr(getattr(q, 'requisition', None), 'date', None)
             days = _days_pending(getattr(q, 'valid_until', None), today)
             overdue_days = _days_pending(ref, today)
-            rfqs_overdue.append({
-                'pk': q.pk,
-                'number': getattr(q, 'number', str(q.pk)),
-                'title': f'طلب عروض أسعار {getattr(q, "number", q.pk)}',
-                'subtitle': f'انتهت مهلة الرد: {getattr(q, "valid_until", "-")}',
-                'status': 'sent',
-                'status_display': 'مُرسل',
-                'days': days,
-                'escalated': True,
-                'overdue_days': max(days, 0),
-                'url': getattr(q, 'get_absolute_url', lambda: '#')(),
-                'cost_center': getattr(getattr(q, 'requisition', None), 'cost_center', None),
-            })
+            rfqs_overdue.append(
+                {
+                    'pk': q.pk,
+                    'number': getattr(q, 'number', str(q.pk)),
+                    'title': f'طلب عروض أسعار {getattr(q, "number", q.pk)}',
+                    'subtitle': f'انتهت مهلة الرد: {getattr(q, "valid_until", "-")}',
+                    'status': 'sent',
+                    'status_display': 'مُرسل',
+                    'days': days,
+                    'escalated': True,
+                    'overdue_days': max(days, 0),
+                    'url': getattr(q, 'get_absolute_url', lambda: '#')(),
+                    'cost_center': getattr(getattr(q, 'requisition', None), 'cost_center', None),
+                }
+            )
     except ImportError:
         rfqs_overdue = []
 
     pos_waiting = []
     for po in PurchaseOrder.objects.filter(status__in=['sent', 'approved']).select_related('supplier'):
         days = _days_pending(po.date, today)
-        pos_waiting.append({
-            'pk': po.pk,
-            'number': po.order_number,
-            'title': f'أمر شراء {po.order_number}',
-            'subtitle': f'المورد: {po.supplier.name}',
-            'status': po.status,
-            'status_display': po.get_status_display(),
-            'days': days,
-            'escalated': _is_escalated(days),
-            'url': po.get_absolute_url(),
-            'cost_center': None,
-        })
+        pos_waiting.append(
+            {
+                'pk': po.pk,
+                'number': po.order_number,
+                'title': f'أمر شراء {po.order_number}',
+                'subtitle': f'المورد: {po.supplier.name}',
+                'status': po.status,
+                'status_display': po.get_status_display(),
+                'days': days,
+                'escalated': _is_escalated(days),
+                'url': po.get_absolute_url(),
+                'cost_center': None,
+            }
+        )
 
-    return render(request, 'requisitions/workflow_dashboard.html', {
-        'today': today,
-        'pending_reqs': pending_reqs,
-        'rfqs_overdue': rfqs_overdue,
-        'pos_waiting': pos_waiting,
-        'escalation_days': ESCALATION_DAYS,
-    })
+    return render(
+        request,
+        'requisitions/workflow_dashboard.html',
+        {
+            'today': today,
+            'pending_reqs': pending_reqs,
+            'rfqs_overdue': rfqs_overdue,
+            'pos_waiting': pos_waiting,
+            'escalation_days': ESCALATION_DAYS,
+        },
+    )
 
 
 @screen_permission_required('requisitions.requisition', 'view')
@@ -372,38 +373,41 @@ def pending_approvals(request):
     pending_reqs = []
     for r in Requisition.objects.filter(status='pending').select_related('requested_by', 'cost_center'):
         days = _days_pending(r.date, today)
-        pending_reqs.append({
-            'pk': r.pk,
-            'number': r.number,
-            'title': f'طلب شراء {r.number}',
-            'subtitle': f'بواسطة {r.requested_by}',
-            'status': r.status,
-            'status_display': r.get_status_display(),
-            'days': days,
-            'escalated': _is_escalated(days),
-            'url': r.get_absolute_url(),
-            'cost_center': r.cost_center,
-        })
+        pending_reqs.append(
+            {
+                'pk': r.pk,
+                'number': r.number,
+                'title': f'طلب شراء {r.number}',
+                'subtitle': f'بواسطة {r.requested_by}',
+                'status': r.status,
+                'status_display': r.get_status_display(),
+                'days': days,
+                'escalated': _is_escalated(days),
+                'url': r.get_absolute_url(),
+                'cost_center': r.cost_center,
+            }
+        )
 
     pos_waiting = []
     for po in PurchaseOrder.objects.filter(status='sent').select_related('supplier'):
         days = _days_pending(po.date, today)
-        pos_waiting.append({
-            'pk': po.pk,
-            'number': po.order_number,
-            'title': f'أمر شراء {po.order_number}',
-            'subtitle': f'المورد: {po.supplier.name}',
-            'status': po.status,
-            'status_display': po.get_status_display(),
-            'days': days,
-            'escalated': _is_escalated(days),
-            'url': po.get_absolute_url(),
-            'cost_center': None,
-        })
+        pos_waiting.append(
+            {
+                'pk': po.pk,
+                'number': po.order_number,
+                'title': f'أمر شراء {po.order_number}',
+                'subtitle': f'المورد: {po.supplier.name}',
+                'status': po.status,
+                'status_display': po.get_status_display(),
+                'days': days,
+                'escalated': _is_escalated(days),
+                'url': po.get_absolute_url(),
+                'cost_center': None,
+            }
+        )
 
-    return render(request, 'requisitions/pending_approvals.html', {
-        'today': today,
-        'pending_reqs': pending_reqs,
-        'pos_waiting': pos_waiting,
-        'escalation_days': ESCALATION_DAYS,
-    })
+    return render(
+        request,
+        'requisitions/pending_approvals.html',
+        {'today': today, 'pending_reqs': pending_reqs, 'pos_waiting': pos_waiting, 'escalation_days': ESCALATION_DAYS},
+    )

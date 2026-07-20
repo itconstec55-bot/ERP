@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+
 from .models import Cheque
 
 
@@ -7,8 +8,16 @@ class ChequeForm(forms.ModelForm):
     class Meta:
         model = Cheque
         fields = [
-            'cheque_number', 'cheque_type', 'bank_name', 'branch',
-            'amount', 'currency', 'issue_date', 'due_date', 'payee_name', 'notes',
+            'cheque_number',
+            'cheque_type',
+            'bank_name',
+            'branch',
+            'amount',
+            'currency',
+            'issue_date',
+            'due_date',
+            'payee_name',
+            'notes',
         ]
         widgets = {
             'issue_date': forms.DateInput(attrs={'type': 'date'}),

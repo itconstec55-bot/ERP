@@ -8,12 +8,11 @@ Egypt Tax Authority E-Invoicing API Service
 3. إرسال المستند عبر endpoints الخاصة بالإرسال
 4. متابعة حالة المستند
 """
-import json
+
 import logging
-from django.conf import settings
-from django.utils import timezone
 
 import requests
+from django.utils import timezone
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -22,6 +21,7 @@ logger = logging.getLogger('accounting')
 
 class ETAAPIError(Exception):
     """خطأ في الاتصال بمنظومة الفاتورة الإلكترونية"""
+
     def __init__(self, message, status_code=None, response_body=None):
         self.message = message
         self.status_code = status_code
@@ -46,18 +46,12 @@ class ETAService:
     def _get_session(self):
         session = requests.Session()
         retry = Retry(
-            total=3,
-            backoff_factor=0.5,
-            status_forcelist=[500, 502, 503, 504],
-            allowed_methods=['GET', 'POST']
+            total=3, backoff_factor=0.5, status_forcelist=[500, 502, 503, 504], allowed_methods=['GET', 'POST']
         )
         adapter = HTTPAdapter(max_retries=retry)
         session.mount('https://', adapter)
         session.mount('http://', adapter)
-        session.headers.update({
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        })
+        session.headers.update({'Accept': 'application/json', 'Content-Type': 'application/json'})
         return session
 
     # ──────────────────────────────────────────────────────────
@@ -87,7 +81,7 @@ class ETAService:
             raise ETAAPIError(
                 f'فشل المصادقة مع مصلحة الضرائب (كود {resp.status_code})',
                 status_code=resp.status_code,
-                response_body=resp.text[:1000]
+                response_body=resp.text[:1000],
             )
 
         data = resp.json()
@@ -124,7 +118,7 @@ class ETAService:
             raise ETAAPIError(
                 f'فشل إرسال المستندات (كود {resp.status_code})',
                 status_code=resp.status_code,
-                response_body=resp.text[:2000]
+                response_body=resp.text[:2000],
             )
 
         return resp.json()
@@ -152,7 +146,7 @@ class ETAService:
             raise ETAAPIError(
                 f'فشل متابعة الحالة (كود {resp.status_code})',
                 status_code=resp.status_code,
-                response_body=resp.text[:1000]
+                response_body=resp.text[:1000],
             )
 
         return resp.json()
@@ -177,7 +171,7 @@ class ETAService:
             raise ETAAPIError(
                 f'فشل جلب التفاصيل (كود {resp.status_code})',
                 status_code=resp.status_code,
-                response_body=resp.text[:1000]
+                response_body=resp.text[:1000],
             )
 
         return resp.json()
@@ -203,7 +197,7 @@ class ETAService:
             raise ETAAPIError(
                 f'فشل إلغاء المستند (كود {resp.status_code})',
                 status_code=resp.status_code,
-                response_body=resp.text[:1000]
+                response_body=resp.text[:1000],
             )
 
         return resp.json() if resp.text else {'status': 'rejected'}

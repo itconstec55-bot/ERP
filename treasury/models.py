@@ -1,12 +1,15 @@
-from decimal import Decimal
-from django.db import models, transaction
-from django.contrib.auth.models import User
-from accounts.models import Account, JournalEntry
-from common.validators import validate_positive_decimal
-from common.accounting_service import JournalEntryService
-from common.models import SequenceNumber
-from common.exceptions import AccountingError
 import uuid
+from datetime import date
+from decimal import Decimal
+
+from django.contrib.auth.models import User
+from django.db import models, transaction
+
+from accounts.models import Account, JournalEntry
+from common.accounting_service import JournalEntryService
+from common.exceptions import AccountingError
+from common.models import SequenceNumber
+from common.validators import validate_positive_decimal
 
 
 class Bank(models.Model):
@@ -16,10 +19,10 @@ class Bank(models.Model):
     account_number = models.CharField(max_length=50, verbose_name='رقم الحساب')
     iban = models.CharField(max_length=50, blank=True, null=True, verbose_name='رقم الآيبان')
     swift_code = models.CharField(max_length=20, blank=True, null=True, verbose_name='الكود السويفت')
-    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True,
-                                verbose_name='الحساب المحاسبي')
-    current_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0,
-                                           verbose_name='الرصيد الحالي')
+    account = models.ForeignKey(
+        Account, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='الحساب المحاسبي'
+    )
+    current_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name='الرصيد الحالي')
     is_active = models.BooleanField(default=True, db_index=True, verbose_name='نشط')
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -42,14 +45,12 @@ class Bank(models.Model):
 class Safe(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, verbose_name='اسم الخزينة')
-    responsible_person = models.CharField(max_length=200, blank=True, null=True,
-                                           verbose_name='المسئول')
-    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True,
-                                verbose_name='الحساب المحاسبي')
-    current_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0,
-                                           verbose_name='الرصيد الحالي')
-    maximum_limit = models.DecimalField(max_digits=15, decimal_places=2, default=0,
-                                         verbose_name='الحد الأقصى')
+    responsible_person = models.CharField(max_length=200, blank=True, null=True, verbose_name='المسئول')
+    account = models.ForeignKey(
+        Account, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='الحساب المحاسبي'
+    )
+    current_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name='الرصيد الحالي')
+    maximum_limit = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name='الحد الأقصى')
     is_active = models.BooleanField(default=True, db_index=True, verbose_name='نشط')
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -76,23 +77,26 @@ class BankTransaction(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     bank = models.ForeignKey(Bank, on_delete=models.PROTECT, verbose_name='البنك')
-    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE_CHOICES,
-                                         verbose_name='نوع المعاملة')
-    date = models.DateField(verbose_name='التاريخ')
-    amount = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='المبلغ',
-                                    validators=[validate_positive_decimal])
-    balance_after = models.DecimalField(max_digits=15, decimal_places=2, default=0,
-                                         verbose_name='الرصيد بعد المعاملة')
-    reference_number = models.CharField(max_length=100, blank=True, null=True,
-                                         verbose_name='رقم المرجع')
-    check_number = models.CharField(max_length=50, blank=True, null=True,
-                                     verbose_name='رقم الشيك')
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE_CHOICES, verbose_name='نوع المعاملة')
+    date = models.DateField(verbose_name='التاريخ', default=date.today)
+    amount = models.DecimalField(
+        max_digits=15, decimal_places=2, verbose_name='المبلغ', validators=[validate_positive_decimal]
+    )
+    balance_after = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name='الرصيد بعد المعاملة')
+    reference_number = models.CharField(max_length=100, blank=True, null=True, verbose_name='رقم المرجع')
+    check_number = models.CharField(max_length=50, blank=True, null=True, verbose_name='رقم الشيك')
     description = models.TextField(verbose_name='البيان')
-    journal_entry = models.ForeignKey(JournalEntry, on_delete=models.SET_NULL, null=True, blank=True,
-                                        verbose_name='القيد المحاسبي')
-    counterparty_account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True,
-                                             related_name='bank_tx_counterparty',
-                                             verbose_name='حساب الطرف المقابل')
+    journal_entry = models.ForeignKey(
+        JournalEntry, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القيد المحاسبي'
+    )
+    counterparty_account = models.ForeignKey(
+        Account,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='bank_tx_counterparty',
+        verbose_name='حساب الطرف المقابل',
+    )
     is_posted = models.BooleanField(default=False, verbose_name='مرحل للاستاذ العام')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -114,8 +118,7 @@ class BankTransaction(models.Model):
         bank_gl = self.bank.account
         if bank_gl is None:
             raise AccountingError(
-                f'لا يوجد حساب محاسبي مرتبط بالبنك "{self.bank.name}". '
-                f'يرجى ربط حساب محاسبي بالبنك أولاً.'
+                f'لا يوجد حساب محاسبي مرتبط بالبنك "{self.bank.name}". يرجى ربط حساب محاسبي بالبنك أولاً.'
             )
         counterparty = self.counterparty_account
         if counterparty is None:
@@ -189,27 +192,28 @@ class BankTransaction(models.Model):
 
 
 class SafeTransaction(models.Model):
-    TRANSACTION_TYPE_CHOICES = [
-        ('deposit', 'إيداع'),
-        ('withdrawal', 'سحب'),
-        ('transfer', 'تحويل'),
-    ]
+    TRANSACTION_TYPE_CHOICES = [('deposit', 'إيداع'), ('withdrawal', 'سحب'), ('transfer', 'تحويل')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     safe = models.ForeignKey(Safe, on_delete=models.PROTECT, verbose_name='الخزينة')
-    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE_CHOICES,
-                                         verbose_name='نوع المعاملة')
-    date = models.DateField(verbose_name='التاريخ')
-    amount = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='المبلغ',
-                                    validators=[validate_positive_decimal])
-    balance_after = models.DecimalField(max_digits=15, decimal_places=2, default=0,
-                                         verbose_name='الرصيد بعد المعاملة')
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE_CHOICES, verbose_name='نوع المعاملة')
+    date = models.DateField(verbose_name='التاريخ', default=date.today)
+    amount = models.DecimalField(
+        max_digits=15, decimal_places=2, verbose_name='المبلغ', validators=[validate_positive_decimal]
+    )
+    balance_after = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name='الرصيد بعد المعاملة')
     description = models.TextField(verbose_name='البيان')
-    journal_entry = models.ForeignKey(JournalEntry, on_delete=models.SET_NULL, null=True, blank=True,
-                                        verbose_name='القيد المحاسبي')
-    counterparty_account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True,
-                                             related_name='safe_tx_counterparty',
-                                             verbose_name='حساب الطرف المقابل')
+    journal_entry = models.ForeignKey(
+        JournalEntry, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القيد المحاسبي'
+    )
+    counterparty_account = models.ForeignKey(
+        Account,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='safe_tx_counterparty',
+        verbose_name='حساب الطرف المقابل',
+    )
     is_posted = models.BooleanField(default=False, verbose_name='مرحل للاستاذ العام')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='أنشئ بواسطة')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -231,8 +235,7 @@ class SafeTransaction(models.Model):
         safe_gl = self.safe.account
         if safe_gl is None:
             raise AccountingError(
-                f'لا يوجد حساب محاسبي مرتبط بالخزينة "{self.safe.name}". '
-                f'يرجى ربط حساب محاسبي بالخزينة أولاً.'
+                f'لا يوجد حساب محاسبي مرتبط بالخزينة "{self.safe.name}". يرجى ربط حساب محاسبي بالخزينة أولاً.'
             )
         counterparty = self.counterparty_account
         if counterparty is None:

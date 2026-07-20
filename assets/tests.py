@@ -1,9 +1,10 @@
 from decimal import Decimal
 from io import BytesIO
-from django.test import TestCase
+
 from django.contrib.auth.models import User
-from django.test import Client
+from django.test import Client, TestCase
 from openpyxl import Workbook
+
 from .models import Asset, AssetCategory
 
 
@@ -26,18 +27,22 @@ class AssetImportTest(TestCase):
 
     def _upload(self, buf):
         from django.core.files.uploadedfile import SimpleUploadedFile
-        return self.client.post('/assets/import/assets/', {
-            'excel_file': SimpleUploadedFile(
-                'test.xlsx', buf.read(),
-                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            ),
-        })
+
+        return self.client.post(
+            '/assets/import/assets/',
+            {
+                'excel_file': SimpleUploadedFile(
+                    'test.xlsx',
+                    buf.read(),
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                )
+            },
+        )
 
     def test_import_creates_assets_with_decimal_values(self):
-        buf = self._build_xlsx([
-            ['A1', 'أصل1', 'مباني', '1,234.50', '100.25', 'active'],
-            ['A2', 'أصل2', 'مباني', '500', '', 'active'],
-        ])
+        buf = self._build_xlsx(
+            [['A1', 'أصل1', 'مباني', '1,234.50', '100.25', 'active'], ['A2', 'أصل2', 'مباني', '500', '', 'active']]
+        )
         resp = self._upload(buf)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Asset.objects.count(), 2)
@@ -51,9 +56,7 @@ class AssetImportTest(TestCase):
         self.assertTrue(AssetCategory.objects.filter(name='مباني').exists())
 
     def test_import_rejects_negative_price_rolls_back(self):
-        buf = self._build_xlsx([
-            ['A3', 'أصل3', 'مباني', '-500', '0', 'active'],
-        ])
+        buf = self._build_xlsx([['A3', 'أصل3', 'مباني', '-500', '0', 'active']])
         resp = self._upload(buf)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Asset.objects.count(), 0)

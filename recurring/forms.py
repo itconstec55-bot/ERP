@@ -1,18 +1,14 @@
 from django import forms
 from django.core.exceptions import ValidationError
+
 from .models import RecurringJournal
 
 
 class RecurringJournalForm(forms.ModelForm):
     class Meta:
         model = RecurringJournal
-        fields = [
-            'name', 'description', 'frequency', 'day_of_month',
-            'next_due_date', 'journal_type', 'reference',
-        ]
-        widgets = {
-            'next_due_date': forms.DateInput(attrs={'type': 'date'}),
-        }
+        fields = ['name', 'description', 'frequency', 'day_of_month', 'next_due_date', 'journal_type', 'reference']
+        widgets = {'next_due_date': forms.DateInput(attrs={'type': 'date'})}
 
     def clean_name(self):
         name = self.cleaned_data.get('name')

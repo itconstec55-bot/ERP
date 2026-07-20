@@ -1,17 +1,18 @@
 import json
-import hashlib
+import logging
 from datetime import datetime
-from django.shortcuts import render, redirect, get_object_or_404
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from django.conf import settings
+
+from .forms import SyncSettingsForm
 from .models import MachineInfo, SyncLog, SyncSettings
-from .forms import MachineInfoForm, SyncSettingsForm
-from .sync_engine import export_data, import_data, recalculate_balances, create_sync_log
-import logging
+from .sync_engine import create_sync_log, export_data, import_data
 
 logger = logging.getLogger('accounting')
 
@@ -23,7 +24,7 @@ def _get_or_create_machine():
         defaults={
             'name': getattr(settings, 'MACHINE_NAME', 'الجهاز الرئيسي'),
             'machine_type': getattr(settings, 'MACHINE_TYPE', 'standalone'),
-        }
+        },
     )
     return machine
 
@@ -75,11 +76,7 @@ def sync_settings_view(request):
     else:
         form = SyncSettingsForm(instance=sync_settings)
 
-    context = {
-        'form': form,
-        'machine': machine,
-        'sync_settings': sync_settings,
-    }
+    context = {'form': form, 'machine': machine, 'sync_settings': sync_settings}
     return render(request, 'sync/sync_settings.html', context)
 
 
@@ -92,8 +89,8 @@ def test_connection(request):
     if not sync_settings or not sync_settings.host_address:
         return JsonResponse({'success': False, 'error': 'لم يتم تعيين عنوان الـ Host بعد'})
 
-    import urllib.request
     import urllib.error
+    import urllib.request
 
     url = f'http://{sync_settings.host_address}:{sync_settings.host_port}/api/sync/status/'
     api_key = sync_settings.sync_key
@@ -103,10 +100,10 @@ def test_connection(request):
         with urllib.request.urlopen(req, timeout=10) as response:
             data = json.loads(response.read().decode())
             return JsonResponse({'success': True, 'data': data})
-    except urllib.error.URLError as e:
+    except urllib.error.URLError:
         logger.exception('Connection test failed')
         return JsonResponse({'success': False, 'error': 'تعذر الاتصال بالسيرفر البعيد'})
-    except Exception as e:
+    except Exception:
         logger.exception('Connection test failed')
         return JsonResponse({'success': False, 'error': 'حدث خطأ أثناء اختبار الاتصال'})
 
@@ -128,20 +125,16 @@ def manual_sync(request):
     # ضع مهمة المزامنة في الطابور. في وضع eager (الافتراضي، بلا وسيط) تُنفَّذ
     # متزامناً داخل الطلب فوراً؛ وعند ضبط وسيط + DJANGO_CELERY_EAGER=False تصبح غير متزامنة.
     from sync.tasks import perform_manual_sync
+
     perform_manual_sync.delay(
-        str(log.id),
-        sync_settings.host_address,
-        sync_settings.host_port,
-        sync_settings.sync_key,
-        machine.machine_id,
+        str(log.id), sync_settings.host_address, sync_settings.host_port, sync_settings.sync_key, machine.machine_id
     )
 
     if getattr(settings, 'CELERY_TASK_ALWAYS_EAGER', False):
         log.refresh_from_db()
         if log.status == 'completed':
             messages.success(
-                request,
-                f'تمت المزامنة بنجاح! تم إرسال {log.records_sent} سجل واستلام {log.records_received} سجل'
+                request, f'تمت المزامنة بنجاح! تم إرسال {log.records_sent} سجل واستلام {log.records_received} سجل'
             )
         else:
             messages.error(request, 'فشلت المزامنة. تأكد من اتصال الشبكة وحاول مرة أخرى.')
@@ -158,7 +151,7 @@ def sync_log_detail(request, pk):
 
 
 @csrf_exempt
-@require_http_methods(["POST"])
+@require_http_methods(['POST'])
 def api_push(request):
     if not _verify_api_key(request):
         return JsonResponse({'error': 'مفتاح API غير صالح'}, status=401)
@@ -170,8 +163,7 @@ def api_push(request):
 
     source_machine_id = data.get('sync_manifest', {}).get('source_machine', 'unknown')
     source_machine, _ = MachineInfo.objects.get_or_create(
-        machine_id=source_machine_id,
-        defaults={'name': f'جهاز {source_machine_id}', 'machine_type': 'client'}
+        machine_id=source_machine_id, defaults={'name': f'جهاز {source_machine_id}', 'machine_type': 'client'}
     )
 
     log = create_sync_log(source_machine, 'push', 'pending')
@@ -189,13 +181,15 @@ def api_push(request):
         source_machine.last_sync_at = datetime.now()
         source_machine.save(update_fields=['last_sync_at'])
 
-        return JsonResponse({
-            'success': True,
-            'imported': result['imported'],
-            'skipped': result['skipped'],
-            'conflicts': len(result['errors']),
-            'errors': result['errors'][:10],
-        })
+        return JsonResponse(
+            {
+                'success': True,
+                'imported': result['imported'],
+                'skipped': result['skipped'],
+                'conflicts': len(result['errors']),
+                'errors': result['errors'][:10],
+            }
+        )
 
     except Exception as e:
         log.status = 'failed'
@@ -207,7 +201,7 @@ def api_push(request):
 
 
 @csrf_exempt
-@require_http_methods(["GET"])
+@require_http_methods(['GET'])
 def api_pull(request):
     if not _verify_api_key(request):
         return JsonResponse({'error': 'مفتاح API غير صالح'}, status=401)
@@ -231,13 +225,13 @@ def api_pull(request):
     try:
         data = export_data(machine_id, limit=limit_val, offset=offset_val)
         return JsonResponse(data)
-    except Exception as e:
+    except Exception:
         logger.exception('Sync pull failed')
         return JsonResponse({'error': 'حدث خطأ أثناء جلب البيانات'}, status=500)
 
 
 @csrf_exempt
-@require_http_methods(["GET"])
+@require_http_methods(['GET'])
 def api_status(request):
     if not _verify_api_key(request):
         return JsonResponse({'error': 'مفتاح API غير صالح'}, status=401)
@@ -245,38 +239,34 @@ def api_status(request):
     machine = _get_or_create_machine()
     last_log = SyncLog.objects.first()
 
-    return JsonResponse({
-        'machine_id': machine.machine_id,
-        'name': machine.name,
-        'machine_type': machine.machine_type,
-        'last_sync': machine.last_sync_at.isoformat() if machine.last_sync_at else None,
-        'last_log_status': last_log.status if last_log else None,
-        'total_syncs': SyncLog.objects.filter(status='completed').count(),
-    })
+    return JsonResponse(
+        {
+            'machine_id': machine.machine_id,
+            'name': machine.name,
+            'machine_type': machine.machine_type,
+            'last_sync': machine.last_sync_at.isoformat() if machine.last_sync_at else None,
+            'last_log_status': last_log.status if last_log else None,
+            'total_syncs': SyncLog.objects.filter(status='completed').count(),
+        }
+    )
 
 
 @csrf_exempt
-@require_http_methods(["POST"])
+@require_http_methods(['POST'])
 def api_recalculate(request):
     if not _verify_api_key(request):
         return JsonResponse({'error': 'مفتاح API غير صالح'}, status=401)
 
     try:
-        from sync.tasks import recalc_balances_task
         from django.conf import settings
+
+        from sync.tasks import recalc_balances_task
+
         result = recalc_balances_task.delay()
         if getattr(settings, 'CELERY_TASK_ALWAYS_EAGER', False):
             # وضع eager: نُفِّذت المهمة متزامنياً (لا وسيط) — النتيجة جاهزة
-            return JsonResponse({
-                'success': True,
-                'message': 'تم إعادة حساب الأرصدة بنجاح',
-                'task_id': result.id,
-            })
-        return JsonResponse({
-            'success': True,
-            'message': 'تم وضع مهمة إعادة الحساب في الطابور',
-            'task_id': result.id,
-        })
-    except Exception as e:
+            return JsonResponse({'success': True, 'message': 'تم إعادة حساب الأرصدة بنجاح', 'task_id': result.id})
+        return JsonResponse({'success': True, 'message': 'تم وضع مهمة إعادة الحساب في الطابور', 'task_id': result.id})
+    except Exception:
         logger.exception('Recalculate balances failed')
         return JsonResponse({'error': 'حدث خطأ أثناء إعادة حساب الأرصدة'}, status=500)

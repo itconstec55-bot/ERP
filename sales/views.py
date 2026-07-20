@@ -1,24 +1,20 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db import models, transaction
+from django.db import IntegrityError, models, transaction
 from django.db.models import Sum
-from django.conf import settings
-from django.db import IntegrityError
-from .models import Customer, SalesInvoice, SalesInvoiceLine
-from .forms import CustomerForm, SalesInvoiceForm, SalesInvoiceLineFormSet
-from common.excel_utils import export_to_excel, import_from_excel
-from common.permissions import (
-    filter_by_branch, get_user_profile,
-    object_permission_required, screen_permission_required,
-    filter_by_user_branches, can_access_branch,
-)
-from purchases.models import Product
-from common.whatsapp import WhatsAppService, send_invoice_whatsapp, send_statement_whatsapp
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-from common.accounting_service import UnbalancedEntryError, AccountNotFoundError, InsufficientStockError
+
+from common.accounting_service import AccountNotFoundError, UnbalancedEntryError
+from common.excel_utils import export_to_excel, import_from_excel
+from common.permissions import can_access_branch, filter_by_user_branches, screen_permission_required
+from common.whatsapp import send_invoice_whatsapp, send_statement_whatsapp
+from purchases.models import Product
+
+from .forms import CustomerForm, SalesInvoiceForm, SalesInvoiceLineFormSet
+from .models import Customer, SalesInvoice
 
 # الحد الأقصى لحجم ملف الاستيراد (10 ميجابايت)
 MAX_UPLOAD_SIZE = 10 * 1024 * 1024
@@ -52,15 +48,11 @@ def customer_create(request):
 @screen_permission_required('sales.customer', 'view')
 def customer_detail(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
-    invoices = SalesInvoice.objects.filter(customer=customer).select_related(
-        'journal_entry'
-    ).order_by('-date')
+    invoices = SalesInvoice.objects.filter(customer=customer).select_related('journal_entry').order_by('-date')
     total_sales = invoices.aggregate(total=Sum('total_amount'))['total'] or 0
-    return render(request, 'sales/customer_detail.html', {
-        'customer': customer,
-        'invoices': invoices,
-        'total_sales': total_sales,
-    })
+    return render(
+        request, 'sales/customer_detail.html', {'customer': customer, 'invoices': invoices, 'total_sales': total_sales}
+    )
 
 
 @screen_permission_required('sales.customer', 'edit')
@@ -79,9 +71,7 @@ def customer_edit(request, pk):
 
 @screen_permission_required('sales.invoice', 'view')
 def sales_invoice_list(request):
-    invoices = filter_by_user_branches(SalesInvoice.objects.select_related(
-        'customer', 'journal_entry'
-    ), request.user)
+    invoices = filter_by_user_branches(SalesInvoice.objects.select_related('customer', 'journal_entry'), request.user)
     paginator = Paginator(invoices, 25)
     page = request.GET.get('page')
     invoices_page = paginator.get_page(page)
@@ -97,12 +87,14 @@ def sales_invoice_create(request):
             invoice = form.save(commit=False)
             invoice.created_by = request.user
             from common.permissions import get_user_profile
+
             profile = get_user_profile(request.user)
             if profile and profile.branch:
                 invoice.branch = profile.branch
 
             with transaction.atomic():
                 from warehouses.models import WarehouseProduct
+
                 stock_errors = []
                 for f in formset:
                     if not f.cleaned_data or f.cleaned_data.get('DELETE'):
@@ -110,14 +102,10 @@ def sales_invoice_create(request):
                     product = f.cleaned_data.get('product')
                     quantity = f.cleaned_data.get('quantity', 0)
                     if product and quantity:
-                        wp_list = WarehouseProduct.objects.select_for_update().filter(
-                            product=product
-                        )
+                        wp_list = WarehouseProduct.objects.select_for_update().filter(product=product)
                         total_stock = wp_list.aggregate(total=models.Sum('quantity'))['total'] or 0
                         if total_stock < quantity:
-                            stock_errors.append(
-                                f'{product.name}: المتوفر {total_stock}، المطلوب {quantity}'
-                            )
+                            stock_errors.append(f'{product.name}: المتوفر {total_stock}، المطلوب {quantity}')
                 if stock_errors:
                     for err in stock_errors:
                         messages.error(request, f'نقص في المخزون - {err}')
@@ -132,21 +120,31 @@ def sales_invoice_create(request):
 
             customer = invoice.customer
             if customer and customer.credit_limit > 0:
-                total_owed = SalesInvoice.objects.filter(
-                    customer=customer, remaining_amount__gt=0
-                ).exclude(pk=invoice.pk).aggregate(total=Sum('remaining_amount'))['total'] or 0
+                total_owed = (
+                    SalesInvoice.objects.filter(customer=customer, remaining_amount__gt=0)
+                    .exclude(pk=invoice.pk)
+                    .aggregate(total=Sum('remaining_amount'))['total']
+                    or 0
+                )
                 new_total = total_owed + invoice.remaining_amount
                 if new_total > customer.credit_limit:
                     if getattr(settings, 'CREDIT_LIMIT_HARD_BLOCK', False):
                         invoice.delete()
-                        messages.error(request, f'تم رفض الفاتورة: العميل تجاوز حد الائتمان ({customer.credit_limit:,.2f} ج.م). الرصيد المستحق المتوقع: {new_total:,.2f} ج.م')
+                        messages.error(
+                            request,
+                            f'تم رفض الفاتورة: العميل تجاوز حد الائتمان ({customer.credit_limit:,.2f} ج.م). الرصيد المستحق المتوقع: {new_total:,.2f} ج.م',
+                        )
                         return redirect('sales:invoice_create')
                     else:
-                        messages.warning(request, f'تنبيه: العميل تجاوز حد الائتمان ({customer.credit_limit:,.2f} ج.م). الرصيد المستحق: {new_total:,.2f} ج.م')
+                        messages.warning(
+                            request,
+                            f'تنبيه: العميل تجاوز حد الائتمان ({customer.credit_limit:,.2f} ج.م). الرصيد المستحق: {new_total:,.2f} ج.م',
+                        )
 
             messages.success(request, 'تم إنشاء الفاتورة بنجاح')
             try:
                 from notifications.utils import notify_invoice_created
+
                 notify_invoice_created(invoice)
             except Exception:
                 pass
@@ -155,11 +153,7 @@ def sales_invoice_create(request):
         form = SalesInvoiceForm()
         formset = SalesInvoiceLineFormSet()
     products = Product.objects.filter(is_active=True)
-    return render(request, 'sales/invoice_form.html', {
-        'form': form,
-        'formset': formset,
-        'products': products,
-    })
+    return render(request, 'sales/invoice_form.html', {'form': form, 'formset': formset, 'products': products})
 
 
 @screen_permission_required('sales.invoice', 'view')
@@ -179,9 +173,16 @@ def sales_invoice_approve(request, pk):
     try:
         invoice.approve(request.user)
         from audit.models import log_action
-        log_action(request.user, 'update', 'sales.salesinvoice',
-                   object_id=invoice.pk, object_repr=str(invoice)[:200],
-                   changes={'approved': True}, request=request)
+
+        log_action(
+            request.user,
+            'update',
+            'sales.salesinvoice',
+            object_id=invoice.pk,
+            object_repr=str(invoice)[:200],
+            changes={'approved': True},
+            request=request,
+        )
         messages.success(request, 'تم اعتماد الفاتورة بنجاح')
     except ValueError as e:
         messages.error(request, str(e))
@@ -240,25 +241,33 @@ def sales_invoice_post(request, pk):
     try:
         invoice.create_journal_entry()
         from audit.models import log_action
-        log_action(request.user, 'post', 'sales.salesinvoice',
-                   object_id=invoice.pk, object_repr=str(invoice)[:200], request=request)
+
+        log_action(
+            request.user,
+            'post',
+            'sales.salesinvoice',
+            object_id=invoice.pk,
+            object_repr=str(invoice)[:200],
+            request=request,
+        )
         messages.success(request, 'تم ترحيل الفاتورة بنجاح')
         logger.info(f'Sales invoice {invoice.invoice_number} posted by user {request.user.username}')
         try:
             from notifications.utils import notify_invoice_posted
+
             notify_invoice_posted(invoice)
         except Exception:
             pass
-    except UnbalancedEntryError as e:
+    except UnbalancedEntryError:
         messages.error(request, 'حدث خطأ أثناء الترحيل. تأكد من صحة البيانات وحاول مرة أخرى.')
         logger.exception('Posting failed for SalesInvoice %s', pk)
-    except AccountNotFoundError as e:
+    except AccountNotFoundError:
         messages.error(request, 'حدث خطأ أثناء الترحيل. تأكد من صحة البيانات وحاول مرة أخرى.')
         logger.exception('Posting failed for SalesInvoice %s', pk)
     except IntegrityError as e:
         messages.error(request, 'خطأ في سلامة البيانات - يرجى مراجعة الحسابات')
         logger.error(f'Integrity error posting invoice {invoice.pk}: {e}')
-    except Exception as e:
+    except Exception:
         messages.error(request, 'حدث خطأ غير متوقع، يرجى المحاولة لاحقاً')
         logger.exception(f'Unexpected error posting invoice {invoice.pk}')
     return redirect('sales:invoice_detail', pk=pk)
@@ -267,16 +276,21 @@ def sales_invoice_post(request, pk):
 @screen_permission_required('sales.invoice', 'print')
 def sales_invoice_print(request, pk):
     from company.models import Company
+
     invoice = get_object_or_404(SalesInvoice, pk=pk)
     lines = invoice.lines.select_related('product').all()
     company = Company.objects.first()
-    return render(request, 'sales/invoice_print.html', {
-        'invoice': invoice,
-        'lines': lines,
-        'company': company,
-        'invoice_type': 'فاتورة مبيعات',
-        'customer': invoice.customer,
-    })
+    return render(
+        request,
+        'sales/invoice_print.html',
+        {
+            'invoice': invoice,
+            'lines': lines,
+            'company': company,
+            'invoice_type': 'فاتورة مبيعات',
+            'customer': invoice.customer,
+        },
+    )
 
 
 @require_POST
@@ -294,10 +308,7 @@ def sales_invoice_whatsapp(request, pk):
 
     # إرسال عبر واتساب
     result = send_invoice_whatsapp(
-        invoice=invoice,
-        phone=phone,
-        party_name=invoice.customer.name,
-        party_type="customer"
+        invoice=invoice, phone=phone, party_name=invoice.customer.name, party_type='customer'
     )
 
     if result['success']:
@@ -331,10 +342,7 @@ def customer_statement_whatsapp(request, pk):
     invoices = SalesInvoice.objects.filter(customer=customer).order_by('-date')
 
     result = send_statement_whatsapp(
-        party=customer,
-        invoices=invoices,
-        phone=customer.mobile or customer.phone,
-        party_type="customer"
+        party=customer, invoices=invoices, phone=customer.mobile or customer.phone, party_type='customer'
     )
 
     if result['success']:
@@ -354,15 +362,19 @@ def customer_statement_whatsapp(request, pk):
 @screen_permission_required('sales.customer', 'export')
 def export_customers(request):
     customers = Customer.objects.all()
-    return export_to_excel(customers, [
-        {'field': 'code', 'header': 'الكود', 'width': 12},
-        {'field': 'name', 'header': 'الاسم', 'width': 25},
-        {'field': lambda c: c.get_customer_type_display(), 'header': 'النوع', 'width': 15},
-        {'field': 'phone', 'header': 'التليفون', 'width': 15},
-        {'field': 'email', 'header': 'البريد الإلكتروني', 'width': 20},
-        {'field': 'tax_number', 'header': 'الرقم الضريبي', 'width': 15},
-        {'field': 'current_balance', 'header': 'الرصيد', 'width': 15, 'format': '#,##0.00'},
-    ], filename="customers")
+    return export_to_excel(
+        customers,
+        [
+            {'field': 'code', 'header': 'الكود', 'width': 12},
+            {'field': 'name', 'header': 'الاسم', 'width': 25},
+            {'field': lambda c: c.get_customer_type_display(), 'header': 'النوع', 'width': 15},
+            {'field': 'phone', 'header': 'التليفون', 'width': 15},
+            {'field': 'email', 'header': 'البريد الإلكتروني', 'width': 20},
+            {'field': 'tax_number', 'header': 'الرقم الضريبي', 'width': 15},
+            {'field': 'current_balance', 'header': 'الرصيد', 'width': 15, 'format': '#,##0.00'},
+        ],
+        filename='customers',
+    )
 
 
 @screen_permission_required('sales.customer', 'add')
@@ -374,17 +386,20 @@ def import_customers(request):
         messages.error(request, 'يرجى اختيار ملف Excel')
         return redirect('sales:customer_list')
     if file.size > MAX_UPLOAD_SIZE:
-        messages.error(request, f'حجم الملف يتجاوز الحد الأقصى ({MAX_UPLOAD_SIZE // (1024*1024)} ميجابايت)')
+        messages.error(request, f'حجم الملف يتجاوز الحد الأقصى ({MAX_UPLOAD_SIZE // (1024 * 1024)} ميجابايت)')
         return redirect('sales:customer_list')
     try:
-        rows = import_from_excel(file, [
-            {'field': 'code', 'header': 'الكود'},
-            {'field': 'name', 'header': 'الاسم'},
-            {'field': 'phone', 'header': 'التليفون'},
-            {'field': 'email', 'header': 'البريد الإلكتروني'},
-            {'field': 'tax_number', 'header': 'الرقم الضريبي'},
-            {'field': 'current_balance', 'header': 'الرصيد', 'type': 'decimal'},
-        ])
+        rows = import_from_excel(
+            file,
+            [
+                {'field': 'code', 'header': 'الكود'},
+                {'field': 'name', 'header': 'الاسم'},
+                {'field': 'phone', 'header': 'التليفون'},
+                {'field': 'email', 'header': 'البريد الإلكتروني'},
+                {'field': 'tax_number', 'header': 'الرقم الضريبي'},
+                {'field': 'current_balance', 'header': 'الرصيد', 'type': 'decimal'},
+            ],
+        )
         created = 0
         for row in rows:
             if not row.get('code') or not row.get('name'):
@@ -397,11 +412,11 @@ def import_customers(request):
                     'email': row.get('email', ''),
                     'tax_number': row.get('tax_number', ''),
                     'current_balance': row.get('current_balance') or 0,
-                }
+                },
             )
             created += 1
         messages.success(request, f'تم استيراد {created} عميل بنجاح')
-    except Exception as e:
+    except Exception:
         messages.error(request, 'حدث خطأ أثناء الاستيراد. تأكد من صحة بيانات الملف وحاول مرة أخرى.')
         logger.exception('Import failed')
     return redirect('sales:customer_list')

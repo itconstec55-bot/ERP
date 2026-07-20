@@ -1,4 +1,5 @@
 from django import forms
+
 from .models import SalesQuotation, SalesQuotationLine
 
 
@@ -14,7 +15,8 @@ class SalesQuotationForm(forms.ModelForm):
 
 
 SalesQuotationLineFormSet = forms.inlineformset_factory(
-    SalesQuotation, SalesQuotationLine,
+    SalesQuotation,
+    SalesQuotationLine,
     fields=['product', 'description', 'quantity', 'unit_price', 'discount_percent'],
     extra=1,
     can_delete=True,

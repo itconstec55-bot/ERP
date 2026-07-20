@@ -3,8 +3,8 @@ from datetime import datetime
 
 from celery import shared_task
 
+from .models import MachineInfo, SyncLog
 from .sync_engine import export_data, recalculate_balances
-from .models import SyncLog, MachineInfo
 
 
 @shared_task
@@ -26,14 +26,12 @@ def perform_manual_sync(log_id, host_address, host_port, api_key, machine_id):
         export = export_data(machine_id)
         export_json = json.dumps(export, ensure_ascii=False, default=str)
 
-        import urllib.request
         import urllib.error
+        import urllib.request
 
         url = f'http://{host_address}:{host_port}/api/sync/push/'
         req = urllib.request.Request(
-            url,
-            data=export_json.encode('utf-8'),
-            headers={'Content-Type': 'application/json', 'X-API-Key': api_key},
+            url, data=export_json.encode('utf-8'), headers={'Content-Type': 'application/json', 'X-API-Key': api_key}
         )
         with urllib.request.urlopen(req, timeout=300) as response:
             result = json.loads(response.read().decode())

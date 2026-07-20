@@ -1,15 +1,13 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import ReconciliationSession, BankStatementItem
+
+from .models import BankStatementItem, ReconciliationSession
 
 
 class ReconciliationSessionForm(forms.ModelForm):
     class Meta:
         model = ReconciliationSession
-        fields = [
-            'bank_account', 'period_start', 'period_end',
-            'book_balance', 'bank_balance',
-        ]
+        fields = ['bank_account', 'period_start', 'period_end', 'book_balance', 'bank_balance']
         widgets = {
             'period_start': forms.DateInput(attrs={'type': 'date'}),
             'period_end': forms.DateInput(attrs={'type': 'date'}),
@@ -27,13 +25,8 @@ class ReconciliationSessionForm(forms.ModelForm):
 class BankStatementItemForm(forms.ModelForm):
     class Meta:
         model = BankStatementItem
-        fields = [
-            'bank_account', 'transaction_date', 'description',
-            'reference', 'debit_amount', 'credit_amount',
-        ]
-        widgets = {
-            'transaction_date': forms.DateInput(attrs={'type': 'date'}),
-        }
+        fields = ['bank_account', 'transaction_date', 'description', 'reference', 'debit_amount', 'credit_amount']
+        widgets = {'transaction_date': forms.DateInput(attrs={'type': 'date'})}
 
     def clean_debit_amount(self):
         amount = self.cleaned_data.get('debit_amount') or 0

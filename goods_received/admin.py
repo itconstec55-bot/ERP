@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import GoodsReceivedNote, GoodsReceivedLine
+
+from .models import GoodsReceivedLine, GoodsReceivedNote
 
 
 @admin.register(GoodsReceivedNote)

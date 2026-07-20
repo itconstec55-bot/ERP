@@ -1,7 +1,9 @@
 from decimal import Decimal
-from django.test import TestCase
+
 from django.contrib.auth.models import User
-from .models import AccountType, Account, JournalEntry, JournalEntryLine
+from django.test import TestCase
+
+from .models import Account, AccountType, JournalEntry, JournalEntryLine
 
 
 class AccountTypeModelTest(TestCase):
@@ -23,8 +25,7 @@ class AccountModelTest(TestCase):
             code='asset', defaults={'name': 'أصول', 'account_type': 'asset'}
         )[0]
         self.account = Account.objects.create(
-            code='1100', name='النقدية', account_type=self.acc_type,
-            opening_balance=Decimal('1000.00'),
+            code='1100', name='النقدية', account_type=self.acc_type, opening_balance=Decimal('1000.00')
         )
 
     def test_account_creation(self):
@@ -41,15 +42,13 @@ class AccountModelTest(TestCase):
             code='liability', defaults={'name': 'خصوم', 'account_type': 'liability'}
         )[0]
         liab = Account.objects.create(
-            code='2000', name='موردون', account_type=liab_type,
-            opening_balance=Decimal('500.00'),
+            code='2000', name='موردون', account_type=liab_type, opening_balance=Decimal('500.00')
         )
         self.assertIn('دائن', liab.get_balance_display())
 
     def test_parent_child_relationship(self):
         child = Account.objects.create(
-            code='1110', name='نقدية بالصندوق', account_type=self.acc_type,
-            parent=self.account,
+            code='1110', name='نقدية بالصندوق', account_type=self.acc_type, parent=self.account
         )
         self.assertEqual(child.parent, self.account)
         self.assertIn(child, self.account.children.all())
@@ -67,28 +66,19 @@ class JournalEntryModelTest(TestCase):
         self.rev_type = AccountType.objects.update_or_create(
             code='revenue', defaults={'name': 'إيرادات', 'account_type': 'revenue'}
         )[0]
-        self.cash = Account.objects.create(
-            code='1100', name='النقدية', account_type=self.acc_type,
-        )
-        self.expense = Account.objects.create(
-            code='5100', name='مصروفات', account_type=self.exp_type,
-        )
-        self.revenue = Account.objects.create(
-            code='4100', name='إيرادات', account_type=self.rev_type,
-        )
+        self.cash = Account.objects.create(code='1100', name='النقدية', account_type=self.acc_type)
+        self.expense = Account.objects.create(code='5100', name='مصروفات', account_type=self.exp_type)
+        self.revenue = Account.objects.create(code='4100', name='إيرادات', account_type=self.rev_type)
 
     def _create_balanced_entry(self):
         entry = JournalEntry.objects.create(
-            entry_number='JE-001', entry_type='general',
-            description='قيد اختبار', created_by=self.user,
+            entry_number='JE-001', entry_type='general', description='قيد اختبار', created_by=self.user
         )
         JournalEntryLine.objects.create(
-            journal_entry=entry, account=self.cash,
-            debit=Decimal('1000.00'), credit=Decimal('0.00'),
+            journal_entry=entry, account=self.cash, debit=Decimal('1000.00'), credit=Decimal('0.00')
         )
         JournalEntryLine.objects.create(
-            journal_entry=entry, account=self.revenue,
-            debit=Decimal('0.00'), credit=Decimal('1000.00'),
+            journal_entry=entry, account=self.revenue, debit=Decimal('0.00'), credit=Decimal('1000.00')
         )
         entry.calculate_totals()
         return entry
@@ -101,12 +91,10 @@ class JournalEntryModelTest(TestCase):
 
     def test_journal_entry_not_balanced_raises_error(self):
         entry = JournalEntry.objects.create(
-            entry_number='JE-002', entry_type='general',
-            description='قيد غير متوازن', created_by=self.user,
+            entry_number='JE-002', entry_type='general', description='قيد غير متوازن', created_by=self.user
         )
         JournalEntryLine.objects.create(
-            journal_entry=entry, account=self.cash,
-            debit=Decimal('1000.00'), credit=Decimal('0.00'),
+            journal_entry=entry, account=self.cash, debit=Decimal('1000.00'), credit=Decimal('0.00')
         )
         entry.calculate_totals()
         with self.assertRaises(ValueError):
@@ -147,24 +135,19 @@ class JournalEntryModelTest(TestCase):
 
     def test_multi_line_entry(self):
         entry = JournalEntry.objects.create(
-            entry_number='JE-003', entry_type='general',
-            description='قيد بثلاثة أسطر', created_by=self.user,
+            entry_number='JE-003', entry_type='general', description='قيد بثلاثة أسطر', created_by=self.user
         )
         JournalEntryLine.objects.create(
-            journal_entry=entry, account=self.expense,
-            debit=Decimal('500.00'), credit=Decimal('0.00'),
+            journal_entry=entry, account=self.expense, debit=Decimal('500.00'), credit=Decimal('0.00')
         )
         JournalEntryLine.objects.create(
-            journal_entry=entry, account=self.cash,
-            debit=Decimal('0.00'), credit=Decimal('500.00'),
+            journal_entry=entry, account=self.cash, debit=Decimal('0.00'), credit=Decimal('500.00')
         )
         JournalEntryLine.objects.create(
-            journal_entry=entry, account=self.revenue,
-            debit=Decimal('200.00'), credit=Decimal('0.00'),
+            journal_entry=entry, account=self.revenue, debit=Decimal('200.00'), credit=Decimal('0.00')
         )
         JournalEntryLine.objects.create(
-            journal_entry=entry, account=self.cash,
-            debit=Decimal('0.00'), credit=Decimal('200.00'),
+            journal_entry=entry, account=self.cash, debit=Decimal('0.00'), credit=Decimal('200.00')
         )
         entry.calculate_totals()
         self.assertTrue(entry.is_balanced())

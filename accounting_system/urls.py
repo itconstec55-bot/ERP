@@ -1,34 +1,37 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.http import JsonResponse
-from django.urls import path, include, re_path
-from django.conf import settings
-from django.conf.urls.static import static
-from django.views.static import serve
+from django.urls import include, path, re_path
 from django.views.decorators.http import require_GET
-from reports.views import dashboard_view
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from django.views.static import serve
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
 from accounting_system import views as accounting_views
+from reports.views import dashboard_view
 
 
 @require_GET
 def health_api(request):
     """API health check endpoint for monitoring."""
-    checks = {"status": "ok"}
+    checks = {'status': 'ok'}
     try:
         from django.db import connection
+
         with connection.cursor() as cursor:
-            cursor.execute("SELECT 1")
-        checks["database"] = "ok"
+            cursor.execute('SELECT 1')
+        checks['database'] = 'ok'
     except Exception:
-        checks["database"] = "error"
-        checks["status"] = "degraded"
+        checks['database'] = 'error'
+        checks['status'] = 'degraded'
 
     import shutil
-    usage = shutil.disk_usage(str(settings.BASE_DIR))
-    checks["disk_free_mb"] = usage.free // (1024 * 1024)
 
-    status_code = 200 if checks["status"] == "ok" else 503
+    usage = shutil.disk_usage(str(settings.BASE_DIR))
+    checks['disk_free_mb'] = usage.free // (1024 * 1024)
+
+    status_code = 200 if checks['status'] == 'ok' else 503
     return JsonResponse(checks, status=status_code)
 
 
@@ -38,22 +41,33 @@ urlpatterns = [
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/accounts/login/'), name='logout'),
     # Password Reset (Forgot Password)
-    path('password-reset/', auth_views.PasswordResetView.as_view(
-        template_name='registration/password_reset.html',
-        email_template_name='registration/password_reset_email.html',
-        subject_template_name='registration/password_reset_subject.txt',
-        success_url='/password-reset/done/',
-    ), name='password_reset'),
-    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(
-        template_name='registration/password_reset_done.html',
-    ), name='password_reset_done'),
-    path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
-        template_name='registration/password_reset_confirm.html',
-        success_url='/password-reset-complete/',
-    ), name='password_reset_confirm'),
-    path('password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(
-        template_name='registration/password_reset_complete.html',
-    ), name='password_reset_complete'),
+    path(
+        'password-reset/',
+        auth_views.PasswordResetView.as_view(
+            template_name='registration/password_reset.html',
+            email_template_name='registration/password_reset_email.html',
+            subject_template_name='registration/password_reset_subject.txt',
+            success_url='/password-reset/done/',
+        ),
+        name='password_reset',
+    ),
+    path(
+        'password-reset/done/',
+        auth_views.PasswordResetDoneView.as_view(template_name='registration/password_reset_done.html'),
+        name='password_reset_done',
+    ),
+    path(
+        'password-reset-confirm/<uidb64>/<token>/',
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name='registration/password_reset_confirm.html', success_url='/password-reset-complete/'
+        ),
+        name='password_reset_confirm',
+    ),
+    path(
+        'password-reset-complete/',
+        auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'),
+        name='password_reset_complete',
+    ),
     path('', dashboard_view, name='dashboard'),
     path('accounts/', include('accounts.urls')),
     path('purchases/', include('purchases.urls')),
@@ -109,6 +123,4 @@ if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 else:
     # الإنتاج: جونيكورن لا يخدم media تلقائياً، نخدمها عبر Django static serve
-    urlpatterns += [
-        re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
-    ]
+    urlpatterns += [re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT})]

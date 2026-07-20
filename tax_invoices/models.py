@@ -2,10 +2,12 @@
 نماذج الفاتورة الضريبية الإلكترونية (فاتورة)
 التكامل مع منظومة الفاتورة الإلكترونية لـ مصلحة الضرائب المصرية (ETA)
 """
+
 import uuid
 from decimal import Decimal
-from django.db import models
+
 from django.conf import settings
+from django.db import models
 from django.utils import timezone
 
 
@@ -14,22 +16,19 @@ class ETAConnection(models.Model):
     إعدادات الاتصال بمنظومة الفاتورة الإلكترونية (ETA)
     يحتوي على بيانات الاعتماد (client_id / client_secret) وبيئة التشغيل
     """
-    ENVIRONMENT_CHOICES = [
-        ('sandbox', 'بيئة الاختبار (Sandbox)'),
-        ('production', 'بيئة الإنتاج (Production)'),
-    ]
+
+    ENVIRONMENT_CHOICES = [('sandbox', 'بيئة الاختبار (Sandbox)'), ('production', 'بيئة الإنتاج (Production)')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, default='الافتراضي', verbose_name='اسم الإعداد')
-    environment = models.CharField(max_length=20, choices=ENVIRONMENT_CHOICES,
-                                   default='sandbox', verbose_name='بيئة التشغيل')
+    environment = models.CharField(
+        max_length=20, choices=ENVIRONMENT_CHOICES, default='sandbox', verbose_name='بيئة التشغيل'
+    )
     client_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='Client ID')
     client_secret = models.CharField(max_length=255, blank=True, null=True, verbose_name='Client Secret')
     # شهادة التوقيع الرقمي (PKI) — مسار الملف على الخادم
-    certificate_path = models.CharField(max_length=500, blank=True, null=True,
-                                        verbose_name='مسار شهادة التوقيع')
-    certificate_password = models.CharField(max_length=255, blank=True, null=True,
-                                            verbose_name='كلمة سر الشهادة')
+    certificate_path = models.CharField(max_length=500, blank=True, null=True, verbose_name='مسار شهادة التوقيع')
+    certificate_password = models.CharField(max_length=255, blank=True, null=True, verbose_name='كلمة سر الشهادة')
     is_active = models.BooleanField(default=True, verbose_name='مفعل', db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -60,6 +59,7 @@ class TaxInvoice(models.Model):
     الفاتورة الضريبية المرسلة لمنظومة الفاتورة الإلكترونية
     تُنشأ مرتبطة بفاتورة مبيعات موجودة، وتُرسل لمصلحة الضرائب
     """
+
     DOCUMENT_TYPE_CHOICES = [
         ('i', 'فاتورة مبيعات (Issued)'),
         ('c', 'إشعار دائن (Credit)'),
@@ -79,45 +79,53 @@ class TaxInvoice(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     # الرقم الداخلي للفاتورة الضريبية في النظام
     tax_invoice_number = models.CharField(max_length=50, unique=True, verbose_name='رقم الفاتورة الضريبية')
-    sales_invoice = models.ForeignKey('sales.SalesInvoice', on_delete=models.PROTECT,
-                                      related_name='tax_invoices', verbose_name='فاتورة المبيعات',
-                                      blank=True, null=True)
-    connection = models.ForeignKey(ETAConnection, on_delete=models.PROTECT,
-                                   related_name='tax_invoices', verbose_name='إعداد الاتصال')
-    document_type = models.CharField(max_length=1, choices=DOCUMENT_TYPE_CHOICES,
-                                     default='i', verbose_name='نوع المستند')
+    sales_invoice = models.ForeignKey(
+        'sales.SalesInvoice',
+        on_delete=models.PROTECT,
+        related_name='tax_invoices',
+        verbose_name='فاتورة المبيعات',
+        blank=True,
+        null=True,
+    )
+    connection = models.ForeignKey(
+        ETAConnection, on_delete=models.PROTECT, related_name='tax_invoices', verbose_name='إعداد الاتصال'
+    )
+    document_type = models.CharField(
+        max_length=1, choices=DOCUMENT_TYPE_CHOICES, default='i', verbose_name='نوع المستند'
+    )
     # بيانات مصلحة الضرائب
-    eta_uuid = models.CharField(max_length=36, blank=True, null=True, unique=True,
-                                verbose_name='ETA UUID', db_index=True)
-    eta_submission_uuid = models.CharField(max_length=36, blank=True, null=True,
-                                           verbose_name='Submission UUID')
-    eta_long_id = models.CharField(max_length=64, blank=True, null=True,
-                                   verbose_name='الرقم الطويل للتحقق')
-    eta_internal_id = models.CharField(max_length=64, blank=True, null=True,
-                                       verbose_name='Internal ID')
+    eta_uuid = models.CharField(
+        max_length=36, blank=True, null=True, unique=True, verbose_name='ETA UUID', db_index=True
+    )
+    eta_submission_uuid = models.CharField(max_length=36, blank=True, null=True, verbose_name='Submission UUID')
+    eta_long_id = models.CharField(max_length=64, blank=True, null=True, verbose_name='الرقم الطويل للتحقق')
+    eta_internal_id = models.CharField(max_length=64, blank=True, null=True, verbose_name='Internal ID')
     eta_qr_code = models.TextField(blank=True, null=True, verbose_name='QR Code')
     eta_pdf_url = models.CharField(max_length=500, blank=True, null=True, verbose_name='رابط PDF')
 
-    status = models.CharField(max_length=20, choices=SUBMISSION_STATUS_CHOICES,
-                              default='pending', verbose_name='الحالة', db_index=True)
+    status = models.CharField(
+        max_length=20, choices=SUBMISSION_STATUS_CHOICES, default='pending', verbose_name='الحالة', db_index=True
+    )
     # تفاصيل المبالغ
-    total_sale_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                            verbose_name='إجمالي المبيعات')
-    total_discount_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                                verbose_name='إجمالي الخصم')
-    net_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                     verbose_name='الصافي')
-    total_vat_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                           verbose_name='إجمالي ضريبة القيمة المضافة')
-    total_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0,
-                                       verbose_name='الإجمالي شامل الضريبة')
+    total_sale_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0, verbose_name='إجمالي المبيعات')
+    total_discount_amount = models.DecimalField(
+        max_digits=30, decimal_places=10, default=0, verbose_name='إجمالي الخصم'
+    )
+    net_amount = models.DecimalField(max_digits=30, decimal_places=10, default=0, verbose_name='الصافي')
+    total_vat_amount = models.DecimalField(
+        max_digits=30, decimal_places=10, default=0, verbose_name='إجمالي ضريبة القيمة المضافة'
+    )
+    total_amount = models.DecimalField(
+        max_digits=30, decimal_places=10, default=0, verbose_name='الإجمالي شامل الضريبة'
+    )
 
     error_message = models.TextField(blank=True, null=True, verbose_name='رسالة الخطأ')
     submission_log = models.TextField(blank=True, null=True, verbose_name='سجل الإرسال')
     submitted_at = models.DateTimeField(blank=True, null=True, verbose_name='تاريخ الإرسال')
     validated_at = models.DateTimeField(blank=True, null=True, verbose_name='تاريخ التحقق')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
-                                   null=True, blank=True, verbose_name='أنشئ بواسطة')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='أنشئ بواسطة'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -141,7 +149,6 @@ class TaxInvoice(models.Model):
         حسب مواصفات هيكل المستندات (Document Structure)
         """
         from company.models import Company
-        from sales.models import SalesInvoice
 
         company = Company.get_company()
         invoice = self.sales_invoice
@@ -194,41 +201,38 @@ class TaxInvoice(models.Model):
         for idx, line in enumerate(invoice.lines.all(), start=1):
             item_total = line.total_price
             discount = (item_total * (line.discount_percent or Decimal('0')) / Decimal('100')).quantize(
-                Decimal('0.0000000001'))
+                Decimal('0.0000000001')
+            )
             net = item_total - discount
             vat_rate = Decimal('14')
             vat_value = (net * vat_rate / Decimal('100')).quantize(Decimal('0.0000000001'))
 
-            lines.append({
-                'description': line.product.name if line.product else 'صنف',
-                'itemType': 'GS1',
-                'itemCode': line.product.code if line.product and hasattr(line.product, 'code') else f'P{idx}',
-                'unitType': 'EA',
-                'quantity': float(line.quantity),
-                'internalCode': line.product.id.hex if line.product else f'P{idx}',
-                'salesTotal': float(item_total),
-                'total': float(net + vat_value),
-                'valueDifference': 0.0,
-                'totalTaxableFees': 0.0,
-                'netTotal': float(net),
-                'itemsDiscount': float(discount),
-                'unitValue': {
-                    'currencySold': company.currency_code or 'EGP',
-                    'amountEGP': float(line.unit_price),
-                    'amountSold': float(line.unit_price),
-                    'currencyExchangeRate': 0.0,
-                },
-                'discount': {
-                    'rate': float(line.discount_percent or Decimal('0')),
-                    'amount': float(discount),
-                },
-                'taxableItems': [{
-                    'taxType': 'T1',
-                    'amount': float(vat_value),
-                    'subType': 'V009',
-                    'rate': float(vat_rate),
-                }],
-            })
+            lines.append(
+                {
+                    'description': line.product.name if line.product else 'صنف',
+                    'itemType': 'GS1',
+                    'itemCode': line.product.code if line.product and hasattr(line.product, 'code') else f'P{idx}',
+                    'unitType': 'EA',
+                    'quantity': float(line.quantity),
+                    'internalCode': line.product.id.hex if line.product else f'P{idx}',
+                    'salesTotal': float(item_total),
+                    'total': float(net + vat_value),
+                    'valueDifference': 0.0,
+                    'totalTaxableFees': 0.0,
+                    'netTotal': float(net),
+                    'itemsDiscount': float(discount),
+                    'unitValue': {
+                        'currencySold': company.currency_code or 'EGP',
+                        'amountEGP': float(line.unit_price),
+                        'amountSold': float(line.unit_price),
+                        'currencyExchangeRate': 0.0,
+                    },
+                    'discount': {'rate': float(line.discount_percent or Decimal('0')), 'amount': float(discount)},
+                    'taxableItems': [
+                        {'taxType': 'T1', 'amount': float(vat_value), 'subType': 'V009', 'rate': float(vat_rate)}
+                    ],
+                }
+            )
 
         document = {
             'issuer': issuer,
@@ -244,10 +248,7 @@ class TaxInvoice(models.Model):
             'totalSalesAmount': float(self.total_sale_amount),
             'totalDiscountAmount': float(self.total_discount_amount),
             'netAmount': float(self.net_amount),
-            'taxTotals': [{
-                'taxType': 'T1',
-                'amount': float(self.total_vat_amount),
-            }],
+            'taxTotals': [{'taxType': 'T1', 'amount': float(self.total_vat_amount)}],
             'totalAmount': float(self.total_amount),
             'extraDiscountAmount': 0.0,
             'totalItemsDiscountAmount': float(self.total_discount_amount),

@@ -1,19 +1,36 @@
 from django import forms
 from django.utils import timezone
-from .models import (Supplier, Product, ProductCategory, UnitOfMeasure,
-                     CatalogSettings, PurchaseInvoice, PurchaseInvoiceLine)
+
+from .models import (
+    CatalogSettings,
+    Product,
+    ProductCategory,
+    PurchaseInvoice,
+    PurchaseInvoiceLine,
+    Supplier,
+    UnitOfMeasure,
+)
 
 
 class SupplierForm(forms.ModelForm):
     class Meta:
         model = Supplier
-        fields = ['code', 'name', 'supplier_type', 'tax_number', 'commercial_register',
-                  'address', 'city', 'phone', 'mobile', 'email', 'account',
-                  'credit_limit', 'notes']
-        widgets = {
-            'address': forms.Textarea(attrs={'rows': 3}),
-            'notes': forms.Textarea(attrs={'rows': 3}),
-        }
+        fields = [
+            'code',
+            'name',
+            'supplier_type',
+            'tax_number',
+            'commercial_register',
+            'address',
+            'city',
+            'phone',
+            'mobile',
+            'email',
+            'account',
+            'credit_limit',
+            'notes',
+        ]
+        widgets = {'address': forms.Textarea(attrs={'rows': 3}), 'notes': forms.Textarea(attrs={'rows': 3})}
 
     def clean_credit_limit(self):
         limit = self.cleaned_data.get('credit_limit', 0)
@@ -25,12 +42,19 @@ class SupplierForm(forms.ModelForm):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['code', 'name', 'category', 'unit_of_measure', 'description',
-                  'purchase_price', 'selling_price', 'current_stock',
-                  'minimum_stock', 'vat_rate']
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
-        }
+        fields = [
+            'code',
+            'name',
+            'category',
+            'unit_of_measure',
+            'description',
+            'purchase_price',
+            'selling_price',
+            'current_stock',
+            'minimum_stock',
+            'vat_rate',
+        ]
+        widgets = {'description': forms.Textarea(attrs={'rows': 3})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -57,9 +81,7 @@ class ProductCategoryForm(forms.ModelForm):
     class Meta:
         model = ProductCategory
         fields = ['code', 'name', 'parent', 'description']
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
-        }
+        widgets = {'description': forms.Textarea(attrs={'rows': 3})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -81,16 +103,25 @@ class UnitOfMeasureForm(forms.ModelForm):
 class CatalogSettingsForm(forms.ModelForm):
     class Meta:
         model = CatalogSettings
-        fields = ['default_unit', 'default_category', 'enforce_unit',
-                  'enforce_category', 'allow_decimal_quantity']
+        fields = ['default_unit', 'default_category', 'enforce_unit', 'enforce_category', 'allow_decimal_quantity']
 
 
 class PurchaseInvoiceForm(forms.ModelForm):
     class Meta:
         model = PurchaseInvoice
-        fields = ['invoice_number', 'file_number', 'supplier', 'date', 'due_date',
-                  'payment_method', 'is_tax_invoice', 'withholding_tax_type',
-                  'discount_amount', 'paid_amount', 'notes']
+        fields = [
+            'invoice_number',
+            'file_number',
+            'supplier',
+            'date',
+            'due_date',
+            'payment_method',
+            'is_tax_invoice',
+            'withholding_tax_type',
+            'discount_amount',
+            'paid_amount',
+            'notes',
+        ]
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'due_date': forms.DateInput(attrs={'type': 'date'}),
@@ -140,7 +171,8 @@ class PurchaseInvoiceLineForm(forms.ModelForm):
 
 
 PurchaseInvoiceLineFormSet = forms.inlineformset_factory(
-    PurchaseInvoice, PurchaseInvoiceLine,
+    PurchaseInvoice,
+    PurchaseInvoiceLine,
     form=PurchaseInvoiceLineForm,
     extra=3,
     can_delete=True,

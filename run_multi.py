@@ -17,6 +17,7 @@ gunicorn على 127.0.0.1، أمّا هذا الملف فللتشغيل المب
     python run_multi.py
     DJANGO_BIND_HOSTS=192.168.1.31,10.0.0.5 DJANGO_BIND_PORT=8012 python run_multi.py
 """
+
 import os
 import subprocess
 import sys
@@ -37,6 +38,7 @@ if env_path.exists():
         os.environ.setdefault(key.strip(), val.strip())
 
 import django
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'accounting_system.settings')
 django.setup()
 
@@ -56,10 +58,7 @@ def main():
     for host in HOSTS:
         addr = f'{host}:{PORT}'
         print(f'[run_multi] >> تشغيل الخادم على {addr}')
-        p = subprocess.Popen(
-            [sys.executable, 'manage.py', 'runserver', '--noreload', addr],
-            cwd=BASE_DIR,
-        )
+        p = subprocess.Popen([sys.executable, 'manage.py', 'runserver', '--noreload', addr], cwd=BASE_DIR)
         procs.append((addr, p))
 
     print(f'[run_multi] تم تشغيل {len(procs)} نسخة. Ctrl+C للإيقاف.')

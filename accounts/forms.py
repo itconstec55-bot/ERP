@@ -1,15 +1,23 @@
 from django import forms
+
 from .models import Account, JournalEntry, JournalEntryLine
 
 
 class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
-        fields = ['code', 'name', 'account_type', 'parent', 'description',
-                  'opening_balance', 'is_bank', 'is_safe', 'tax_account']
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
-        }
+        fields = [
+            'code',
+            'name',
+            'account_type',
+            'parent',
+            'description',
+            'opening_balance',
+            'is_bank',
+            'is_safe',
+            'tax_account',
+        ]
+        widgets = {'description': forms.Textarea(attrs={'rows': 3})}
 
     def clean_code(self):
         code = self.cleaned_data.get('code', '').strip()
@@ -28,13 +36,11 @@ class JournalEntryForm(forms.ModelForm):
     class Meta:
         model = JournalEntry
         fields = ['entry_type', 'date', 'description', 'reference']
-        widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 3}),
-        }
+        widgets = {'date': forms.DateInput(attrs={'type': 'date'}), 'description': forms.Textarea(attrs={'rows': 3})}
 
     def clean_date(self):
         from datetime import date
+
         d = self.cleaned_data.get('date')
         if d and d > date.today():
             raise forms.ValidationError('لا يمكن أن يكون تاريخ القيد في المستقبل')
@@ -58,10 +64,5 @@ class JournalEntryLineForm(forms.ModelForm):
 
 
 JournalEntryLineFormSet = forms.inlineformset_factory(
-    JournalEntry, JournalEntryLine,
-    form=JournalEntryLineForm,
-    extra=2,
-    can_delete=True,
-    min_num=2,
-    validate_min=True,
+    JournalEntry, JournalEntryLine, form=JournalEntryLineForm, extra=2, can_delete=True, min_num=2, validate_min=True
 )

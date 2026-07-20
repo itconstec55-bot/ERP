@@ -1,6 +1,8 @@
 import uuid
-from django.db import models, transaction
+
 from django.contrib.auth.models import User
+from django.db import models, transaction
+
 from accounts.models import Account
 from hr.models import Department
 
@@ -36,8 +38,9 @@ class DocumentType(models.Model):
 class DocumentTemplate(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, verbose_name='اسم القالب')
-    document_type = models.ForeignKey(DocumentType, on_delete=models.CASCADE,
-                                       related_name='templates', verbose_name='نوع المستند')
+    document_type = models.ForeignKey(
+        DocumentType, on_delete=models.CASCADE, related_name='templates', verbose_name='نوع المستند'
+    )
     content = models.TextField(verbose_name='محتوى القالب')
     is_default = models.BooleanField(default=False, verbose_name='القالب الافتراضي')
     is_active = models.BooleanField(default=True, verbose_name='نشط')
@@ -62,40 +65,43 @@ class Document(models.Model):
         ('archived', 'مؤرشف'),
         ('cancelled', 'ملغي'),
     ]
-    PRIORITY_CHOICES = [
-        ('low', 'منخفضة'),
-        ('medium', 'متوسطة'),
-        ('high', 'عالية'),
-        ('urgent', 'عاجلة'),
-    ]
+    PRIORITY_CHOICES = [('low', 'منخفضة'), ('medium', 'متوسطة'), ('high', 'عالية'), ('urgent', 'عاجلة')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     document_number = models.CharField(max_length=50, unique=True, verbose_name='رقم المستند')
-    document_type = models.ForeignKey(DocumentType, on_delete=models.PROTECT,
-                                       related_name='documents', verbose_name='نوع المستند')
+    document_type = models.ForeignKey(
+        DocumentType, on_delete=models.PROTECT, related_name='documents', verbose_name='نوع المستند'
+    )
     title = models.CharField(max_length=300, verbose_name='عنوان المستند')
     description = models.TextField(blank=True, null=True, verbose_name='الوصف')
     date = models.DateField(verbose_name='التاريخ')
     due_date = models.DateField(blank=True, null=True, verbose_name='تاريخ الاستحقاق')
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft',
-                               db_index=True, verbose_name='الحالة')
-    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium',
-                                 verbose_name='الأولوية')
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='draft', db_index=True, verbose_name='الحالة'
+    )
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium', verbose_name='الأولوية')
 
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True,
-                                    related_name='documents', verbose_name='القسم')
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
-                                    related_name='created_documents', verbose_name='أنشئ بواسطة')
-    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
-                                     related_name='assigned_documents', verbose_name='مسؤول التنفيذ')
+    department = models.ForeignKey(
+        Department, on_delete=models.SET_NULL, null=True, blank=True, related_name='documents', verbose_name='القسم'
+    )
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name='created_documents', verbose_name='أنشئ بواسطة'
+    )
+    assigned_to = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_documents',
+        verbose_name='مسؤول التنفيذ',
+    )
 
-    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True,
-                                 verbose_name='الحساب المحاسبي المرتبط')
-    reference_amount = models.DecimalField(max_digits=15, decimal_places=10, default=0,
-                                            verbose_name='المبلغ المرجعي')
-    reference_number = models.CharField(max_length=100, blank=True, null=True,
-                                         verbose_name='رقم المرجع الخارجي')
+    account = models.ForeignKey(
+        Account, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='الحساب المحاسبي المرتبط'
+    )
+    reference_amount = models.DecimalField(max_digits=15, decimal_places=10, default=0, verbose_name='المبلغ المرجعي')
+    reference_number = models.CharField(max_length=100, blank=True, null=True, verbose_name='رقم المرجع الخارجي')
 
     is_active = models.BooleanField(default=True, verbose_name='نشط')
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
@@ -123,6 +129,7 @@ class Document(models.Model):
         allowed = self.VALID_TRANSITIONS.get(self.status, [])
         if new_status not in allowed:
             from django.core.exceptions import ValidationError
+
             raise ValidationError(
                 f'لا يمكن التحويل من حالة "{self.get_status_display()}" إلى "{dict(self.STATUS_CHOICES).get(new_status, new_status)}"'
             )
@@ -161,13 +168,11 @@ class DocumentFlow(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    document = models.ForeignKey(Document, on_delete=models.CASCADE,
-                                  related_name='flows', verbose_name='المستند')
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='flows', verbose_name='المستند')
     action = models.CharField(max_length=20, choices=ACTION_CHOICES, verbose_name='الإجراء')
     from_status = models.CharField(max_length=20, blank=True, null=True, verbose_name='من حالة')
     to_status = models.CharField(max_length=20, blank=True, null=True, verbose_name='إلى حالة')
-    performed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
-                                      verbose_name='نفّذ الإجراء')
+    performed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='نفّذ الإجراء')
     comment = models.TextField(blank=True, null=True, verbose_name='التعليق')
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -182,13 +187,11 @@ class DocumentFlow(models.Model):
 
 class DocumentAttachment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    document = models.ForeignKey(Document, on_delete=models.CASCADE,
-                                  related_name='attachments', verbose_name='المستند')
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='attachments', verbose_name='المستند')
     file = models.FileField(upload_to='documents/attachments/%Y/%m/', verbose_name='الملف')
     name = models.CharField(max_length=200, verbose_name='اسم الملف')
     description = models.TextField(blank=True, null=True, verbose_name='الوصف')
-    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
-                                     verbose_name='رفع بواسطة')
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='رفع بواسطة')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

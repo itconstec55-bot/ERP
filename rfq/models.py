@@ -1,42 +1,48 @@
 import uuid
 
-from django.db import models
 from django.conf import settings
+from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 
+from common.decimal_utils import safe_add, safe_mul
 from common.models import SequenceNumber
-from common.decimal_utils import quantize_10, safe_mul, safe_add
 
 
 class RFQ(models.Model):
-    STATUS_CHOICES = [
-        ('draft', 'مسودة'),
-        ('sent', 'مُرسل'),
-        ('closed', 'مغلق'),
-        ('cancelled', 'ملغي'),
-    ]
+    STATUS_CHOICES = [('draft', 'مسودة'), ('sent', 'مُرسل'), ('closed', 'مغلق'), ('cancelled', 'ملغي')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    number = models.CharField(max_length=50, unique=True, blank=True,
-                              verbose_name='رقم الطلب')
+    number = models.CharField(max_length=50, unique=True, blank=True, verbose_name='رقم الطلب')
     requisition = models.ForeignKey(
-        'requisitions.Requisition', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='rfqs', verbose_name='الطلب الداخلي')
+        'requisitions.Requisition',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='rfqs',
+        verbose_name='الطلب الداخلي',
+    )
     requested_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-        related_name='rfqs_requested', verbose_name='طالب الشراء')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='rfqs_requested',
+        verbose_name='طالب الشراء',
+    )
     cost_center = models.ForeignKey(
-        'budget.CostCenter', on_delete=models.SET_NULL, null=True, blank=True,
-        verbose_name='مركز التكلفة')
+        'budget.CostCenter', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='مركز التكلفة'
+    )
     date = models.DateField(default=timezone.localdate, verbose_name='التاريخ')
     valid_until = models.DateField(null=True, blank=True, verbose_name='صالح حتى')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft',
-                              verbose_name='الحالة')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft', verbose_name='الحالة')
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-        related_name='rfqs_created', verbose_name='أنشئ بواسطة')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='rfqs_created',
+        verbose_name='أنشئ بواسطة',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -68,14 +74,13 @@ class RFQ(models.Model):
 
 class RFQLine(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    rfq = models.ForeignKey(RFQ, on_delete=models.CASCADE, related_name='lines',
-                           verbose_name='طلب عروض الأسعار')
-    product = models.ForeignKey('purchases.Product', on_delete=models.PROTECT,
-                               verbose_name='المنتج')
+    rfq = models.ForeignKey(RFQ, on_delete=models.CASCADE, related_name='lines', verbose_name='طلب عروض الأسعار')
+    product = models.ForeignKey('purchases.Product', on_delete=models.PROTECT, verbose_name='المنتج')
     quantity = models.DecimalField(max_digits=15, decimal_places=3, verbose_name='الكمية')
     required_date = models.DateField(null=True, blank=True, verbose_name='تاريخ التوريد المطلوب')
-    estimated_unit_price = models.DecimalField(max_digits=15, decimal_places=2,
-                                              null=True, blank=True, verbose_name='السعر التقديري')
+    estimated_unit_price = models.DecimalField(
+        max_digits=15, decimal_places=2, null=True, blank=True, verbose_name='السعر التقديري'
+    )
     description = models.CharField(max_length=255, blank=True, verbose_name='وصف إضافي')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -94,25 +99,22 @@ class RFQLine(models.Model):
 
 
 class Quotation(models.Model):
-    STATUS_CHOICES = [
-        ('pending', 'معلق'),
-        ('accepted', 'مقبول'),
-        ('rejected', 'مرفوض'),
-    ]
+    STATUS_CHOICES = [('pending', 'معلق'), ('accepted', 'مقبول'), ('rejected', 'مرفوض')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    rfq = models.ForeignKey(RFQ, on_delete=models.CASCADE, related_name='quotations',
-                           verbose_name='طلب عروض الأسعار')
-    supplier = models.ForeignKey('purchases.Supplier', on_delete=models.PROTECT,
-                                verbose_name='المورد')
+    rfq = models.ForeignKey(RFQ, on_delete=models.CASCADE, related_name='quotations', verbose_name='طلب عروض الأسعار')
+    supplier = models.ForeignKey('purchases.Supplier', on_delete=models.PROTECT, verbose_name='المورد')
     received_date = models.DateField(default=timezone.localdate, verbose_name='تاريخ الاستلام')
     valid_until = models.DateField(null=True, blank=True, verbose_name='صالح حتى')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending',
-                             verbose_name='الحالة')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='الحالة')
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-        related_name='quotations_created', verbose_name='أنشئ بواسطة')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='quotations_created',
+        verbose_name='أنشئ بواسطة',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -120,10 +122,7 @@ class Quotation(models.Model):
         verbose_name = 'عرض سعر مورد'
         verbose_name_plural = 'عروض أسعار الموردين'
         ordering = ['-received_date', '-created_at']
-        permissions = [
-            ('accept_quotation', 'قبول عرض السعر'),
-            ('reject_quotation', 'رفض عرض السعر'),
-        ]
+        permissions = [('accept_quotation', 'قبول عرض السعر'), ('reject_quotation', 'رفض عرض السعر')]
 
     def __str__(self):
         return f'{self.supplier.name} - {self.rfq.number or ""}'
@@ -135,16 +134,19 @@ class Quotation(models.Model):
 
 class QuotationLine(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name='lines',
-                                 verbose_name='عرض السعر')
-    rfq_line = models.ForeignKey(RFQLine, on_delete=models.CASCADE, null=True, blank=True,
-                                related_name='quotation_lines', verbose_name='بند الطلب')
-    product = models.ForeignKey('purchases.Product', on_delete=models.PROTECT,
-                               verbose_name='المنتج')
+    quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name='lines', verbose_name='عرض السعر')
+    rfq_line = models.ForeignKey(
+        RFQLine,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='quotation_lines',
+        verbose_name='بند الطلب',
+    )
+    product = models.ForeignKey('purchases.Product', on_delete=models.PROTECT, verbose_name='المنتج')
     quantity = models.DecimalField(max_digits=15, decimal_places=3, verbose_name='الكمية')
     unit_price = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='سعر الوحدة')
-    discount = models.DecimalField(max_digits=15, decimal_places=2, default=0,
-                                  verbose_name='الخصم')
+    discount = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name='الخصم')
     delivery_days = models.IntegerField(null=True, blank=True, verbose_name='أيام التسليم')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

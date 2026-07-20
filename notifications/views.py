@@ -1,13 +1,15 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.core.mail import send_mail
-from django.conf import settings as django_settings
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
-from .models import NotificationCategory, NotificationTemplate, NotificationLog
-from .forms import NotificationTemplateForm
 import logging
+
+from django.conf import settings as django_settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.core.validators import validate_email
+from django.shortcuts import redirect, render
+
+from .forms import NotificationTemplateForm
+from .models import NotificationLog, NotificationTemplate
 
 logger = logging.getLogger('accounting')
 
@@ -16,9 +18,7 @@ logger = logging.getLogger('accounting')
 def notification_dashboard(request):
     logs = NotificationLog.objects.all()[:50]
     templates = NotificationTemplate.objects.all()
-    return render(request, 'notifications/dashboard.html', {
-        'logs': logs, 'templates': templates,
-    })
+    return render(request, 'notifications/dashboard.html', {'logs': logs, 'templates': templates})
 
 
 @login_required
@@ -62,13 +62,11 @@ def send_test_notification(request):
                 return redirect('notifications:dashboard')
         try:
             send_mail(subject, body, django_settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
-            NotificationLog.objects.create(
-                recipient_email=email, subject=subject, body=body, success=True,
-            )
+            NotificationLog.objects.create(recipient_email=email, subject=subject, body=body, success=True)
             messages.success(request, f'تم الإرسال إلى {email}')
         except Exception as e:
             NotificationLog.objects.create(
-                recipient_email=email, subject=subject, body=body, success=False, error_message=str(e),
+                recipient_email=email, subject=subject, body=body, success=False, error_message=str(e)
             )
             messages.error(request, 'حدث خطأ أثناء إرسال البريد الإلكتروني. تأكد من صحة الإعدادات وحاول مرة أخرى.')
             logger.exception('Failed to send test email')

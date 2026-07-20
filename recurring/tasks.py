@@ -1,23 +1,21 @@
 import logging
-from celery import shared_task
-from django.utils import timezone
 from datetime import date, timedelta
+
+from celery import shared_task
 
 logger = logging.getLogger('accounting')
 
 
 @shared_task(name='recurring.execute_due_journals')
 def execute_due_journals():
-    from .models import RecurringJournal, RecurringJournalLog
-    from accounts.models import Account, JournalEntry, JournalEntryLine
-    from common.accounting_service import JournalEntryService
     from django.db import transaction
 
+    from common.accounting_service import JournalEntryService
+
+    from .models import RecurringJournal, RecurringJournalLog
+
     today = date.today()
-    due_journals = RecurringJournal.objects.filter(
-        status='active',
-        next_due_date__lte=today,
-    ).prefetch_related('lines')
+    due_journals = RecurringJournal.objects.filter(status='active', next_due_date__lte=today).prefetch_related('lines')
 
     executed = 0
     for rj in due_journals:
@@ -25,17 +23,20 @@ def execute_due_journals():
             with transaction.atomic():
                 entry_lines = []
                 for line in rj.lines.all():
-                    entry_lines.append({
-                        'account': line.account,
-                        'debit': line.debit,
-                        'credit': line.credit,
-                        'description': line.description,
-                    })
+                    entry_lines.append(
+                        {
+                            'account': line.account,
+                            'debit': line.debit,
+                            'credit': line.credit,
+                            'description': line.description,
+                        }
+                    )
 
                 if not entry_lines:
                     continue
 
                 from django.contrib.auth.models import User
+
                 admin_user = User.objects.filter(is_superuser=True).first()
 
                 entry = JournalEntryService.create_entry(
@@ -47,9 +48,7 @@ def execute_due_journals():
                     created_by=admin_user,
                 )
 
-                RecurringJournalLog.objects.create(
-                    journal=rj, executed_date=today, journal_entry=entry,
-                )
+                RecurringJournalLog.objects.create(journal=rj, executed_date=today, journal_entry=entry)
 
                 if rj.frequency == 'daily':
                     rj.next_due_date += timedelta(days=1)

@@ -1,20 +1,23 @@
+import logging
 import os
 import shutil
 import subprocess
-import zipfile
 import tempfile
+import zipfile
 from datetime import datetime
-from django.shortcuts import render, redirect, get_object_or_404
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.views.decorators.http import require_POST
 from django.http import FileResponse
-from django.conf import settings
-from .models import Backup, BackupSettings, FactoryResetRequest
-from .forms import BackupSettingsForm
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
 from common.permissions import screen_permission_required
+
 from . import factory_reset as fr
-import logging
+from .forms import BackupSettingsForm
+from .models import Backup, BackupSettings, FactoryResetRequest
 
 logger = logging.getLogger('accounting')
 
@@ -87,11 +90,7 @@ def create_backup(request):
     backup_type = request.POST.get('backup_type', 'data')
 
     backup = Backup.objects.create(
-        name=name,
-        backup_type=backup_type,
-        file_path='',
-        status='pending',
-        created_by=request.user,
+        name=name, backup_type=backup_type, file_path='', status='pending', created_by=request.user
     )
 
     try:
@@ -116,9 +115,19 @@ def create_backup(request):
             filename = f'dump_{timestamp}.json'
             filepath = os.path.join(BACKUP_DIR, filename)
             result = subprocess.run(
-                [settings.BASE_DIR / 'manage.py', 'dumpdata',
-                 '--indent', '2', '--exclude', 'auth.permission', '--exclude', 'contenttypes'],
-                capture_output=True, text=True, timeout=300
+                [
+                    settings.BASE_DIR / 'manage.py',
+                    'dumpdata',
+                    '--indent',
+                    '2',
+                    '--exclude',
+                    'auth.permission',
+                    '--exclude',
+                    'contenttypes',
+                ],
+                capture_output=True,
+                text=True,
+                timeout=300,
             )
             if result.returncode != 0:
                 raise Exception(f'dumpdata failed: {result.stderr}')
@@ -174,11 +183,7 @@ def download_backup(request, pk):
         return redirect('backups:backup_dashboard')
 
     filename = os.path.basename(backup.file_path)
-    return FileResponse(
-        open(backup.file_path, 'rb'),
-        as_attachment=True,
-        filename=filename
-    )
+    return FileResponse(open(backup.file_path, 'rb'), as_attachment=True, filename=filename)
 
 
 @login_required
@@ -211,32 +216,7 @@ def restore_backup(request, pk):
     try:
         shutil.copy2(db_path, restore_file)
 
-        if backup.backup_type == 'data':
-            with tempfile.TemporaryDirectory() as tmp_dir:
-                with zipfile.ZipFile(backup.file_path, 'r') as zf:
-                    _safe_extract_zip(zf, tmp_dir)
-
-                extracted_db = os.path.join(tmp_dir, 'db.sqlite3')
-                if os.path.exists(extracted_db):
-                    shutil.copy2(extracted_db, db_path)
-                    wal_file = os.path.join(tmp_dir, 'db.sqlite3-wal')
-                    if os.path.exists(wal_file):
-                        shutil.copy2(wal_file, db_path + '-wal')
-                    shm_file = os.path.join(tmp_dir, 'db.sqlite3-shm')
-                    if os.path.exists(shm_file):
-                        shutil.copy2(shm_file, db_path + '-shm')
-
-                extracted_media = os.path.join(tmp_dir, 'media')
-                if os.path.exists(extracted_media):
-                    for root, dirs, files in os.walk(extracted_media):
-                        for file in files:
-                            src = os.path.join(root, file)
-                            rel = os.path.relpath(src, extracted_media)
-                            dst = os.path.join(settings.MEDIA_ROOT, rel)
-                            os.makedirs(os.path.dirname(dst), exist_ok=True)
-                            shutil.copy2(src, dst)
-
-        elif backup.backup_type == 'full':
+        if backup.backup_type == 'data' or backup.backup_type == 'full':
             with tempfile.TemporaryDirectory() as tmp_dir:
                 with zipfile.ZipFile(backup.file_path, 'r') as zf:
                     _safe_extract_zip(zf, tmp_dir)
@@ -262,10 +242,12 @@ def restore_backup(request, pk):
                             shutil.copy2(src, dst)
 
         messages.success(request, f'تم استرجاع النسخة "{backup.name}" بنجاح. أعد تشغيل السيرفر.')
-        backup.notes = (backup.notes + '\n' if backup.notes else '') + f'تم الاسترجاع في {datetime.now().strftime("%Y-%m-%d %H:%M")}'
+        backup.notes = (
+            backup.notes + '\n' if backup.notes else ''
+        ) + f'تم الاسترجاع في {datetime.now().strftime("%Y-%m-%d %H:%M")}'
         backup.save()
 
-    except Exception as e:
+    except Exception:
         if os.path.exists(restore_file):
             shutil.copy2(restore_file, db_path)
         messages.error(request, 'فشلت العملية. يرجى المحاولة لاحقاً.')
@@ -283,9 +265,19 @@ def export_json(request):
 
     try:
         result = subprocess.run(
-            [settings.BASE_DIR / 'manage.py', 'dumpdata',
-             '--indent', '2', '--exclude', 'auth.permission', '--exclude', 'contenttypes'],
-            capture_output=True, text=True, timeout=300
+            [
+                settings.BASE_DIR / 'manage.py',
+                'dumpdata',
+                '--indent',
+                '2',
+                '--exclude',
+                'auth.permission',
+                '--exclude',
+                'contenttypes',
+            ],
+            capture_output=True,
+            text=True,
+            timeout=300,
         )
         if result.returncode != 0:
             raise Exception(f'dumpdata failed: {result.stderr}')
@@ -303,7 +295,7 @@ def export_json(request):
             created_by=request.user,
         )
         messages.success(request, f'تم التصدير بنجاح ({_format_size(file_size)})')
-    except Exception as e:
+    except Exception:
         messages.error(request, 'فشلت العملية. يرجى المحاولة لاحقاً.')
         logger.exception('Backup operation failed')
 
@@ -318,7 +310,7 @@ def import_json(request):
 
     uploaded = request.FILES['json_file']
     if uploaded.size > MAX_UPLOAD_SIZE:
-        messages.error(request, f'حجم الملف يتجاوز الحد الأقصى ({MAX_UPLOAD_SIZE // (1024*1024)} ميجابايت)')
+        messages.error(request, f'حجم الملف يتجاوز الحد الأقصى ({MAX_UPLOAD_SIZE // (1024 * 1024)} ميجابايت)')
         return redirect('backups:backup_dashboard')
     if not uploaded.name.endswith('.json'):
         messages.error(request, 'يجب أن يكون الملف بصيغة JSON')
@@ -335,15 +327,14 @@ def import_json(request):
 
     try:
         result = subprocess.run(
-            [settings.BASE_DIR / 'manage.py', 'loaddata', filepath],
-            capture_output=True, text=True, timeout=300
+            [settings.BASE_DIR / 'manage.py', 'loaddata', filepath], capture_output=True, text=True, timeout=300
         )
         if result.returncode != 0:
             raise Exception(f'loaddata failed: {result.stderr}')
 
         messages.success(request, 'تم استيراد البيانات بنجاح')
         os.remove(filepath)
-    except Exception as e:
+    except Exception:
         messages.error(request, 'فشلت العملية. يرجى المحاولة لاحقاً.')
         logger.exception('Backup operation failed')
 
@@ -374,11 +365,12 @@ SCREEN = 'system.factory_reset'
 
 @screen_permission_required(SCREEN, 'view')
 def factory_reset_home(request):
-    requests_qs = FactoryResetRequest.objects.select_related(
-        'requested_by', 'reviewed_by', 'executed_by')[:100]
-    active = FactoryResetRequest.objects.filter(
-        status__in=FactoryResetRequest.ACTIVE_STATUSES
-    ).select_related('requested_by', 'reviewed_by').first()
+    requests_qs = FactoryResetRequest.objects.select_related('requested_by', 'reviewed_by', 'executed_by')[:100]
+    active = (
+        FactoryResetRequest.objects.filter(status__in=FactoryResetRequest.ACTIVE_STATUSES)
+        .select_related('requested_by', 'reviewed_by')
+        .first()
+    )
     context = {
         'reset_requests': requests_qs,
         'active_request': active,
@@ -410,9 +402,7 @@ def factory_reset_request(request):
 def factory_reset_approve(request, pk):
     try:
         _req, token = fr.approve_request(pk, request.user, fr.meta_from_request(request))
-        messages.success(
-            request,
-            f'تم الاعتماد. رمز التنفيذ (يُسلَّم للمنفّذ ولمرة واحدة فقط): {token}')
+        messages.success(request, f'تم الاعتماد. رمز التنفيذ (يُسلَّم للمنفّذ ولمرة واحدة فقط): {token}')
     except FactoryResetRequest.DoesNotExist:
         messages.error(request, 'الطلب غير موجود.')
     except fr.FactoryResetError as e:
@@ -424,8 +414,7 @@ def factory_reset_approve(request, pk):
 @screen_permission_required(SCREEN, 'edit')
 def factory_reset_reject(request, pk):
     try:
-        fr.reject_request(pk, request.user, request.POST.get('notes', ''),
-                          fr.meta_from_request(request))
+        fr.reject_request(pk, request.user, request.POST.get('notes', ''), fr.meta_from_request(request))
         messages.success(request, 'تم رفض الطلب.')
     except FactoryResetRequest.DoesNotExist:
         messages.error(request, 'الطلب غير موجود.')
@@ -443,6 +432,7 @@ def factory_reset_cancel(request, pk):
         perms = None
         if not request.user.is_superuser and req.requested_by_id != request.user.id:
             from access_control.resolver import resolve
+
             perms = resolve(request.user)
             if not perms.can(SCREEN, 'edit'):
                 messages.error(request, 'لا تملك صلاحية إلغاء هذا الطلب.')
@@ -461,16 +451,16 @@ def factory_reset_cancel(request, pk):
 def factory_reset_execute(request, pk):
     try:
         _req, deleted = fr.execute_request(
-            pk, request.user,
+            pk,
+            request.user,
             token=request.POST.get('token', ''),
             phrase=request.POST.get('phrase', ''),
             password=request.POST.get('password', ''),
             request_meta=fr.meta_from_request(request),
         )
         messages.success(
-            request,
-            'تم تنفيذ استعادة ضبط المصنع بنجاح. أُنشئت نسخة أمان قبل المسح. '
-            'يُنصح بإعادة تشغيل الخادم.')
+            request, 'تم تنفيذ استعادة ضبط المصنع بنجاح. أُنشئت نسخة أمان قبل المسح. يُنصح بإعادة تشغيل الخادم.'
+        )
     except FactoryResetRequest.DoesNotExist:
         messages.error(request, 'الطلب غير موجود.')
     except fr.FactoryResetError as e:

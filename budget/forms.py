@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import CostCenter, Budget
+
+from .models import Budget, CostCenter
 
 
 class CostCenterForm(forms.ModelForm):
@@ -24,10 +25,7 @@ class CostCenterForm(forms.ModelForm):
 class BudgetForm(forms.ModelForm):
     class Meta:
         model = Budget
-        fields = [
-            'name', 'account', 'cost_center', 'period', 'year', 'month',
-            'budgeted_amount', 'notes',
-        ]
+        fields = ['name', 'account', 'cost_center', 'period', 'year', 'month', 'budgeted_amount', 'notes']
 
     def clean_year(self):
         year = self.cleaned_data.get('year')

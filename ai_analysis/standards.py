@@ -41,16 +41,12 @@ EGYPTIAN_ACCOUNTING_STANDARDS = {
             'نسبة الضريبة 14%',
             'يُسجل كالتزام ضريبي عند الفوترة',
             'يُخصم كدخل ضريبي عند الدفع',
-        ]
+        ],
     },
     'withholding_tax_rules': {
-        'rates': {
-            '1': 'شركات',
-            '3': 'جهات حكومية',
-            '5': 'مقاولين',
-        },
+        'rates': {'1': 'شركات', '3': 'جهات حكومية', '5': 'مقاولين'},
         'law': 'القانون رقم 91 لسنة 2005 وتعديلاته',
-    }
+    },
 }
 
 IFRS_STANDARDS = {
@@ -64,7 +60,7 @@ IFRS_STANDARDS = {
                 'عرض البيانات المالية بوضوح',
                 'الإفصاح عن جميع السياسات المحاسبية',
                 'تقديم مقارنة مع الفترة السابقة',
-            ]
+            ],
         },
         {
             'code': 'IAS 8',
@@ -73,15 +69,12 @@ IFRS_STANDARDS = {
                 'استمرار السياسات المحاسبية',
                 'التغيير فقط إذا كان يحسن المعلومات المالية',
                 'الإفصاح عن أي تغيير',
-            ]
+            ],
         },
         {
             'code': 'IAS 10',
             'name': 'الأحداث بعد تاريخ الميزانية العمومية',
-            'key_requirements': [
-                'تعديل البيانات المالية للأحداث المعدلة',
-                'الإفصاح عن الأحداث غير المعدلة',
-            ]
+            'key_requirements': ['تعديل البيانات المالية للأحداث المعدلة', 'الإفصاح عن الأحداث غير المعدلة'],
         },
         {
             'code': 'IFRS 15',
@@ -92,7 +85,7 @@ IFRS_STANDARDS = {
                 'تحديد سعر المعاملة',
                 'توزيع سعر المعاملة',
                 'الاعتراف بالإيراد',
-            ]
+            ],
         },
         {
             'code': 'IAS 36',
@@ -101,9 +94,9 @@ IFRS_STANDARDS = {
                 'تحقق من انخفاض القيمة القابلة للاسترداد',
                 'تسجيل خسائر انخفاض القيمة',
                 'عدم عكس الخسائر في_periodات لاحقة',
-            ]
+            ],
         },
-    ]
+    ],
 }
 
 
@@ -114,39 +107,32 @@ def validate_solution_against_standards(proposed_solution, error_type):
 
     # التحقق من مبدأ الحيطة المحاسبية
     if 'ربح' in proposed_solution.lower() and 'محتشم' not in proposed_solution.lower():
-        violations.append({
-            'standard': 'مبدأ الحيطة المحاسبية',
-            'description': 'يجب أن يكون التقدير محتشماً عند الاعتراف بالأرباح',
-        })
+        violations.append(
+            {'standard': 'مبدأ الحيطة المحاسبية', 'description': 'يجب أن يكون التقدير محتشماً عند الاعتراف بالأرباح'}
+        )
 
     # التحقق من مبدأ المطابقة
     if error_type in ['REVENUE_RECOGNITION', 'EXPENSE_MATCHING']:
         if 'فترة' not in proposed_solution.lower():
-            warnings.append({
-                'standard': 'مبدأ المطابقة',
-                'description': 'تأكد من مطابقة الإيرادات والمصروفات لنفس الفترة المحاسبية',
-            })
+            warnings.append(
+                {
+                    'standard': 'مبدأ المطابقة',
+                    'description': 'تأكد من مطابقة الإيرادات والمصروفات لنفس الفترة المحاسبية',
+                }
+            )
 
     # التحقق من الكشف الكامل
     if 'إفصاح' not in proposed_solution.lower() and 'كشف' not in proposed_solution.lower():
-        warnings.append({
-            'standard': 'مبدأ الكشف الكامل',
-            'description': 'تأكد من الإفصاح الكامل عن التعديل في البيانات المالية',
-        })
+        warnings.append(
+            {'standard': 'مبدأ الكشف الكامل', 'description': 'تأكد من الإفصاح الكامل عن التعديل في البيانات المالية'}
+        )
 
     # التحقق من قواعد VAT
     if error_type in ['VAT_ERROR', 'TAX_ERROR']:
         if '14%' not in proposed_solution:
-            warnings.append({
-                'standard': 'ضريبة القيمة المضافة',
-                'description': 'تأكد من تطبيق نسبة 14% الصحيحة',
-            })
+            warnings.append({'standard': 'ضريبة القيمة المضافة', 'description': 'تأكد من تطبيق نسبة 14% الصحيحة'})
 
-    return {
-        'is_compliant': len(violations) == 0,
-        'violations': violations,
-        'warnings': warnings,
-    }
+    return {'is_compliant': len(violations) == 0, 'violations': violations, 'warnings': warnings}
 
 
 def get_applicable_standards(error_type):

@@ -60,11 +60,11 @@ def user_permissions_context(request):
     """Context processor that adds user permissions for template conditional display."""
     if not request.user.is_authenticated:
         return {'user_perms': set(), 'is_superuser': False}
-    
+
     cached = getattr(request, '_cached_perms', None)
     if cached is not None:
         return cached
-    
+
     if request.user.is_superuser:
         perms = {'all'}
     else:
@@ -74,6 +74,7 @@ def user_permissions_context(request):
     can_view_prices = True
     try:
         from access_control.resolver import resolve
+
         resolved = resolve(request.user)
         screen_perms = resolved.screens
         can_view_prices = resolved.can_view_prices
