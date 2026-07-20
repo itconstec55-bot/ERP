@@ -58,8 +58,8 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: accounting_system.settings
           DATABASE_URL: postgres://accounting:accounting@localhost:5432/accounting_test
-          SECRET_KEY: ci-test-secret-key
-          DEBUG: "0"
+          DJANGO_SECRET_KEY: ci-test-secret-key
+          DJANGO_DEBUG: "0"
         run: |
           python manage.py check --deploy
 
@@ -67,8 +67,8 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: accounting_system.settings
           DATABASE_URL: postgres://accounting:accounting@localhost:5432/accounting_test
-          SECRET_KEY: ci-test-secret-key
-          DEBUG: "0"
+          DJANGO_SECRET_KEY: ci-test-secret-key
+          DJANGO_DEBUG: "0"
           CI: "true"
         run: |
           pytest --ds=accounting_system.settings --cov=. --cov-report=xml || echo "::warning::No tests configured or tests failed"
@@ -94,8 +94,8 @@ jobs:
       - name: Collect static files
         env:
           DJANGO_SETTINGS_MODULE: accounting_system.settings
-          SECRET_KEY: ci-test-secret-key
-          DEBUG: "0"
+          DJANGO_SECRET_KEY: ci-test-secret-key
+          DJANGO_DEBUG: "0"
         run: |
           python manage.py collectstatic --noinput --dry-run || python manage.py collectstatic --noinput
 
