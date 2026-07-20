@@ -1,0 +1,197 @@
+{% extends "base/base.html" %}
+
+{% block content_header %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>{{ title }}</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="{% url 'contractors:dashboard' %}">لوحة التحكم</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'contractors:contract_list' %}">العقود</a></li>
+          <li class="breadcrumb-item active">{{ title }}</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <form method="post">
+    {% csrf_token %}
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card card-primary">
+          <div class="card-header">
+            <h3 class="card-title">بيانات العقد</h3>
+          </div>
+          <div class="card-body">
+            {% if form.errors %}
+            <div class="alert alert-danger">
+              {% for field, errors in form.errors.items %}
+              <p><strong>{{ field }}:</strong> {{ errors|join:", " }}</p>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="row">
+              <div class="col-md-8">
+                <div class="form-group">
+                  <label>{{ form.title.label }}</label>
+                  {{ form.title }}
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label>{{ form.contract_type.label }}</label>
+                  {{ form.contract_type }}
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>{{ form.contractor.label }}</label>
+                  {{ form.contractor }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>{{ form.cost_account.label }}</label>
+                  {{ form.cost_account }}
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label>{{ form.contract_amount.label }}</label>
+                  {{ form.contract_amount }}
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label>{{ form.vat_rate.label }} (%)</label>
+                  {{ form.vat_rate }}
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label>{{ form.retention_rate.label }} (%)</label>
+                  {{ form.retention_rate }}
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label>{{ form.advance_payment_percent.label }} (%)</label>
+                  {{ form.advance_payment_percent }}
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>{{ form.start_date.label }}</label>
+                  {{ form.start_date }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>{{ form.end_date.label }}</label>
+                  {{ form.end_date }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-secondary">
+          <div class="card-header">
+            <h3 class="card-title">بنود العقد</h3>
+          </div>
+          <div class="card-body">
+            {{ formset.management_form }}
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>رقم البند</th>
+                    <th>الوصف</th>
+                    <th>الوحدة</th>
+                    <th>الكمية</th>
+                    <th>سعر الوحدة</th>
+                    <th>الإجمالي</th>
+                    <th>حذف</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item_form in formset %}
+                  <tr>
+                    {% for field in item_form %}
+                    {% if not field.is_hidden %}
+                    <td>{{ field }}</td>
+                    {% endif %}
+                    {% endfor %}
+                    {% if item_form.instance.pk %}
+                    <td>{{ item_form.DELETE }}</td>
+                    {% endif %}
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-secondary">
+          <div class="card-header">
+            <h3 class="card-title">شروط خاصة</h3>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>{{ form.special_conditions.label }}</label>
+                  {{ form.special_conditions }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>{{ form.penalties_clause.label }}</label>
+                  {{ form.penalties_clause }}
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ form.notes.label }}</label>
+              {{ form.notes }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> حفظ العقد
+            </button>
+            <a href="{% url 'contractors:contract_list' %}" class="btn btn-secondary">
+              <i class="fas fa-times"></i> إلغاء
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

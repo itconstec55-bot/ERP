@@ -1,0 +1,78 @@
+{% extends "base/base.html" %}
+
+{% block title %}جدول الأصول والإهلاك{% endblock %}
+{% block page_title %}جدول الأصول والإهلاك{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><i class="fas fa-building"></i> جدول الأصول والإهلاك</div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white"><div class="card-body text-center">
+                    <h6>إجمالي التكلفة</h6><h4>{{ total_cost|floatformat:2 }} ج.م</h4>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-danger text-white"><div class="card-body text-center">
+                    <h6>إجمالي الإهلاك</h6><h4>{{ total_depreciation|floatformat:2 }} ج.م</h4>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white"><div class="card-body text-center">
+                    <h6>القيمة الدفترية</h6><h4>{{ total_net|floatformat:2 }} ج.م</h4>
+                </div></div>
+            </div>
+        </div>
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>الكود</th><th>الاسم</th><th>التصنيف</th><th>تاريخ الشراء</th>
+                    <th>التكلفة</th><th>القيمة التخليصية</th><th>العمر</th><th>الإهلاك السنوي</th>
+                    <th>مجمع الإهلاك</th><th>القيمة الدفترية</th><th>نسبة الإهلاك</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in assets %}
+                <tr>
+                    <td>{{ asset.code }}</td>
+                    <td>{{ asset.name }}</td>
+                    <td>{{ asset.category }}</td>
+                    <td>{{ asset.purchase_date|date:"d/m/Y" }}</td>
+                    <td>{{ asset.purchase_price|floatformat:2 }}</td>
+                    <td>{{ asset.salvage_value|floatformat:2 }}</td>
+                    <td>{{ asset.useful_life_years }} سنة</td>
+                    <td>{{ asset.annual_depreciation|floatformat:2 }}</td>
+                    <td class="text-danger">{{ asset.accumulated_depreciation|floatformat:2 }}</td>
+                    <td class="text-success">{{ asset.net_book_value|floatformat:2 }}</td>
+                    <td>
+                        <div class="progress" style="width:100px">
+                            <div class="progress-bar bg-danger" style="width:{{ asset.depreciation_percentage }}%"></div>
+                        </div>
+                        {{ asset.depreciation_percentage|floatformat:1 }}%
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if depreciation_entries %}
+        <h5 class="mt-4">آخر قيود الإهلاك</h5>
+        <table class="table table-hover">
+            <thead><tr><th>الأصل</th><th>التاريخ</th><th>المبلغ</th><th>أشهر</th><th>القيد</th></tr></thead>
+            <tbody>
+                {% for entry in depreciation_entries %}
+                <tr>
+                    <td>{{ entry.asset.name }}</td>
+                    <td>{{ entry.date|date:"d/m/Y" }}</td>
+                    <td class="text-danger">{{ entry.amount|floatformat:2 }}</td>
+                    <td>{{ entry.months }}</td>
+                    <td>{% if entry.journal_entry %}<a href="{% url 'accounts:journal_detail' pk=entry.journal_entry.pk %}">{{ entry.journal_entry.entry_number }}</a>{% else %}-{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

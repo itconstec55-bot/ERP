@@ -1,0 +1,77 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}لوحة الشيكات{% endblock %}
+{% block page_title %}لوحة إدارة الشيكات{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <i class="fas fa-money-check-alt fa-2x text-success mb-2"></i>
+                <h6>شيكات واردة قيد الانتظار</h6>
+                <h3 class="text-success">{{ received_pending|floatformat:2|intcomma }} ج.م</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <i class="fas fa-money-check fa-2x text-warning mb-2"></i>
+                <h6>شيكات صادرة قيد الانتظار</h6>
+                <h3 class="text-warning">{{ issued_pending|floatformat:2|intcomma }} ج.م</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                <h6>شيكات متأخرة ({{ overdue_count }})</h6>
+                <h3 class="text-danger">{{ total_overdue|floatformat:2|intcomma }} ج.م</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between mb-3">
+    <a href="{% url 'cheques:cheque_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> إضافة شيك
+    </a>
+    <a href="{% url 'cheques:cheque_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-list"></i> عرض الكل
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header"><i class="fas fa-clock"></i> آخر الشيكات</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr><th>رقم الشيك</th><th>البنك</th><th>المبلغ</th><th>نوع</th><th>الاستحقاق</th><th>الحالة</th></tr>
+            </thead>
+            <tbody>
+                {% for cheque in recent_cheques %}
+                <tr>
+                    <td><a href="{% url 'cheques:cheque_detail' pk=cheque.pk %}">{{ cheque.cheque_number }}</a></td>
+                    <td>{{ cheque.bank_name }}</td>
+                    <td>{{ cheque.amount|floatformat:2|intcomma }}</td>
+                    <td><span class="badge bg-{% if cheque.cheque_type == 'received' %}success{% else %}warning{% endif %}">{{ cheque.get_cheque_type_display }}</span></td>
+                    <td>{{ cheque.due_date|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if cheque.status == 'pending' %}<span class="badge bg-secondary">قيد الانتظار</span>
+                        {% elif cheque.status == 'deposited' %}<span class="badge bg-info">ودع في البنك</span>
+                        {% elif cheque.status == 'cleared' %}<span class="badge bg-success">محصل</span>
+                        {% elif cheque.status == 'bounced' %}<span class="badge bg-danger">مرتجع</span>
+                        {% else %}<span class="badge bg-dark">ملغي</span>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">لا توجد شيكات</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

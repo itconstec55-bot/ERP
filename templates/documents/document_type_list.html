@@ -1,0 +1,60 @@
+{% extends "base/base.html" %}
+{% load access_tags %}
+
+{% block title %}أنواع المستندات{% endblock %}
+{% block page_title %}أنواع المستندات{% endblock %}
+
+{% block content %}
+{% can_screen 'documents.document' 'add' as doc_can_add %}
+{% can_screen 'documents.document' 'edit' as doc_can_edit %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-folder-open"></i> أنواع المستندات</span>
+        {% if doc_can_add %}
+        <a href="{% url 'documents:document_type_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> نوع جديد
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>الكود</th>
+                    <th>الاسم</th>
+                    <th>البادئة</th>
+                    <th>التالي رقم</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in types %}
+                <tr>
+                    <td><strong>{{ t.code }}</strong></td>
+                    <td>{{ t.name }}</td>
+                    <td><code>{{ t.prefix }}</code></td>
+                    <td>{{ t.next_number }}</td>
+                    <td>
+                        {% if t.is_active %}
+                        <span class="badge bg-success">نشط</span>
+                        {% else %}
+                        <span class="badge bg-danger">غير نشط</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if doc_can_edit %}
+                        <a href="{% url 'documents:document_type_edit' pk=t.pk %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted">لا توجد أنواع مستندات</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

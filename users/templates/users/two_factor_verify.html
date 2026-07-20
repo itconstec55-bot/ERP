@@ -1,0 +1,42 @@
+{% extends 'base/base.html' %}
+{% block title %}التحقق من المصادقة الثنائية{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-5">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-lock"></i> التحقق من الهوية</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-mobile-alt fa-3x text-primary mb-3"></i>
+                        <h6>أدخل الرمز المكوّن من 6 أرقام من تطبيق المصادقة</h6>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <input type="text" name="totp_code" id="totp_code"
+                                   class="form-control form-control-lg text-center"
+                                   maxlength="6" pattern="[0-9]{6}" inputmode="numeric"
+                                   autocomplete="one-time-code"
+                                   placeholder="000000" required autofocus
+                                   style="letter-spacing: 8px; font-size: 1.5rem;">
+                        </div>
+                        <button type="submit" class="btn btn-warning btn-lg w-100">
+                            <i class="fas fa-check"></i> تحقق
+                        </button>
+                    </form>
+
+                    <div class="mt-3">
+                        <a href="{% url 'logout' %}" class="text-muted text-decoration-none">
+                            <i class="fas fa-arrow-right"></i> تسجيل الخروج
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

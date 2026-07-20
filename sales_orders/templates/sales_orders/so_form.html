@@ -1,0 +1,100 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<form method="post" id="orderForm">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-header"><i class="fas fa-clipboard-list"></i> بيانات أمر البيع</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">{{ form.order_number|as_crispy_field }}</div>
+                <div class="col-md-3">{{ form.customer|as_crispy_field }}</div>
+                <div class="col-md-3">{{ form.date|as_crispy_field }}</div>
+                <div class="col-md-3">{{ form.expected_date|as_crispy_field }}</div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">{{ form.status|as_crispy_field }}</div>
+                <div class="col-md-9">{{ form.notes|as_crispy_field }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-header"><i class="fas fa-list"></i> بنود أمر البيع</div>
+        <div class="card-body">
+            {{ formset.management_form }}
+            <table class="table table-bordered" id="linesTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:30%">المنتج</th>
+                        <th>الكمية</th>
+                        <th>سعر البيع</th>
+                        <th>الكمية المفوترة</th>
+                        <th>الإجمالي</th>
+                        <th>ملاحظات</th>
+                        <th>حذف</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for form in formset %}
+                    <tr class="line-row">
+                        <td>{{ form.product }}</td>
+                        <td>{{ form.quantity }}</td>
+                        <td>{{ form.unit_price }}</td>
+                        <td>{{ form.invoiced_quantity }}</td>
+                        <td class="line-total">0.00</td>
+                        <td>{{ form.notes }}</td>
+                        <td>{{ form.DELETE }}</td>
+                        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="row mt-3">
+                <div class="col-md-4 offset-md-8">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <table class="table table-borderless mb-0">
+                                <tr class="table-primary"><th>إجمالي الأمر:</th><td id="sum-total" class="text-end fw-bold">0.00 ج.م</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+                <a href="{% url 'sales_orders:so_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-right"></i> رجوع</a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function recalc() {
+    let total = 0;
+    document.querySelectorAll('.line-row').forEach(row => {
+        if (row.querySelector('input[name$="-DELETE"]') && row.querySelector('input[name$="-DELETE"]').checked) {
+            row.querySelector('.line-total').textContent = '0.00';
+            return;
+        }
+        const qty = parseFloat(row.querySelector('input[name$="-quantity"]').value) || 0;
+        const price = parseFloat(row.querySelector('input[name$="-unit_price"]').value) || 0;
+        const lineTotal = qty * price;
+        row.querySelector('.line-total').textContent = lineTotal.toFixed(2);
+        total += lineTotal;
+    });
+    document.getElementById('sum-total').textContent = total.toFixed(2) + ' ج.م';
+}
+document.addEventListener('input', function(e) {
+    if (e.target.closest('.line-row')) recalc();
+});
+window.addEventListener('load', recalc);
+</script>
+{% endblock %}

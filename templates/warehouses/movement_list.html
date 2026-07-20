@@ -1,0 +1,83 @@
+{% extends "base/base.html" %}
+{% load access_tags %}
+
+{% block title %}حركات المخزون{% endblock %}
+{% block page_title %}حركات المخزون{% endblock %}
+
+{% block content %}
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <a href="{% url 'warehouses:movement_list' %}" class="btn btn-sm {% if not current_type %}btn-primary{% else %}btn-outline-primary{% endif %}">الكل</a>
+            <a href="?type=in" class="btn btn-sm {% if current_type == 'in' %}btn-success{% else %}btn-outline-success{% endif %}">وارد</a>
+            <a href="?type=out" class="btn btn-sm {% if current_type == 'out' %}btn-danger{% else %}btn-outline-danger{% endif %}">صادر</a>
+            <a href="?type=transfer" class="btn btn-sm {% if current_type == 'transfer' %}btn-info{% else %}btn-outline-info{% endif %}">تحويل</a>
+            <a href="?type=adjustment" class="btn btn-sm {% if current_type == 'adjustment' %}btn-warning{% else %}btn-outline-warning{% endif %}">تسوية</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-exchange-alt"></i> حركات المخزون</span>
+        <div class="d-flex gap-2">
+            <form class="d-flex" method="get">
+                {% if current_type %}<input type="hidden" name="type" value="{{ current_type }}">{% endif %}
+                <input type="text" name="q" value="{{ search }}" class="form-control form-control-sm" placeholder="بحث..." style="width:180px;">
+                <button class="btn btn-outline-secondary btn-sm ms-1" type="submit"><i class="fas fa-search"></i></button>
+            </form>
+            <a href="{% url 'warehouses:movement_create' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> حركة جديدة
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>الرقم</th>
+                    <th>التاريخ</th>
+                    <th>النوع</th>
+                    <th>المخزن</th>
+                    <th>إلى</th>
+                    <th>المنتج</th>
+                    <th>الكمية</th>
+                    <th>التكلفة</th>
+                    <th>بواسطة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in movements %}
+                <tr>
+                    <td><a href="{% url 'warehouses:movement_detail' pk=m.pk %}">{{ m.movement_number }}</a></td>
+                    <td>{{ m.date|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if m.movement_type == 'in' %}
+                        <span class="badge bg-success">وارد</span>
+                        {% elif m.movement_type == 'out' %}
+                        <span class="badge bg-danger">صادر</span>
+                        {% elif m.movement_type == 'transfer' %}
+                        <span class="badge bg-info">تحويل</span>
+                        {% elif m.movement_type == 'adjustment' %}
+                        <span class="badge bg-warning">تسوية</span>
+                        {% elif m.movement_type == 'return_in' %}
+                        <span class="badge bg-success">مرتجع وارد</span>
+                        {% elif m.movement_type == 'return_out' %}
+                        <span class="badge bg-danger">مرتجع صادر</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ m.warehouse.name }}</td>
+                    <td>{{ m.to_warehouse.name|default:"-" }}</td>
+                    <td>{{ m.product.name }}</td>
+                    <td>{{ m.quantity|floatformat:0 }}</td>
+                    <td>{% if can_view_prices %}{{ m.total_cost|floatformat:2 }} ج.م{% else %}••••{% endif %}</td>
+                    <td>{{ m.performed_by|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center text-muted">لا توجد حركات</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

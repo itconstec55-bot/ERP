@@ -1,0 +1,62 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}{% if conn %}تعديل إعداد{% else %}إضافة إعداد{% endif %}{% endblock %}
+{% block page_title %}{% if conn %}تعديل إعداد اتصال الضرائب{% else %}إضافة إعداد اتصال الضرائب{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-cog"></i> {% if conn %}تعديل إعداد{% else %}إضافة إعداد{% endif %} اتصال
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">اسم الإعداد</label>
+                    <input type="text" name="name" class="form-control" value="{{ conn.name|default:'الافتراضي' }}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">بيئة التشغيل</label>
+                    <select name="environment" class="form-select">
+                        {% for value, label in environments %}
+                        <option value="{{ value }}" {% if conn and conn.environment == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Client ID</label>
+                    <input type="text" name="client_id" class="form-control" value="{{ conn.client_id|default:'' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Client Secret</label>
+                    <input type="password" name="client_secret" class="form-control" placeholder="{% if conn %}اتركه فارغاً للإبقاء على الحالي{% endif %}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">مسار شهادة التوقيع (PKI)</label>
+                    <input type="text" name="certificate_path" class="form-control" value="{{ conn.certificate_path|default:'' }}" placeholder="/path/to/cert.pfx">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">كلمة سر الشهادة</label>
+                    <input type="password" name="certificate_password" class="form-control" placeholder="{% if conn %}اتركه فارغاً للإبقاء على الحالي{% endif %}">
+                </div>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="is_active" class="form-check-input" id="is_active" {% if not conn or conn.is_active %}checked{% endif %}>
+                <label class="form-check-label" for="is_active">تفعيل هذا الإعداد (مفعل واحد فقط)</label>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> حفظ
+                </button>
+                <a href="{% url 'tax_invoices:connection_list' %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

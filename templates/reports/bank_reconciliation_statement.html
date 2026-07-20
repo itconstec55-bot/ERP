@@ -1,0 +1,81 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}كشف التسوية البنكية{% endblock %}
+{% block page_title %}كشف التسوية البنكية{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/print.css' %}" rel="stylesheet">
+<style>
+    @media screen { .print-header-wrapper, .print-footer-wrapper { display: none; } }
+    @media print { .print-header-wrapper, .print-footer-wrapper { display: block !important; } }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'components/print_header.html' with doc_title='كشف التسوية البنكية' doc_date=date_to %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between flex-wrap gap-2">
+        <span><i class="fas fa-university"></i> كشف التسوية البنكية</span>
+        <form method="get" class="d-flex gap-2 flex-wrap">
+            <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+            <a href="{% url 'reports:export_report' 'bank-reconciliation' %}?date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}" class="btn btn-success btn-sm"><i class="fas fa-file-excel"></i></a>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>البنك / الحساب</th>
+                        <th>رصيد الدفتر (الاستاذ)</th>
+                        <th>رصيد البيان</th>
+                        <th>الشيكات غير المحصلة</th>
+                        <th>الرصيد المطابق</th>
+                        <th>الفرق</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in banks %}
+                    <tr>
+                        <td>{{ b.bank.name }}{% if b.bank.account %}<br><small class="text-muted">{{ b.bank.account.code }} - {{ b.bank.account.name }}</small>{% endif %}</td>
+                        <td class="text-end">{{ b.book_balance|floatformat:2 }}</td>
+                        <td class="text-end">{{ b.statement_balance|floatformat:2 }}</td>
+                        <td class="text-end text-danger">{{ b.outstanding_total|floatformat:2 }}</td>
+                        <td class="text-end text-success"><strong>{{ b.reconciled_balance|floatformat:2 }}</strong></td>
+                        <td class="text-end">{{ b.diff|floatformat:2 }}</td>
+                    </tr>
+                    {% if b.outstanding_cheques %}
+                    <tr class="table-light">
+                        <td colspan="6">
+                            <small><strong>الشيكات غير المحصلة:</strong></small>
+                            <ul class="mb-0 small">
+                                {% for c in b.outstanding_cheques %}
+                                <li>{{ c.cheque_number }} - {{ c.bank_name }} - {{ c.payee_name|default:'-' }} : {{ c.amount|floatformat:2 }} ({{ c.get_status_display }})</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted">لا توجد حسابات بنكية نشطة</td></tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-primary">
+                    <tr>
+                        <th>الإجمالي</th>
+                        <th class="text-end">{{ total_book|floatformat:2 }}</th>
+                        <th class="text-end">{{ total_statement|floatformat:2 }}</th>
+                        <th class="text-end text-danger">{{ total_outstanding|floatformat:2 }}</th>
+                        <th></th>
+                        <th class="text-end">{{ total_diff|floatformat:2 }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% include 'components/print_footer.html' %}
+{% endblock %}

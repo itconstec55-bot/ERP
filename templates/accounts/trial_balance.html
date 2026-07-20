@@ -1,0 +1,58 @@
+{% extends "base/base.html" %}
+
+{% block title %}ميزان المراجعة{% endblock %}
+{% block page_title %}ميزان المراجعة{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-balance-scale"></i> ميزان المراجعة</span>
+        <span class="badge bg-primary">{{ today|date:"d/m/Y" }}</span>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>كود الحساب</th>
+                    <th>اسم الحساب</th>
+                    <th>نوع الحساب</th>
+                    <th>مدين</th>
+                    <th>دائن</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in accounts %}
+                {% if account.current_balance != 0 %}
+                <tr>
+                    <td>{{ account.code }}</td>
+                    <td>{{ account.name }}</td>
+                    <td>{{ account.account_type.get_account_type_display }}</td>
+                    <td class="text-danger">
+                        {% if account.current_balance > 0 and account.account_type.account_type == 'asset' or account.account_type.account_type == 'expense' %}
+                            {{ account.current_balance|floatformat:2 }}
+                        {% elif account.current_balance < 0 and account.account_type.account_type != 'asset' and account.account_type.account_type != 'expense' %}
+                            {{ account.current_balance|floatformat:2|cut:"-" }}
+                        {% endif %}
+                    </td>
+                    <td class="text-success">
+                        {% if account.current_balance > 0 and account.account_type.account_type != 'asset' and account.account_type.account_type != 'expense' %}
+                            {{ account.current_balance|floatformat:2 }}
+                        {% elif account.current_balance < 0 and account.account_type.account_type == 'asset' or account.account_type.account_type == 'expense' %}
+                            {{ account.current_balance|floatformat:2|cut:"-" }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="table-dark">
+                    <th colspan="3">الإجمالي</th>
+                    <th class="text-danger">{{ total_debit|floatformat:2 }}</th>
+                    <th class="text-success">{{ total_credit|floatformat:2 }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endblock %}

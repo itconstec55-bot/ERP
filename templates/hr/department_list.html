@@ -1,0 +1,28 @@
+{% extends "base/base.html" %}
+
+{% block title %}الأقسام{% endblock %}
+{% block page_title %}الأقسام{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-sitemap"></i> الأقسام</span>
+        <a href="{% url 'hr:department_create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> قسم جديد</a>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead><tr><th>الاسم</th><th>المدير</th><th>الموظفين</th><th>الحالة</th></tr></thead>
+            <tbody>
+                {% for dept in departments %}
+                <tr>
+                    <td><a href="{% url 'hr:department_detail' pk=dept.pk %}"><strong>{{ dept.name }}</strong></a></td>
+                    <td>{{ dept.manager|default:"-" }}</td>
+                    <td><span class="badge bg-info">{{ dept.employees.count }}</span></td>
+                    <td><span class="badge bg-success">نشط</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

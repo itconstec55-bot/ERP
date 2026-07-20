@@ -1,0 +1,29 @@
+{% extends 'base/base.html' %}
+
+{% block title %}إضافة بند كشف حساب{% endblock %}
+{% block page_title %}إضافة بند كشف حساب{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-plus"></i> بند جديد</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3"><label class="form-label">الحساب البنكي</label>
+                        <select name="bank_account" class="form-select" required>{% for b in banks %}<option value="{{ b.pk }}">{{ b }}</option>{% endfor %}</select>
+                    </div>
+                    <div class="mb-3"><label class="form-label">التاريخ</label><input type="date" name="transaction_date" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">الوصف</label><input type="text" name="description" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">المرجع</label><input type="text" name="reference" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">المدين</label><input type="number" name="debit_amount" class="form-control" step="0.01" value="0"></div>
+                    <div class="mb-3"><label class="form-label">الدائن</label><input type="number" name="credit_amount" class="form-control" step="0.01" value="0"></div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+                    <a href="{% url 'bank_reconciliation:item_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "base/base.html" %}
+
+{% block content_header %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>المستخلص — {{ cert.certificate_number }}</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="{% url 'contractors:dashboard' %}">لوحة التحكم</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'contractors:certificate_list' %}">المستخلصات</a></li>
+          <li class="breadcrumb-item active">{{ cert.certificate_number }}</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card card-primary card-outline">
+        <div class="card-header">
+          <h3 class="card-title">بيانات المستخلص</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <ul class="list-unstyled">
+                <li><strong>رقم المستخلص:</strong> {{ cert.certificate_number }}</li>
+                <li><strong>رقم المستخلص:</strong> {{ cert.period_number }}</li>
+                <li><strong>العقد:</strong> <a href="{% url 'contractors:contract_detail' pk=cert.contract.pk %}">{{ cert.contract.contract_number }}</a></li>
+                <li><strong>المقاول:</strong> {{ cert.contract.contractor.name }}</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <ul class="list-unstyled">
+                <li><strong>من تاريخ:</strong> {{ cert.period_from|date:"Y/m/d" }}</li>
+                <li><strong>إلى تاريخ:</strong> {{ cert.period_to|date:"Y/m/d" }}</li>
+                <li><strong>الحالة:</strong>
+                  <span class="badge badge-{% if cert.status == 'approved' %}success{% elif cert.status == 'certified' %}info{% elif cert.status == 'paid' %}primary{% elif cert.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                    {{ cert.get_status_display }}
+                  </span>
+                </li>
+                <li><strong>تاريخ الإنشاء:</strong> {{ cert.created_at|date:"Y/m/d H:i" }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card card-success">
+        <div class="card-header">
+          <h3 class="card-title">الملخص المالي</h3>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="float-right">الإجمالي:</div>
+              <div class="float-left"><b>{{ cert.gross_amount|floatformat:2 }}</b> ر.س</div>
+              <div class="clearfix"></div>
+            </li>
+            <li class="list-group-item">
+              <div class="float-right">الاحتفاظ ({{ cert.contract.retention_rate }}%):</div>
+              <div class="float-left text-danger"><b>-{{ cert.retention_amount|floatformat:2 }}</b> ر.س</div>
+              <div class="clearfix"></div>
+            </li>
+            <li class="list-group-item">
+              <div class="float-right">خصم الدفعة المقدمة:</div>
+              <div class="float-left text-danger"><b>-{{ cert.advance_deduction|floatformat:2 }}</b> ر.س</div>
+              <div class="clearfix"></div>
+            </li>
+            <li class="list-group-item">
+              <div class="float-right">الضريبة:</div>
+              <div class="float-left"><b>{{ cert.vat_amount|floatformat:2 }}</b> ر.س</div>
+              <div class="clearfix"></div>
+            </li>
+            <li class="list-group-item">
+              <div class="float-right"><strong>الصافي للمدفوع:</strong></div>
+              <div class="float-left text-success"><b>{{ cert.net_amount|floatformat:2 }}</b> ر.س</div>
+              <div class="clearfix"></div>
+            </li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          {% if cert.status == 'draft' or cert.status == 'submitted' %}
+          <form method="post" action="{% url 'contractors:certificate_approve' pk=cert.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-block">
+              <i class="fas fa-check"></i> اعتماد المستخلص
+            </button>
+          </form>
+          {% endif %}
+          {% if cert.status == 'approved' %}
+          <form method="post" action="{% url 'contractors:certificate_post' pk=cert.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-info btn-block">
+              <i class="fas fa-book"></i> ترحيل إلى دفتر الأستاذ
+            </button>
+          </form>
+          {% endif %}
+          {% if cert.status == 'certified' or cert.status == 'paid' %}
+          <a href="{% url 'contractors:payment_create' %}?certificate={{ cert.pk }}&contract={{ cert.contract.pk }}" class="btn btn-primary btn-block">
+            <i class="fas fa-money-bill"></i> تسجيل دفعة
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- بنود المستخلص -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">بنود المستخلص</h3>
+        </div>
+        <div class="card-body table-responsive p-0">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>رقم البند</th>
+                <th>الوصف</th>
+                <th>الكمية السابقة</th>
+                <th>الكمية الحالية</th>
+                <th>الإجمالي</th>
+                <th>سعر الوحدة</th>
+                <th>المبلغ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+              <tr>
+                <td>{{ item.contract_item.item_number }}</td>
+                <td>{{ item.contract_item.description }}</td>
+                <td>{{ item.previous_quantity }}</td>
+                <td>{{ item.current_quantity }}</td>
+                <td>{{ item.total_executed }}</td>
+                <td>{{ item.contract_item.unit_price|floatformat:2 }}</td>
+                <td>{{ item.amount|floatformat:2 }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="7" class="text-center">لا توجد بنود</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

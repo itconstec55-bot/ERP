@@ -1,0 +1,59 @@
+{% extends "base/base.html" %}
+{% load access_tags %}
+
+{% block title %}تفاصيل الأصل{% endblock %}
+{% block page_title %}{{ asset.code }} - {{ asset.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-info-circle"></i> بيانات الأصل</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>الكود:</th><td>{{ asset.code }}</td></tr>
+                    <tr><th>الاسم:</th><td>{{ asset.name }}</td></tr>
+                    <tr><th>التصنيف:</th><td>{{ asset.category }}</td></tr>
+                    <tr><th>تاريخ الشراء:</th><td>{{ asset.purchase_date|date:"d/m/Y" }}</td></tr>
+                    <tr><th>العمر الإنتاجي:</th><td>{{ asset.useful_life_years }} سنة</td></tr>
+                    <tr><th>طريقة الإهلاك:</th><td>{{ asset.get_depreciation_method_display }}</td></tr>
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr><th>التكلفة:</th><td>{{ asset.purchase_price|floatformat:2|price_mask:can_view_prices }} ج.م</td></tr>
+                    <tr><th>القيمة التخليصية:</th><td>{{ asset.salvage_value|floatformat:2|price_mask:can_view_prices }} ج.م</th></tr>
+                    <tr><th>الإهلاك السنوي:</th><td>{{ asset.annual_depreciation|floatformat:2|price_mask:can_view_prices }} ج.م</td></tr>
+                    <tr><th>الإهلاك الشهري:</th><td>{{ asset.monthly_depreciation|floatformat:2|price_mask:can_view_prices }} ج.م</td></tr>
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr><th>مجمع الإهلاك:</th><td class="text-danger">{{ asset.accumulated_depreciation|floatformat:2|price_mask:can_view_prices }} ج.م</td></tr>
+                    <tr><th>القيمة الدفترية:</th><td class="text-success"><strong>{{ asset.net_book_value|floatformat:2|price_mask:can_view_prices }} ج.م</strong></td></tr>
+                </table>
+                    <a href="{% url 'assets:depreciation_create' asset_id=asset.pk %}" class="btn btn-warning btn-sm w-100 mt-2">
+                    <i class="fas fa-calculator"></i> حساب إهلاك
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-chart-line"></i> سجل الإهلاك</div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead><tr><th>التاريخ</th><th>المبلغ</th><th>أشهر</th><th>المجمع بعد</th><th>القيد</th></tr></thead>
+                    <tbody>
+                        {% for entry in depreciation_entries %}
+                        <tr>
+                            <td>{{ entry.date|date:"d/m/Y" }}</td>
+                            <td class="text-danger">{{ entry.amount|floatformat:2|price_mask:can_view_prices }}</td>
+                            <td>{{ entry.months }}</td>
+                            <td>{{ entry.accumulated_after|floatformat:2|price_mask:can_view_prices }}</td>
+                            <td>{% if entry.journal_entry %}<a href="{% url 'accounts:journal_detail' pk=entry.journal_entry.pk %}">{{ entry.journal_entry.entry_number }}</a>{% else %}-{% endif %}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted">لا توجد قيود إهلاك</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

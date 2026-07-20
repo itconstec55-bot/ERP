@@ -1,0 +1,166 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load access_tags %}
+
+{% block title %}لوحة تحليل الأخطاء{% endblock %}
+{% block page_title %}لوحة تحكم تحليل الأخطاء المحاسبية{% endblock %}
+
+{% block content %}
+{% can_screen 'ai_analysis.errorlog' 'add' as ai_can_add %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                <h3 class="text-danger">{{ critical_errors }}</h3>
+                <p class="text-muted mb-0">أخطاء حرجة</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                <h3 class="text-warning">{{ pending_errors }}</h3>
+                <p class="text-muted mb-0">بانتظار المعالجة</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h3 class="text-success">{{ resolved_errors }}</h3>
+                <p class="text-muted mb-0">تم الحل</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-primary">
+            <div class="card-body text-center">
+                <i class="fas fa-database fa-2x text-primary mb-2"></i>
+                <h3 class="text-primary">{{ total_errors }}</h3>
+                <p class="text-muted mb-0">إجمالي الأخطاء</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span><i class="fas fa-exclamation-circle"></i> آخر الأخطاء المكتشفة</span>
+                {% if ai_can_add %}
+                <a href="{% url 'ai_analysis:auto_detect' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-search"></i> كشف تلقائي
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>العنوان</th>
+                            <th>النوع</th>
+                            <th>الشدة</th>
+                            <th>الحالة</th>
+                            <th>التاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for error in recent_errors %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'ai_analysis:error_detail' pk=error.pk %}">
+                                    {{ error.title }}
+                                </a>
+                            </td>
+                            <td>{{ error.error_type }}</td>
+                            <td>
+                                {% if error.severity == 'critical' %}
+                                    <span class="badge bg-danger">حرج</span>
+                                {% elif error.severity == 'high' %}
+                                    <span class="badge bg-warning">عالي</span>
+                                {% elif error.severity == 'medium' %}
+                                    <span class="badge bg-info">متوسط</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">منخفض</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if error.status == 'resolved' %}
+                                    <span class="badge bg-success">تم الحل</span>
+                                {% elif error.status == 'detected' %}
+                                    <span class="badge bg-warning">تم الكشف</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ error.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ error.created_at|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">
+                                لا توجد أخطاء مكتشفة
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-bolt"></i> إجراءات سريعة
+            </div>
+            <div class="card-body">
+                {% if ai_can_add %}
+                <a href="{% url 'ai_analysis:auto_detect' %}" class="btn btn-danger w-100 mb-2">
+                    <i class="fas fa-search"></i> كشف الأخطاء تلقائياً
+                </a>
+                <a href="{% url 'ai_analysis:analyze_error' %}" class="btn btn-primary w-100 mb-2">
+                    <i class="fas fa-robot"></i> تحليل خطأ جديد
+                </a>
+                {% endif %}
+                <a href="{% url 'ai_analysis:error_history' %}" class="btn btn-secondary w-100">
+                    <i class="fas fa-history"></i> سجل الأخطاء
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-pie"></i> توزيع الأخطاء
+            </div>
+            <div class="card-body">
+                <canvas id="errorChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/chart.js/chart.umd.min.js' %}"></script>
+<script>
+fetch('{% url "ai_analysis:api_error_stats" %}')
+    .then(r => r.json())
+    .then(data => {
+        const ctx = document.getElementById('errorChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(data.by_severity || {}),
+                datasets: [{
+                    data: Object.values(data.by_severity || {}),
+                    backgroundColor: ['#dc3545', '#ffc107', '#17a2b8', '#6c757d']
+                }]
+            }
+        });
+    });
+</script>
+{% endblock %}

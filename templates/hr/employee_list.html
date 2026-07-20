@@ -1,0 +1,69 @@
+{% extends "base/base.html" %}
+
+{% block title %}الموظفين{% endblock %}
+{% block page_title %}الموظفين{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-id-badge"></i> الموظفين</span>
+        <a href="{% url 'hr:employee_create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> موظف جديد</a>
+        <div class="dropdown">
+            <button class="btn btn-success btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-file-excel"></i> Excel
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'hr:export_employees' %}"><i class="fas fa-download"></i> تصدير إلى Excel</a></li>
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#importModal"><i class="fas fa-upload"></i> استيراد من Excel</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead><tr><th>الرقم</th><th>الاسم</th><th>القسم</th><th>الوظيفة</th><th>الراتب</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody>
+                {% for emp in employees %}
+                <tr>
+                    <td>{{ emp.employee_number }}</td>
+                    <td>{{ emp.full_name }}</td>
+                    <td>{{ emp.department|default:"-" }}</td>
+                    <td>{{ emp.position }}</td>
+                    <td>{{ emp.salary|floatformat:2 }} ج.م</td>
+                    <td><span class="badge bg-{% if emp.status == 'active' %}success{% else %}danger{% endif %}">{{ emp.get_status_display }}</span></td>
+                    <td>
+                        <a href="{% url 'hr:employee_detail' pk=emp.pk %}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i></a>
+                        <a href="{% url 'hr:employee_edit' pk=emp.pk %}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'hr:import_employees' %}" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-upload"></i> استيراد من Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">اختر ملف Excel (.xlsx)</label>
+                        <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls" required>
+                    </div>
+                    <div class="alert alert-info">
+                        <small><i class="fas fa-info-circle"></i> تأكد من أن ملف Excel يحتوي على أعمدة مطابقة للحقول المطلوبة</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> استيراد</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

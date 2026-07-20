@@ -1,0 +1,53 @@
+{% extends 'base/base.html' %}
+{% load humanize %}
+
+{% block title %}تفاصيل جلسة التسوية{% endblock %}
+{% block page_title %}تفاصيل جلسة التسوية{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #1565c0, #0d47a1);">
+            <h3>{{ session.book_balance|intcomma }}</h3><p>رصيد الدفتر</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #2e7d32, #1b5e20);">
+            <h3>{{ session.bank_balance|intcomma }}</h3><p>رصيد البنك</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, {% if session.reconciled_diff == 0 %}#2e7d32{% else %}#c62828{% endif %}, {% if session.reconciled_diff == 0 %}#1b5e20{% else %}#b71c1c{% endif %});">
+            <h3>{{ session.reconciled_diff|intcomma }}</h3><p>فرق التسوية</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #6a1b9a, #4a148c);">
+            <h3>{{ session.get_status_display }}</h3><p>الحالة</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white"><i class="fas fa-list"></i> بنود كشف الحساب</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>التاريخ</th><th>الوصف</th><th>المرجع</th><th>المدين</th><th>الدائن</th><th>الحالة</th></tr></thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.transaction_date|date:"d/m/Y" }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.reference|default:"-" }}</td>
+                    <td>{% if item.debit_amount %}{{ item.debit_amount|intcomma }}{% endif %}</td>
+                    <td>{% if item.credit_amount %}{{ item.credit_amount|intcomma }}{% endif %}</td>
+                    <td><span class="badge bg-{% if item.status == 'matched' %}success{% else %}warning{% endif %}">{{ item.get_status_display }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-4 text-muted">لا توجد بنود في هذه الفترة</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

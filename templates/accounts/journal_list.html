@@ -1,0 +1,83 @@
+{% extends "base/base.html" %}
+
+{% block title %}القيود المحاسبية{% endblock %}
+{% block page_title %}القيود المحاسبية{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-journal-whills"></i> القيود المحاسبية</span>
+        <a href="{% url 'accounts:journal_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> قيد جديد
+        </a>
+        <a href="{% url 'accounts:export_journal' %}" class="btn btn-success btn-sm"><i class="fas fa-file-excel"></i> تصدير Excel</a>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row mb-3">
+            <div class="col-md-3">
+                <select name="type" class="form-select form-select-sm">
+                    <option value="">جميع الأنواع</option>
+                    <option value="general">قيد عام</option>
+                    <option value="purchase">قيد مشتريات</option>
+                    <option value="sale">قيد مبيعات</option>
+                    <option value="receipt">قيد تحصيل</option>
+                    <option value="payment">قيد دفع</option>
+                    <option value="depreciation">قيد إهلاك</option>
+                    <option value="payroll">قيد رواتب</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="date_from" class="form-control form-control-sm" placeholder="من تاريخ">
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="date_to" class="form-control form-control-sm" placeholder="إلى تاريخ">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> بحث</button>
+            </div>
+        </form>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>رقم القيد</th>
+                    <th>التاريخ</th>
+                    <th>النوع</th>
+                    <th>البيان</th>
+                    <th>مدين</th>
+                    <th>دائن</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                <tr>
+                    <td><strong>{{ entry.entry_number }}</strong></td>
+                    <td>{{ entry.date|date:"d/m/Y" }}</td>
+                    <td><span class="badge bg-info">{{ entry.get_entry_type_display }}</span></td>
+                    <td>{{ entry.description|truncatewords:10 }}</td>
+                    <td class="text-danger">{{ entry.total_debit|floatformat:2 }}</td>
+                    <td class="text-success">{{ entry.total_credit|floatformat:2 }}</td>
+                    <td>
+                        {% if entry.is_posted %}
+                            {% if entry.is_reversed %}
+                            <span class="badge bg-warning">معكوس</span>
+                            {% else %}
+                            <span class="badge bg-success">مرحل</span>
+                            {% endif %}
+                        {% else %}
+                        <span class="badge bg-secondary">مسودة</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'accounts:journal_detail' pk=entry.pk %}" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

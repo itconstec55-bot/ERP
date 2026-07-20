@@ -1,0 +1,149 @@
+{% extends "base/base.html" %}
+
+{% block title %}تقرير المخزون والحركة{% endblock %}
+{% block page_title %}تقرير المخزون والحركة{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-warehouse"></i> تقرير المخزون والحركة</span>
+        <form method="get" class="d-flex gap-2">
+            <select name="warehouse" class="form-select form-select-sm" style="width:200px">
+                <option value="">جميع المخازن</option>
+                {% for wh in warehouses %}
+                <option value="{{ wh.id }}" {% if selected_warehouse == wh.id|stringformat:"s" %}selected{% endif %}>{{ wh.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">إجمالي قيمة المخزون</h6>
+                        <h4 class="text-primary">{{ total_stock_value|floatformat:2 }} ج.م</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">عدد المنتجات</h6>
+                        <h4 class="text-success">{{ warehouse_products|length }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">منتجات تحت الحد الأدنى</h6>
+                        <h4 class="text-warning">{{ low_stock|length }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-info">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">حركات المخزون</h6>
+                        <h4 class="text-info">{{ movements|length }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h5 class="mb-3"><i class="fas fa-boxes"></i> أرصدة المخازن</h5>
+        <table class="table table-bordered table-hover mb-4">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>المخزن</th>
+                    <th>المنتج</th>
+                    <th>الكمية</th>
+                    <th>الحد الأدنى</th>
+                    <th>الحد الأقصى</th>
+                    <th>سعر الشراء</th>
+                    <th>قيمة المخزون</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for wp in warehouse_products %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ wp.warehouse.name }}</td>
+                    <td><strong>{{ wp.product.name }}</strong></td>
+                    <td>{{ wp.quantity }}</td>
+                    <td>{{ wp.minimum_quantity }}</td>
+                    <td>{{ wp.maximum_quantity }}</td>
+                    <td>{{ wp.product.purchase_price|floatformat:2 }}</td>
+                    <td><strong>{{ wp.quantity|floatformat:0 }} x {{ wp.product.purchase_price|floatformat:2 }} = {{ wp.product.stock_value|floatformat:2 }}</strong></td>
+                    <td>
+                        {% if wp.is_low %}
+                            <span class="badge bg-danger">تحت الحد الأدنى</span>
+                        {% else %}
+                            <span class="badge bg-success">متوفر</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center text-muted">لا توجد أرصدة في المخازن</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h5 class="mb-3"><i class="fas fa-exchange-alt"></i> حركات المخزون</h5>
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>رقم الحركة</th>
+                    <th>التاريخ</th>
+                    <th>النوع</th>
+                    <th>المخزن</th>
+                    <th>المنتج</th>
+                    <th>الكمية</th>
+                    <th>تكلفة الوحدة</th>
+                    <th>الإجمالي</th>
+                    <th>مرجع</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in movements %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ m.movement_number }}</td>
+                    <td>{{ m.date|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if m.movement_type == 'in' %}
+                            <span class="badge bg-success">وارد</span>
+                        {% elif m.movement_type == 'out' %}
+                            <span class="badge bg-danger">صادر</span>
+                        {% elif m.movement_type == 'transfer' %}
+                            <span class="badge bg-info">تحويل</span>
+                        {% elif m.movement_type == 'adjustment' %}
+                            <span class="badge bg-warning">تسوية</span>
+                        {% elif m.movement_type == 'return_in' %}
+                            <span class="badge bg-primary">مرتجع وارد</span>
+                        {% elif m.movement_type == 'return_out' %}
+                            <span class="badge bg-secondary">مرتجع صادر</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ m.warehouse.name }}</td>
+                    <td>{{ m.product.name }}</td>
+                    <td>{{ m.quantity }}</td>
+                    <td>{{ m.unit_cost|floatformat:2 }}</td>
+                    <td><strong>{{ m.total_cost|floatformat:2 }}</strong></td>
+                    <td>{{ m.reference_number|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="10" class="text-center text-muted">لا توجد حركات في هذه الفترة</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

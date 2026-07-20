@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+venv/
+.venv/
+env/
+
+# Monitoring runtime data
+deployment/metrics_history.json
+deployment/health_state.json
+
+# Django
+*.log
+logs/
+staticfiles/
+media/
+db.sqlite3
+db.sqlite3-shm
+db.sqlite3-wal
+
+# Environment
+.env
+*.bak
+*.swp

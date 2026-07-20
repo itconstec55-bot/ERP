@@ -1,0 +1,78 @@
+{% extends "base/base.html" %}
+{% block title %}تصاميم الخلطات{% endblock %}
+{% block page_title %}<i class="fas fa-flask me-2"></i>تصاميم خلطات الخرسانة{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="بحث بالكود أو الاسم..." style="width: 250px;">
+            <button class="btn btn-primary"><i class="fas fa-search"></i></button>
+        </form>
+        <a href="{% url 'concrete_production:mix_design_create' %}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i> إضافة تصميم خلطة
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-3">الكود</th>
+                    <th>الاسم</th>
+                    <th>فئة القوة</th>
+                    <th>الانهيار (سم)</th>
+                    <th>قوة الهدف (MPa)</th>
+                    <th>السعر/م³</th>
+                    <th>الحالة</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mix in mixes %}
+                <tr>
+                    <td class="ps-3 fw-bold">{{ mix.code }}</td>
+                    <td>{{ mix.name }}</td>
+                    <td><span class="badge bg-primary">{{ mix.strength_class }}</span></td>
+                    <td>{{ mix.slump_cm }}</td>
+                    <td>{{ mix.target_strength_mpa }}</td>
+                    <td>{{ mix.selling_price_per_m3|floatformat:2 }} ج.م</td>
+                    <td>
+                        {% if mix.is_active %}
+                            <span class="badge bg-success">نشط</span>
+                        {% else %}
+                            <span class="badge bg-secondary">غير نشط</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'concrete_production:mix_design_detail' pk=mix.pk %}" class="btn btn-sm btn-outline-info" title="عرض">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center text-muted p-4">لا توجد تصاميم خلطات مسجلة</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if mixes.has_other_pages %}
+    <div class="card-footer">
+        <nav>
+            <ul class="pagination mb-0 justify-content-center">
+                {% if mixes.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ mixes.previous_page_number }}">السابق</a></li>
+                {% endif %}
+                {% for num in mixes.paginator.page_range %}
+                <li class="page-item {% if mixes.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if mixes.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ mixes.next_page_number }}">التالي</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

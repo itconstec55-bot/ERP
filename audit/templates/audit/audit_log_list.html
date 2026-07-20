@@ -1,0 +1,102 @@
+{% extends 'base/base.html' %}
+{% load humanize %}
+
+{% block title %}سجل التدقيق{% endblock %}
+{% block page_title %}سجل التدقيق{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <i class="fas fa-filter"></i> تصفية
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-2">
+                <select name="user" class="form-select form-select-sm">
+                    <option value="">جميع المستخدمين</option>
+                    {% for u in users %}
+                    <option value="{{ u.id }}" {% if request.GET.user == u.id|stringformat:"d" %}selected{% endif %}>{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="action" class="form-select form-select-sm">
+                    <option value="">جميع الإجراءات</option>
+                    {% for value, label in action_choices %}
+                    <option value="{{ value }}" {% if request.GET.action == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="text" name="model" class="form-control form-control-sm" placeholder="النموذج" value="{{ request.GET.model|default:'' }}">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="date_from" class="form-control form-control-sm" value="{{ request.GET.date_from|default:'' }}">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="date_to" class="form-control form-control-sm" value="{{ request.GET.date_to|default:'' }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-search"></i> بحث</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-secondary text-white d-flex justify-content-between">
+        <span><i class="fas fa-history"></i> سجل التدقيق</span>
+        <span class="badge bg-light text-dark">{{ logs|length }} سجل</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>المستخدم</th>
+                        <th>الإجراء</th>
+                        <th>النموذج</th>
+                        <th>السجل</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.timestamp|date:"d/m/Y H:i" }}</td>
+                        <td>{{ log.user.username|default:"نظام" }}</td>
+                        <td>
+                            {% if log.action == 'create' %}
+                                <span class="badge bg-success">إنشاء</span>
+                            {% elif log.action == 'update' %}
+                                <span class="badge bg-warning text-dark">تعديل</span>
+                            {% elif log.action == 'delete' %}
+                                <span class="badge bg-danger">حذف</span>
+                            {% elif log.action == 'login' %}
+                                <span class="badge bg-info">دخول</span>
+                            {% elif log.action == 'post' %}
+                                <span class="badge bg-primary">ترحيل</span>
+                            {% elif log.action == 'export' %}
+                                <span class="badge bg-secondary">تصدير</span>
+                            {% elif log.action == 'import' %}
+                                <span class="badge bg-secondary">استيراد</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ log.get_action_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td><code>{{ log.model_name }}</code></td>
+                        <td>{{ log.object_repr|truncatechars:50 }}</td>
+                        <td><small>{{ log.ip_address|default:"-" }}</small></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">لا توجد سجلات</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

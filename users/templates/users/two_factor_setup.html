@@ -1,0 +1,63 @@
+{% extends 'base/base.html' %}
+{% block title %}إعداد المصادقة الثنائية{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-shield-alt"></i> إعداد المصادقة الثنائية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        اتبع الخطوات التالية لتفعيل المصادقة الثنائية على حسابك:
+                    </div>
+
+                    <ol class="list-group list-group-numbered mb-4">
+                        <li class="list-group-item">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">خطوة 1: تحميل تطبيق المصادقة</div>
+                                <small class="text-muted">حمّل تطبيق Google Authenticator أو Authy على هاتفك</small>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">خطوة 2: مسح رمز QR</div>
+                                <small class="text-muted">استخدم التطبيق لمسح الرمز أدناه</small>
+                                <div class="text-center my-3">
+                                    <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" class="border rounded p-2" style="max-width: 200px;">
+                                </div>
+                                <div class="text-center">
+                                    <small class="text-muted">أو أدخل المفتاح يدوياً:</small><br>
+                                    <code class="user-select-all fs-6">{{ secret }}</code>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">خطوة 3: إدخال الرمز</div>
+                                <small class="text-muted">أدخل الرمز المكوّن من 6 أرقام من التطبيق</small>
+                            </div>
+                        </li>
+                    </ol>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="secret" value="{{ secret }}">
+                        <div class="mb-3">
+                            <label for="totp_code" class="form-label">رمز التحقق (6 أرقام)</label>
+                            <input type="text" name="totp_code" id="totp_code" class="form-control form-control-lg text-center"
+                                   maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code"
+                                   placeholder="000000" required autofocus>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-check-circle"></i> تفعيل المصادقة الثنائية
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

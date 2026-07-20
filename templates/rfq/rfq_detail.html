@@ -1,0 +1,184 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load access_tags %}
+
+{% block title %}تفاصيل طلب عروض الأسعار {{ rfq.number }}{% endblock %}
+
+{% block content %}
+{% can_screen 'rfq.rfq' 'edit' as rfq_can_edit %}
+{% can_screen 'rfq.rfq' 'add' as rfq_can_add %}
+<div class="top-bar">
+    <div>
+        <h4 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> طلب عروض الأسعار {{ rfq.number }}</h4>
+        <small class="text-muted">الحالة: {{ rfq.get_status_display }}</small>
+    </div>
+    <a href="{% url 'rfq:rfq_list' %}" class="btn-back"><i class="fas fa-arrow-right"></i> رجوع</a>
+</div>
+
+{% if rfq.status == 'draft' %}
+<div class="d-flex gap-2 mb-3 flex-wrap">
+    {% if rfq_can_edit %}
+    <a href="{% url 'rfq:rfq_edit' rfq.pk %}" class="btn btn-warning"><i class="fas fa-edit"></i> تعديل</a>
+    {% endif %}
+    {% if rfq_can_edit %}
+    <form method="post" action="{% url 'rfq:rfq_send' rfq.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary" onclick="return confirm('إرسال الطلب؟');">
+            <i class="fas fa-paper-plane"></i> إرسال
+        </button>
+    </form>
+    {% endif %}
+</div>
+{% elif rfq.status == 'sent' %}
+<div class="d-flex gap-2 mb-3 flex-wrap">
+    {% if rfq_can_edit %}
+    <form method="post" action="{% url 'rfq:rfq_close' rfq.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary" onclick="return confirm('إغلاق الطلب؟');">
+            <i class="fas fa-lock"></i> إغلاق
+        </button>
+    </form>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="card mb-3">
+    <div class="card-header bg-primary text-white"><i class="fas fa-info-circle"></i> بيانات الطلب</div>
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-md-3"><strong>الرقم:</strong> {{ rfq.number }}</div>
+            <div class="col-md-3"><strong>طالب الشراء:</strong> {{ rfq.requested_by|default:"-" }}</div>
+            <div class="col-md-3"><strong>مركز التكلفة:</strong> {{ rfq.cost_center|default:"-" }}</div>
+            <div class="col-md-3"><strong>الطلب الداخلي:</strong> {{ rfq.requisition|default:"-" }}</div>
+            <div class="col-md-3"><strong>التاريخ:</strong> {{ rfq.date }}</div>
+            <div class="col-md-3"><strong>صالح حتى:</strong> {{ rfq.valid_until|default:"-" }}</div>
+            <div class="col-md-3"><strong>الحالة:</strong> {{ rfq.get_status_display }}</div>
+            <div class="col-md-3"><strong>الإجمالي التقديرية:</strong> {{ rfq.total_estimated }} ج.م</div>
+        </div>
+        {% if rfq.notes %}<div class="mt-2"><strong>ملاحظات:</strong> {{ rfq.notes }}</div>{% endif %}
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header bg-primary text-white"><i class="fas fa-list-ul"></i> بنود الطلب</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr><th>المنتج</th><th>الكمية</th><th>تاريخ التوريد</th><th>السعر التقديرية</th><th>الإجمالي</th></tr>
+                </thead>
+                <tbody>
+                    {% for line in lines %}
+                    <tr>
+                        <td>{{ line.product.name }} <small class="text-muted">({{ line.description }})</small></td>
+                        <td>{{ line.quantity }}</td>
+                        <td>{{ line.required_date|default:"-" }}</td>
+                        <td>{{ line.estimated_unit_price|default:"-" }}</td>
+                        <td>{{ line.line_total }} ج.م</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted">لا توجد بنود</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-balance-scale"></i> مقارنة عروض الأسعار</span>
+        {% if rfq.status in 'draft,sent' %}
+        {% if rfq_can_add %}
+        <a href="{% url 'rfq:quotation_create' rfq.pk %}" class="btn btn-sm btn-light"><i class="fas fa-plus"></i> إضافة عرض سعر</a>
+        {% endif %}
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>البند / المورد</th>
+                        {% for q in quotations %}
+                        <th class="text-center">
+                            {{ q.supplier.name }}
+                            <br><small>{{ q.get_status_display }}</small>
+                        </th>
+                        {% endfor %}
+                        <th class="text-center text-success">أقل سعر</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in comparison %}
+                    <tr>
+                        <td>{{ row.line.product.name }} ({{ row.line.quantity }})</td>
+                        {% for cell in row.cells %}
+                        <td class="text-center {% if row.lowest is not None and cell.price == row.lowest %}table-success fw-bold{% endif %}">
+                            {% if cell.price is not None %}
+                            {{ cell.price }} ج.م
+                            <br><small class="text-muted">{{ cell.delivery }} يوم</small>
+                            {% else %}-{% endif %}
+                        </td>
+                        {% endfor %}
+                        <td class="text-center text-success fw-bold">{{ row.lowest|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="2" class="text-center text-muted">لا توجد عروض أسعار بعد</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header bg-primary text-white"><i class="fas fa-file-invoice"></i> عروض الأسعار الواردة</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr><th>المورد</th><th>تاريخ الاستلام</th><th>صالح حتى</th><th>الإجمالي</th><th>الحالة</th><th>إجراءات</th></tr>
+                </thead>
+                <tbody>
+                    {% for q in quotations %}
+                    <tr>
+                        <td>{{ q.supplier.name }}</td>
+                        <td>{{ q.received_date }}</td>
+                        <td>{{ q.valid_until|default:"-" }}</td>
+                        <td>{{ q.total }} ج.م</td>
+                        <td>
+                            {% if q.status == 'pending' %}<span class="badge bg-warning text-dark">معلق</span>
+                            {% elif q.status == 'accepted' %}<span class="badge bg-success">مقبول</span>
+                            {% elif q.status == 'rejected' %}<span class="badge bg-danger">مرفوض</span>{% endif %}
+                        </td>
+                        <td class="d-flex gap-1 flex-wrap">
+                            {% if q.status == 'pending' %}
+                            <form method="post" action="{% url 'rfq:quotation_accept' q.pk %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('قبول هذا العرض ورفض الباقية؟');">
+                                    <i class="fas fa-check"></i> قبول
+                                </button>
+                            </form>
+                            {% endif %}
+                            {% if rfq.status == 'sent' and q.status == 'accepted' %}
+                            {% if rfq_can_edit %}
+                            <form method="post" action="{% url 'rfq:rfq_convert_to_po' rfq.pk %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('تحويل لأمر شراء؟');">
+                                    <i class="fas fa-exchange-alt"></i> تحويل لأمر شراء
+                                </button>
+                            </form>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted">لا توجد عروض أسعار</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

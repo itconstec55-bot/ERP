@@ -1,0 +1,80 @@
+{% extends "base/base.html" %}
+
+{% block title %}تقرير نسب الربح{% endblock %}
+{% block page_title %}تقرير نسب الربح - الشراء والبيع{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-chart-line"></i> تقرير نسب الربح</span>
+        <form method="get" class="d-flex gap-2">
+            <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h6>إجمالي المبيعات</h6>
+                        <h4>{{ total_sales_all|floatformat:2 }} ج.م</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-danger text-white">
+                    <div class="card-body text-center">
+                        <h6>إجمالي التكلفة</h6>
+                        <h4>{{ total_cost_all|floatformat:2 }} ج.م</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h6>إجمالي الربح</h6>
+                        <h4>{{ total_profit_all|floatformat:2 }} ج.م</h4>
+                        <span class="badge badge-light">نسبة الربح: {{ overall_margin|floatformat:1 }}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th><th>المنتج</th><th>الكمية المباعة</th><th>إجمالي المبيعات</th>
+                    <th>إجمالي التكلفة</th><th>الربح</th><th>نسبة الربح %</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in product_data %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><strong>{{ data.product.name }}</strong></td>
+                    <td>{{ data.total_qty|floatformat:0 }}</td>
+                    <td>{{ data.total_sales|floatformat:2 }}</td>
+                    <td class="text-danger">{{ data.total_cost|floatformat:2 }}</td>
+                    <td class="text-success"><strong>{{ data.total_profit|floatformat:2 }}</strong></td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="height:20px">
+                                <div class="progress-bar bg-{% if data.margin > 30 %}success{% elif data.margin > 15 %}warning{% else %}danger{% endif %}"
+                                     style="width:{{ data.margin }}%"></div>
+                            </div>
+                            <span class="badge bg-{% if data.margin > 30 %}success{% elif data.margin > 15 %}warning{% else %}danger{% endif %}">
+                                {{ data.margin|floatformat:1 }}%
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted">لا توجد بيانات مبيعات في الفترة المحددة</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

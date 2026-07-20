@@ -1,0 +1,89 @@
+{% extends 'base/base.html' %}
+
+{% block title %}تفاصيل سجل المزامنة{% endblock %}
+{% block page_title %}تفاصيل سجل المزامنة{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-file-alt"></i> سجل المزامنة
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>النوع:</strong>
+                        {% if log.sync_type == 'push' %}
+                            <span class="badge bg-success">إرسال</span>
+                        {% elif log.sync_type == 'pull' %}
+                            <span class="badge bg-info">استلام</span>
+                        {% else %}
+                            <span class="badge bg-primary">مزامنة كاملة</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>الحالة:</strong>
+                        {% if log.status == 'completed' %}
+                            <span class="badge bg-success">مكتملة</span>
+                        {% elif log.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">قيد التنفيذ</span>
+                        {% else %}
+                            <span class="badge bg-danger">فشلت</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>السجلات المرسلة:</strong> {{ log.records_sent }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>السجلات المستلمة:</strong> {{ log.records_received }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>التعارضات:</strong> {{ log.conflicts_found }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>تاريخ البدء:</strong> {{ log.started_at|date:"d/m/Y H:i" }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>تاريخ الانتهاء:</strong> {{ log.completed_at|date:"d/m/Y H:i"|default:"-" }}
+                    </div>
+                </div>
+
+                {% if log.error_message %}
+                <div class="alert alert-danger">
+                    <strong>رسالة الخطأ:</strong><br>
+                    {{ log.error_message }}
+                </div>
+                {% endif %}
+
+                {% if log.sync_data %}
+                <h6>بيانات المزامنة:</h6>
+                <pre class="bg-light p-3 rounded" style="max-height: 300px; overflow-y: auto; font-size: 12px;">{{ log.sync_data|pprint }}</pre>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <i class="fas fa-arrow-right"></i> روابط سريعة
+            </div>
+            <div class="card-body">
+                <a href="{% url 'sync:sync_dashboard' %}" class="btn btn-outline-primary w-100 mb-2">
+                    <i class="fas fa-arrow-right"></i> العودة للرئيسية
+                </a>
+                <a href="{% url 'sync:sync_settings' %}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-cog"></i> الإعدادات
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

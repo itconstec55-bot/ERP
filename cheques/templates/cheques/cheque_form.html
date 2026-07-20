@@ -1,0 +1,68 @@
+{% extends "base/base.html" %}
+
+{% block title %}إضافة شيك{% endblock %}
+{% block page_title %}إضافة شيك جديد{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white"><i class="fas fa-plus"></i> بيانات الشيك</div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">رقم الشيك *</label>
+                    <input type="text" name="cheque_number" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">نوع الشيك *</label>
+                    <select name="cheque_type" class="form-select" required>
+                        <option value="received">شيك وارد</option>
+                        <option value="issued">شيك صادر</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">البنك *</label>
+                    <input type="text" name="bank_name" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">الفرع</label>
+                    <input type="text" name="branch" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">المبلغ *</label>
+                    <input type="number" step="0.01" name="amount" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">العملة</label>
+                    <select name="currency" class="form-select">
+                        <option value="EGP">جنيه مصري</option>
+                        <option value="USD">دولار</option>
+                        <option value="EUR">يورو</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">تاريخ الإصدار *</label>
+                    <input type="date" name="issue_date" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">تاريخ الاستحقاق *</label>
+                    <input type="date" name="due_date" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">الدافع/المستفيد</label>
+                    <input type="text" name="payee_name" class="form-control">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">ملاحظات</label>
+                    <textarea name="notes" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+                <a href="{% url 'cheques:cheque_list' %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

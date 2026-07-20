@@ -1,0 +1,248 @@
+{% extends "base/base.html" %}
+{% load access_tags %}
+
+{% block title %}تفاصيل المستند{% endblock %}
+{% block page_title %}{{ document.document_number }} - {{ document.title }}{% endblock %}
+
+{% block content %}
+{% can_screen 'documents.document' 'add' as doc_can_add %}
+{% can_screen 'documents.document' 'edit' as doc_can_edit %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-info-circle"></i> بيانات المستند
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>الرقم:</th><td><strong>{{ document.document_number }}</strong></td></tr>
+                    <tr><th>النوع:</th><td>{{ document.document_type }}</td></tr>
+                    <tr><th>التاريخ:</th><td>{{ document.date|date:"d/m/Y" }}</td></tr>
+                    <tr><th>الاستحقاق:</th><td>{% if document.due_date %}{{ document.due_date|date:"d/m/Y" }}{% else %}-{% endif %}</td></tr>
+                    <tr><th>الأولوية:</th>
+                        <td>
+                            {% if document.priority == 'urgent' %}
+                            <span class="badge bg-danger">عاجلة</span>
+                            {% elif document.priority == 'high' %}
+                            <span class="badge bg-warning text-dark">عالية</span>
+                            {% elif document.priority == 'medium' %}
+                            <span class="badge bg-info">متوسطة</span>
+                            {% else %}
+                            <span class="badge bg-light text-dark">منخفضة</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr><th>الحالة:</th>
+                        <td>
+                            {% if document.status == 'draft' %}
+                            <span class="badge bg-secondary">مسودة</span>
+                            {% elif document.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">قيد المراجعة</span>
+                            {% elif document.status == 'approved' %}
+                            <span class="badge bg-success">معتمد</span>
+                            {% elif document.status == 'rejected' %}
+                            <span class="badge bg-danger">مرفوض</span>
+                            {% elif document.status == 'archived' %}
+                            <span class="badge bg-info">مؤرشف</span>
+                            {% elif document.status == 'cancelled' %}
+                            <span class="badge bg-dark">ملغي</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr><th>القسم:</th><td>{{ document.department|default:"-" }}</td></tr>
+                    <tr><th>أنشئ بواسطة:</th><td>{{ document.created_by|default:"-" }}</td></tr>
+                    <tr><th>مسؤول التنفيذ:</th><td>{{ document.assigned_to|default:"-" }}</td></tr>
+                    <tr><th>المبلغ المرجعي:</th><td>{{ document.reference_amount|floatformat:2 }} ج.م</td></tr>
+                    <tr><th>رقم المرجع:</th><td>{{ document.reference_number|default:"-" }}</td></tr>
+                </table>
+                {% if document.description %}
+                <div class="mt-2">
+                    <strong>الوصف:</strong>
+                    <p class="text-muted">{{ document.description }}</p>
+                </div>
+                {% endif %}
+                {% if document.notes %}
+                <div class="mt-2">
+                    <strong>ملاحظات:</strong>
+                    <p class="text-muted">{{ document.notes }}</p>
+                </div>
+                {% endif %}
+                {% if doc_can_edit %}
+                <div class="d-flex gap-2 mt-3">
+                    <a href="{% url 'documents:document_edit' pk=document.pk %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> تعديل
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if doc_can_edit %}
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-cogs"></i> إجراءات سريعة
+            </div>
+            <div class="card-body">
+                {% if document.status == 'draft' %}
+                <form method="post" action="{% url 'documents:document_action' pk=document.pk %}" class="mb-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="submit">
+                    <div class="input-group">
+                        <input type="text" name="comment" class="form-control form-control-sm" placeholder="تعليق اختياري">
+                        <button type="submit" class="btn btn-warning btn-sm">
+                            <i class="fas fa-paper-plane"></i> تقديم للمراجعة
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+                {% if document.status == 'pending' %}
+                <form method="post" action="{% url 'documents:document_action' pk=document.pk %}" class="mb-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="approve">
+                    <div class="input-group">
+                        <input type="text" name="comment" class="form-control form-control-sm" placeholder="تعليق اختياري">
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="fas fa-check"></i> اعتماد
+                        </button>
+                    </div>
+                </form>
+                <form method="post" action="{% url 'documents:document_action' pk=document.pk %}" class="mb-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reject">
+                    <div class="input-group">
+                        <input type="text" name="comment" class="form-control form-control-sm" placeholder="سبب الرفض">
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="fas fa-times"></i> رفض
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+                {% if document.status == 'approved' %}
+                <form method="post" action="{% url 'documents:document_action' pk=document.pk %}" class="mb-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="archive">
+                    <div class="input-group">
+                        <input type="text" name="comment" class="form-control form-control-sm" placeholder="تعليق اختياري">
+                        <button type="submit" class="btn btn-info btn-sm">
+                            <i class="fas fa-archive"></i> أرشفة
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+                {% if document.status != 'cancelled' and document.status != 'archived' %}
+                <form method="post" action="{% url 'documents:document_action' pk=document.pk %}" class="mb-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="cancel">
+                    <div class="input-group">
+                        <input type="text" name="comment" class="form-control form-control-sm" placeholder="سبب الإلغاء">
+                        <button type="submit" class="btn btn-dark btn-sm">
+                            <i class="fas fa-ban"></i> إلغاء
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-exchange-alt"></i> حركات المستند</span>
+            </div>
+            <div class="card-body">
+                {% for flow in flows %}
+                <div class="d-flex align-items-start mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div class="me-3">
+                        {% if flow.action == 'create' %}
+                        <span class="badge bg-primary"><i class="fas fa-plus"></i></span>
+                        {% elif flow.action == 'submit' %}
+                        <span class="badge bg-warning text-dark"><i class="fas fa-paper-plane"></i></span>
+                        {% elif flow.action == 'approve' %}
+                        <span class="badge bg-success"><i class="fas fa-check"></i></span>
+                        {% elif flow.action == 'reject' %}
+                        <span class="badge bg-danger"><i class="fas fa-times"></i></span>
+                        {% elif flow.action == 'archive' %}
+                        <span class="badge bg-info"><i class="fas fa-archive"></i></span>
+                        {% elif flow.action == 'cancel' %}
+                        <span class="badge bg-dark"><i class="fas fa-ban"></i></span>
+                        {% else %}
+                        <span class="badge bg-secondary"><i class="fas fa-comment"></i></span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ flow.get_action_display }}</strong>
+                            <small class="text-muted">{{ flow.created_at|date:"d/m/Y H:i" }}</small>
+                        </div>
+                        <small class="text-muted">بواسطة: {{ flow.performed_by|default:"النظام" }}</small>
+                        {% if flow.from_status or flow.to_status %}
+                        <div>
+                            {% if flow.from_status %}<small>من: {{ flow.from_status }}</small>{% endif %}
+                            {% if flow.to_status %} <small>-> {{ flow.to_status }}</small>{% endif %}
+                        </div>
+                        {% endif %}
+                        {% if flow.comment %}
+                        <div class="mt-1 p-2 bg-light rounded">
+                            <small>{{ flow.comment }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">لا توجد حركات بعد</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-paperclip"></i> المرفقات</span>
+            </div>
+            <div class="card-body">
+                {% if doc_can_add %}
+                <form method="post" action="{% url 'documents:document_add_attachment' pk=document.pk %}" enctype="multipart/form-data" class="mb-3">
+                    {% csrf_token %}
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-4">
+                            <input type="text" name="name" class="form-control form-control-sm" placeholder="اسم الملف" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="file" name="file" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" name="description" class="form-control form-control-sm" placeholder="وصف اختياري">
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-upload"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                {% endif %}
+                {% for att in attachments %}
+                <div class="d-flex align-items-center justify-content-between p-2 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div>
+                        <i class="fas fa-file text-primary"></i>
+                        <strong>{{ att.name }}</strong>
+                        {% if att.description %}<small class="text-muted"> - {{ att.description }}</small>{% endif %}
+                    </div>
+                    <div>
+                        <small class="text-muted">{{ att.uploaded_by }} | {{ att.uploaded_at|date:"d/m/Y" }}</small>
+                        {% if att.file %}
+                        <a href="{{ att.file.url }}" class="btn btn-outline-primary btn-sm ms-2" target="_blank">
+                            <i class="fas fa-download"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">لا توجد مرفقات</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

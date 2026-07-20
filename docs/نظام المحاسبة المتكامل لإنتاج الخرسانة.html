@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دليل الإجراءات التقنية الموحدة</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Cairo', 'Arial', sans-serif; direction: rtl;
+       background: #f5f6fa; color: #222; line-height: 1.8; }
+.container { max-width: 960px; margin: 0 auto; padding: 30px 24px; background: #fff;
+             box-shadow: 0 2px 20px rgba(0,0,0,.08); min-height: 100vh; }
+h1 { font-size: 1.8rem; color: #1a237e; border-bottom: 3px solid #1a237e;
+     padding-bottom: 8px; margin: 28px 0 16px; }
+h2 { font-size: 1.4rem; color: #0d47a1; margin: 22px 0 12px;
+     border-right: 4px solid #ff6f00; padding-right: 12px; }
+h3 { font-size: 1.15rem; color: #333; margin: 16px 0 8px; }
+p { margin: 8px 0; text-align: justify; }
+a { color: #0d47a1; text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong { color: #1a237e; }
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.9rem; }
+th { background: #1a237e; color: #fff; padding: 8px 10px; text-align: right; }
+td { padding: 7px 10px; border: 1px solid #ddd; text-align: right; }
+tr:nth-child(even) td { background: #f6f8fc; }
+blockquote { background: #eef2f7; border-right: 4px solid #90caf9;
+             padding: 12px 16px; margin: 12px 0; border-radius: 4px; }
+pre { background: #f4f4f4; border: 1px solid #ccc; border-radius: 6px;
+      padding: 14px; direction: ltr; text-align: left; overflow-x: auto;
+      font-size: 0.82rem; line-height: 1.5; margin: 12px 0; }
+code { background: #f0f0f0; padding: 2px 5px; border-radius: 3px; font-size: 0.88em; }
+pre code { background: none; padding: 0; }
+ul { margin: 8px 20px 8px 0; }
+li { margin: 4px 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 20px 0; }
+img { max-width: 100%; height: auto; display: block; margin: 16px auto; border-radius: 6px; }
+.toc { background: #f8f9fb; border: 1px solid #e0e0e0; border-radius: 8px;
+       padding: 20px 24px; margin: 20px 0; }
+.toc a { display: block; padding: 3px 0; color: #1a237e; }
+.toc a:hover { color: #ff6f00; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px;
+         font-size: 0.8rem; color: #fff; margin-left: 4px; }
+.badge-green { background: #2e7d32; }
+.badge-red { background: #c62828; }
+.badge-blue { background: #1565c0; }
+.badge-orange { background: #e65100; }
+@media print {
+  body { background: #fff; }
+  .container { box-shadow: none; padding: 10px; }
+  .no-print { display: none !important; }
+}
+@media (max-width: 768px) {
+  .container { padding: 16px 12px; }
+  table { font-size: 0.8rem; }
+  th, td { padding: 5px 6px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>دليل الإجراءات التقنية الموحدة</h1>
+<h1>نظام المحاسبة المتكامل لإنتاج الخرسانة</h1>
+<blockquote><strong>الإصدار:</strong> 2.2 — يوليو 2026</blockquote>
+<blockquote><strong>النمط:</strong> Django 4.2.30 — DRF 3.17 — Bootstrap 5.3 — HTMX — Alpine.js — SQLite WAL — Python 3.12</blockquote>
+<hr>
+<img src="user_manual/images/01-layout.svg" alt="التخطيط العام">
+<hr>
+<h2>جدول المحتويات</h2>
+<p>1. [الإعداد الأولي للنظام](#القسم-الأول-الإعداد-الأولي-للنظام)</p>
+<p>2. [إنتاج الخرسانة — الدورة الأساسية](#القسم- الثاني-إنتاج-الخرسانة)</p>
+<p>3. [المشتريات — من الطلب إلى الفاتورة](#القسم-الثالث-المشتريات)</p>
+<p>4. [المبيعات — من العميل إلى التحصيل](#القسم-الرابع-المبيعات)</p>
+<p>5. [الدورة النقدي — سندات القبض والصرف](#القسم-الخامس-الدورة-النقدي)</p>
+<p>6. [المخازن والمستودعات](#القسم-السادس-المخازن)</p>
+<p>7. [إدارة المشاريع والمقاولين](#القسم-السابع-إدارة-المشاريع)</p>
+<p>8. [المعالجة المالية — القيود والتقارير](#القسم-الثامن-المعالجة-المالية)</p>
+<p>9. [الدورات الدورية — الأصول والرواتب](#القسم-التاسع-الدورات-الدورية)</p>
+<p>10. [الإدارة والنظام](#القسم-العاشر-الإدارة-والنظام)</p>
+<p>11. [الميزات الجديدة في الإصدار 2.2](#القسم-الحادي-عشر-الميزات-الجديدة)</p>
+<hr>
+<h1>القسم الأول: الإعداد الأولي للنظام</h1>
+<h2>1.1 إعداد بيانات الشركة</h2>
+<img src="user_manual/images/02-dashboard.svg" alt="لوحة التحكم">
+<p><strong>المسار:</strong> الإدارة → إعدادات الشركة</p>
+<p><strong>خطوات الإعداد:</strong></p>
+<table><thead><tr><th>الخطوة</th><th>الشاشة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إعدادات الشركة</td><td>إدخال: الاسم — العنوان — الرقم الضريبي — الشعار — العملة الأساسية</td></tr><tr><td>2</td><td>الفروع</td><td>إنشاء فروع الشركة (فرع رئيسي + فروع فرعية)</td></tr><tr><td>3</td><td>العملات</td><td>تحديد العملة الأساسية (جنيه مصري) + أي عملات أخرى مع أسعار الصرف</td></tr></tbody></table>
+<p><strong>الحسابات الافتراضية (تُنشأ تلقائياً من Company):</strong></p>
+<table><thead><tr><th>الحساب</th><th>الكود</th><th>الغرض</th></tr></thead><tbody><tr><td>حساب العملاء</td><td>1100</td><td>الذمم المدينة</td></tr><tr><td>حساب الموردين</td><td>3100</td><td>الذمم الدائنة</td></tr><tr><td>حساب الخزينة</td><td>1500</td><td>النقدية</td></tr><tr><td>حساب المبيعات</td><td>4100</td><td>إيرادات المبيعات</td></tr><tr><td>حساب المشتريات</td><td>5100</td><td>تكلفة المشتريات</td></tr><tr><td>حساب المخزون</td><td>1300</td><td>المخزون</td></tr><tr><td>حساب VAT</td><td>2210</td><td>ضريبة القيمة المضافة</td></tr><tr><td>حساب الخصم والتحصيل</td><td>2220</td><td>ضريبة الخصم عند المصدر</td></tr></tbody></table>
+<hr>
+<h2>1.2 إعداد شجرة الحسابات</h2>
+<img src="user_manual/images/10-chart-accounts.svg" alt="شجرة الحسابات">
+<p><strong>المسار:</strong> المعالجة المالية → الحسابات → دليل الحسابات</p>
+<p><strong>خطوات الإعداد:</strong></p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>استيراد شجرة الحسابات من ملف Excel (أو الإنشاء اليدوي)</td></tr><tr><td>2</td><td>التأكد من وجود 5 أنواع رئيسية: أصول — خصوم — حقوق ملكية — إيرادات — مصروفات</td></tr><tr><td>3</td><td>ربط الحسابات البنكية بحسابات الدليل</td></tr><tr><td>4</td><td>ربط الحسابات الضريبية (VAT + الخصم والتحصيل)</td></tr></tbody></table>
+<p><strong>الشجرة الهرمية:</strong></p>
+<pre><code>1 — الأصول
+├── 11 — الأصول المتداولة
+│   ├── 1100 — حساب العملاء (ذمم مدينة)
+│   ├── 1200 — المخزون
+│   └── 1300 — النقدية في الصندوق
+├── 15 — الأصول الثابتة
+│   ├── 1500 — الخزينة / البنك
+│   └── 1600 — أصول ثابتة (آلات، سيارات)
+2 — الخصوم
+├── 21 — الخصوم المتداولة
+│   ├── 2100 — حساب الموردين (ذمم دائنة)
+│   └── 2210 — ضريبة القيمة المضافة
+├── 2220 — ضريبة الخصم والتحصيل
+3 — حقوق الملكية
+├── 3100 — رأس المال
+├── 3200 — أرباح محتجزة
+4 — الإيرادات
+├── 4100 — إيرادات المبيعات
+5 — المصروفات
+├── 5100 — تكلفة البضاعة المباعة
+├── 5200 — مصروفات تشغيلية</code></pre>
+<hr>
+<h2>1.3 إعداد البنوك والخزائن</h2>
+<p><strong>المسار:</strong> العمليات اليومية → الخزينة → البنوك / الخزائن</p>
+<table><thead><tr><th>الخطوة</th><th>الشاشة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>البنوك</td><td>إنشاء بنك: الاسم — الفرع — رقم الحساب — IBAN — ربطه بحساب في الدليل</td></tr><tr><td>2</td><td>الخزائن</td><td>إنشاء خزينة: الاسم — المسئول — الحد الأقصى — ربطها بحساب في الدليل</td></tr></tbody></table>
+<blockquote><strong>مهم:</strong> كل بنك/خزينة لازم يكون مربوط بحساب محاسبي في شجرة الحسابات<br><strong>الإصدار:</strong> 2.0 — يوليو 2026<br><strong>النطاق:</strong> 35 شاشة • 9 مجموعات عمل • 5 أدوار نظامية<br><strong>النمط:</strong> Django 4.2 — Bootstrap 5.3 — RTL عربي — SQLite WAL</blockquote>
+<p><strong>المسار:</strong> الإدارة → المستخدمون والصلاحيات</p>
+<p><strong>الأدوار الافتراضية (5 أدوار):</strong></p>
+<table><thead><tr><th>الدور</th><th>الصلاحيات</th></tr></thead><tbody><tr><td><strong>مدير النظام</strong></td><td>كل الشاشات — كل الإجراءات (عرض/إضافة/تعديل/حذف/طباعة/تصدير)</td></tr><tr><td><strong>محاسب</strong></td><td>الحسابات + الخزينة + سندات القبض/صرف + الأصول + التقارير</td></tr><tr><td><strong>أمين مخزن</strong></td><td>المخازن + المنتجات + طلبات الشراء + إذون الاستلام + المرتجعات</td></tr><tr><td><strong>مبيعات</strong></td><td>العملاء + فواتير المبيعات + أوامر البيع + المرتجعات + الفواتير الضريبية</td></tr><tr><td><strong>مشاهدة فقط</strong></td><td>كل الشاشات — عرض + طباعة + تصدير فقط</td></tr></tbody></table>
+<p><strong>خطوات الإعداد:</strong></p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إنشاء حساب المستخدم (اسم مستخدم + كلمة مرور)</td></tr><tr><td>2</td><td>تعيين الدور للمستخدم</td></tr><tr><td>3</td><td>تحديد الفروع المخوّلة (إذا كان المستخدم يعمل في فرع محدد)</td></tr><tr><td>4</td><td>تحديد المخازن المخوّلة (لأمين المخزن)</td></tr><tr><td>5</td><td>تحديد أنواع الحسابات المسموح بها (اختياري)</td></tr></tbody></table>
+<blockquote><strong>مهم:</strong> نظام الصلاحيات يعتمد على <code>access_control</code> فقط — لا يعتمد على مجموعات Django</blockquote>
+<hr>
+<h1>القسم الثاني: إنتاج الخرسانة</h1>
+<blockquote><strong>الدورة الأساسية</strong> — كل شيء يبدأ من هنا</blockquote>
+<h2>2.1 خلطات الخرسانة (Mix Designs)</h2>
+<p><strong>المسار:</strong> إنتاج الخرسانة → خلطات الخرسانة</p>
+<table><thead><tr><th>البند</th><th>التفاصيل</th></tr></thead><tbody><tr><td><strong>الغرض</strong></td><td>تعريف تركيبة الخرسانة (نسبة الأسمنت + رمل + حصى + ماء + مواد مضافة)</td></tr><tr><td><strong>ال権利</strong></td><td><code>concrete_production.concretemixdesign</code></td></tr></tbody></table>
+<p><strong>خطوات الإنشاء:</strong></p>
+<table><thead><tr><th>الخطوة</th><th>الحقل</th><th>التفاصيل</th></tr></thead><tbody><tr><td>1</td><td>اسم الخلطة</td><td>مثال: C25 — خلطة 25 ميجاباسكال</td></tr><tr><td>2</td><td>الصنف</td><td>ربطه بصنف في المشتريات (منتج خرسانة جاهز)</td></tr><tr><td>3</td><td>مكونات الخلطة</td><td>كل مكون: المادة + الكمية لكل متر مكعب + التكلفة التقديرية</td></tr><tr><td>4</td><td>قوة الضغط المطلوبة</td><td>بالنيوتن/مم2</td></tr></tbody></table>
+<p><strong>القيود التلقائية:</strong></p>
+<ul><li>كل مكون لازم يكون صنف مسجل في المشتريات</li></ul>
+<hr>
+<h2>2.2 طلبات العملاء (Customer Requests)</h2>
+<p><strong>المسار:</strong> إنتاج الخرسانة → طلبات العملاء</p>
+<table><thead><tr><th>البند</th><th>التفاصيل</th></tr></thead><tbody><tr><td><strong>الغرض</strong></td><td>تسجيل طلب العميل (نوع الخلطة + الكمية + مكان التسليم)</td></tr><tr><td><strong>ال権利</strong></td><td><code>concrete_production.customerrequest</code></td></tr></tbody></table>
+<p><strong>خطوات الإنشاء:</strong></p>
+<table><thead><tr><th>الخطوة</th><th>الحقل</th><th>التفاصيل</th></tr></thead><tbody><tr><td>1</td><td>العميل</td><td>اختيار من قائمة العملاء (مسجل في المبيعات)</td></tr><tr><td>2</td><td>طلب العميل</td><td>نص الطلب</td></tr><tr><td>3</td><td>خلطة الخرسانة</td><td>اختيار من الخلطات المعرّفة</td></tr><tr><td>4</td><td>الكمية المطلوبة</td><td>بالمتر المكعب</td></tr><tr><td>5</td><td>موقع التسليم</td><td>العنوان</td></tr><tr><td>6</td><td>التاريخ المطلوب</td><td>تاريخ التسليم المتوقع</td></tr></tbody></table>
+<p><strong>الحالة:</strong> <code>مسودة</code> → <code>معتمد</code> → <code>تم التحويل لأمر إنتاج</code></p>
+<hr>
+<h2>2.3 أوامر الإنتاج (Production Orders)</h2>
+<p><strong>المسار:</strong> إنتاج الخرسانة → أوامر الإنتاج</p>
+<table><thead><tr><th>البند</th><th>التفاصيل</th></tr></thead><tbody><tr><td><strong>الغرض</strong></td><td>أمر إنتاج رسمي يُحوّل طلب العميل إلى أوامر عمل</td></tr><tr><td><strong>ال権يل</strong></td><td><code>concrete_production.productionorder</code></td></tr></tbody></table>
+<p><strong>خطوات الإنشاء:</strong></p>
+<table><thead><tr><th>الخطوة</th><th>الحقل</th><th>التفاصيل</th></tr></thead><tbody><tr><td>1</td><td>طلب العميل</td><td>ربط بأمر العميل (اختياري — قد يكون مباشرة)</td></tr><tr><td>2</td><td>فاتورة المبيعات</td><td>ربط بفاتورة مبيعات (إن وُجدت)</td></tr><tr><td>3</td><td>الفرع</td><td>تحديد فرع الإنتاج</td></tr><tr><td>4</td><td>خلطة الخرسانة</td><td>اختيار الخلطة</td></tr><tr><td>5</td><td>الكمية المطلوبة</td><td>بالمتر المكعب</td></tr><tr><td>6</td><td>سعر المتر المكعب</td><td>سعر البيع</td></tr></tbody></table>
+<p><strong>القيود التلقائية عند الترحيل:</strong></p>
+<ul><li>يُنشأ قيد محاسبي: مدين حساب العميل — دائن إيرادات المبيعات</li></ul>
+<hr>
+<h2>2.4 المتابعة اليومية والدفعات الإنتاجية</h2>
+<p><strong>المسار:</strong> إنتاج الخرسانة → المتابعة اليومية / الدفعات الإنتاجية</p>
+<table><thead><tr><th>الشاشة</th><th>الوظيفة</th></tr></thead><tbody><tr><td>المتابعة اليومية</td><td>مراقبة الإنتاج اليومي — كم متر تم إنتاجه فعلياً</td></tr><tr><td>الدفعات الإنتاجية</td><td>تسجيل كل دفعة إنتاج (الكمية الفعلية + расход الأسمنت الفعلي)</td></tr><tr><td>الشاحنات</td><td>إدارة أسطول الشاحنات (المقاسات + الحالة)</td></tr><tr><td>جداول التسليم</td><td>جدولة التوقيتات لتسليم الخرسانة للمواقع</td></tr></tbody></table>
+<hr>
+<h2>2.5 تكاليف الإنتاج</h2>
+<p><strong>المسار:</strong> إنتاج الخرسانة → تكلفة المتر المكعب</p>
+<table><thead><tr><th>البند</th><th>التفاصيل</th></tr></thead><tbody><tr><td><strong>الغرض</strong></td><td>حساب التكلفة الفعلية لكل متر مكعب من الخرسانة</td></tr><tr><td><strong>المعادلة</strong></td><td>التكلفة = (تكلفة الأسمنت + تكلفة الرمل + تكلفة الحصى + تكلفة المواد المضافة + تكلفة النقل) ÷ الكمية</td></tr></tbody></table>
+<p><strong>التكاليف المحسوبة تلقائياً:</strong></p>
+<ul><li>تكلفة الأسمنت = (الكمية المستهلكة × سعر الوحدة)</li></ul>
+<ul><li>تكلفة العمالة = (عدد العمال × الأجر اليومي)</li></ul>
+<hr>
+<h2>2.6 السيلو والجرد اليومي</h2>
+<p><strong>المسار:</strong> إنتاج الخرسانة → سيلو / جرد الأسمنت اليومي</p>
+<table><thead><tr><th>الشاشة</th><th>الوظيفة</th></tr></thead><tbody><tr><td>السيلو</td><td>إدارة خزائن الأسمنت (السعة — الرصيد الحالي — المورد)</td></tr><tr><td>جرد الأسمنت اليومي</td><td>تسجيل الإيداعات والسحوبات اليومية للأسمنت</td></tr></tbody></table>
+<hr>
+<h1>القسم الثالث: المشتريات</h1>
+<blockquote><strong>من طلب الشراء إلى فاتورة المشتريات</strong></blockquote>
+<h2>3.1 دورة الشراء الكاملة</h2>
+<pre><code>طلب شراء → عرض أسعار → أمر شراء → إذن استلام → فاتورة مشتريات</code></pre>
+<img src="user_manual/images/05-invoice.svg" alt="فوترة المشتريات">
+<h2>3.2 طلبات الشراء (Requisitions)</h2>
+<p><strong>المسار:</strong> المشتريات → طلبات الشراء</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إنشاء طلب شراء: الصنف + الكمية + مركز التكلفة + السبب</td></tr><tr><td>2</td><td>المراجعة والاعتماد من المدير المخوّل</td></tr><tr><td>3</td><td>التحويل لعرض أسعار أو أمر شراء مباشر</td></tr></tbody></table>
+<p><strong>الحالة:</strong> <code>مسودة</code> → <code>معتمد</code> → <code>تم التحويل</code></p>
+<h2>3.3 طلبات عروض الأسعار (RFQ)</h2>
+<p><strong>المسار:</strong> المشتريات → عروض الأسعار</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إنشاء طلب عرض سعر من مورد أو عدة موردين</td></tr><tr><td>2</td><td>إدخال أسعار الموردين لكل صنف</td></tr><tr><td>3</td><td>مقارنة الأسعار واختيار الأفضل</td></tr><tr><td>4</td><td>التحويل لأمر شراء</td></tr></tbody></table>
+<h2>3.4 أوامر الشراء (Purchase Orders)</h2>
+<p><strong>المسار:</strong> المشتريات → أوامر الشراء</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إنشاء أمر شراء: المورد + الأصناف + الأسعار</td></tr><tr><td>2</td><td>طباعة أمر الشراء وإرساله للمورد</td></tr><tr><td>3</td><td>متابعة التسليم</td></tr></tbody></table>
+<h2>3.5 إذون الاستلام (Goods Received Notes)</h2>
+<p><strong>المسار:</strong> المشتريات → إذون الاستلام</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>استلام البضاعة من المورد</td></tr><tr><td>2</td><td>التحقق من الكميات مقابل أمر الشراء</td></tr><tr><td>3</td><td>إنشاء إذن الاستلام (يزيد المخزون تلقائياً)</td></tr><tr><td>4</td><td>ربطه بأمر الشراء</td></tr></tbody></table>
+<p><strong>القيود التلقائية:</strong></p>
+<ul><li>حركة مخزون واردة (receive) لكل صنف</li></ul>
+<h2>3.6 فواتير المشتريات (Purchase Invoices)</h2>
+<p><strong>المسار:</strong> المشتريات → فواتير المشتريات</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إنشاء الفاتورة: المورد + الأصناف + الأسعار</td></tr><tr><td>2</td><td>حفظ كمسودة</td></tr><tr><td>3</td><td>اعتماد الفاتورة</td></tr><tr><td>4</td><td>ترحيل الفاتورة (إنشاء القيد المحاسبي)</td></tr></tbody></table>
+<p><strong>القيد المحاسبي عند الترحيل:</strong></p>
+<table><thead><tr><th>الحساب</th><th>مدين</th><th>دائن</th></tr></thead><tbody><tr><td>تكلفة المشتريات (5100)</td><td>المبلغ الإجمالي</td><td>—</td></tr><tr><td>ض. القيمة المضافة (2210)</td><td>مبلغ VAT</td><td>—</td></tr><tr><td>حساب الموردين (3100)</td><td>—</td><td>المبلغ الإجمالي + VAT</td></tr></tbody></table>
+<h2>3.7 مرتجعات المشتريات</h2>
+<p><strong>المسار:</strong> المشتريات → مرتجعات المشتريات</p>
+<p><strong>القيود التلقائية:</strong></p>
+<ul><li>عكس القيد المحاسبي لفاتورة المشتريات</li></ul>
+<hr>
+<h1>القسم الرابع: المبيعات</h1>
+<blockquote><strong>من العميل إلى فاتورة المبيعات</strong></blockquote>
+<h2>4.1 إعداد العملاء</h2>
+<p><strong>المسار:</strong> العمليات اليومية → المبيعات → العملاء</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إنشاء ملف العميل: الاسم — النوع — الرقم الضريبي — العنوان — الاتصال</td></tr><tr><td>2</td><td>تحديد حد الائتمان (الحد الأقصى للمديونية المسموحة)</td></tr><tr><td>3</td><td>ربطه بحساب محاسبي في الدليل</td></tr></tbody></table>
+<h2>4.2 دورة المبيعات الكاملة</h2>
+<pre><code>طلب العميل → فاتورة مبيعات → ترحيل → تحصيل المبلغ (سند قبض)</code></pre>
+<img src="user_manual/images/05-invoice.svg" alt="فوترة المبيعات">
+<h2>4.3 فواتير المبيعات (Sales Invoices)</h2>
+<p><strong>المسار:</strong> العمليات اليومية → المبيعات → فواتير المبيعات</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إنشاء الفاتورة: العميل + الأصناف + الكميات + الأسعار</td></tr><tr><td>2</td><td>تحديد: هل فاتورة ضريبية (VAT 14%)؟</td></tr><tr><td>3</td><td>تحديد: هل ض. خصم وتحصيل (1% / 3% / 5%)؟</td></tr><tr><td>4</td><td>حفظ كمسودة</td></tr><tr><td>5</td><td>اعتماد الفاتورة</td></tr><tr><td>6</td><td>ترحيل الفاتورة (إنشاء القيد المحاسبي + حركة المخزون)</td></tr></tbody></table>
+<p><strong>القيد المحاسبي عند الترحيل:</strong></p>
+<table><thead><tr><th>الحساب</th><th>مدين</th><th>دائن</th></tr></thead><tbody><tr><td>حساب العميل (1100)</td><td>المبلغ الإجمالي + VAT</td><td>—</td></tr><tr><td>إيرادات المبيعات (4100)</td><td>—</td><td>المبلغ قبل الضريبة</td></tr><tr><td>ض. القيمة المضافة (2210)</td><td>—</td><td>مبلغ VAT</td></tr><tr><td>تكلفة البضاعة المباعة (5100)</td><td>تكلفة الأصناف</td><td>—</td></tr><tr><td>المخزون (1300)</td><td>—</td><td>تكلفة الأصناف</td></tr></tbody></table>
+<blockquote><strong>مهم:</strong> الترحيل ينشئ حركة خروج من المخزون تلقائياً لكل صنف في الفاتورة</blockquote>
+<p><strong>المراحل الإلزامية:</strong></p>
+<pre><code>💾 حفظ (مسودة) → ✔ اعتماد → ⇪ ترحيل → 🖨 طباعة</code></pre>
+<h2>4.4 مرتجعات المبيعات</h2>
+<p><strong>المسار:</strong> العمليات اليومية → المبيعات → مرتجعات المبيعات</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إنشاء مرتجع: ربط بالفاتورة الأصلية + أسباب المرتجع</td></tr><tr><td>2</td><td>تحديد الكميات المرتجعة</td></tr><tr><td>3</td><td>ترحيل المرتجع</td></tr></tbody></table>
+<p><strong>القيود التلقائية:</strong></p>
+<ul><li>عكس قيد فاتورة المبيعات (مدين الإيرادات — دائن العميل)</li></ul>
+<h2>4.5 أوامر البيع (Sales Orders)</h2>
+<p><strong>المسار:</strong> العمليات اليومية → المبيعات → أوامر البيع</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إنشاء أمر البيع: العميل + الأصناف + الأسعار</td></tr><tr><td>2</td><td>اعتماد أمر البيع</td></tr><tr><td>3</td><td>التحويل لفاتورة مبيعات عند التسليم</td></tr></tbody></table>
+<h2>4.6 إشعارات الدائن / المدين (Credit Notes)</h2>
+<p><strong>المسار:</strong> العمليات اليومية → المبيعات → إشعارات الدائن / المشتريات → إشعارات المدين</p>
+<table><thead><tr><th>النوع</th><th>الاستخدام</th></tr></thead><tbody><tr><td>إشعار دائن</td><td>تخفيض مديونية العميل (خصم / تعديل)</td></tr><tr><td>إشعار مدين</td><td>زيادة مديونية المورد (خصم / تعديل)</td></tr></tbody></table>
+<hr>
+<h1>القسم الخامس: الدورة النقدي</h1>
+<blockquote><strong>سندات القبض والصرف — من الفاتورة إلى التحصيل</strong></blockquote>
+<h2>5.1 سند القبض (Payment Receipt — Inflow)</h2>
+<p><strong>المسار:</strong> العمليات اليومية → الخزينة → سندات القبض والصرف</p>
+<p><strong>خطوات الإنشاء:</strong></p>
+<table><thead><tr><th>الخطوة</th><th>الحقل</th><th>التفاصيل</th></tr></thead><tbody><tr><td>1</td><td>رقم السند</td><td>يُولَّد تلقائياً PR-XXXXX</td></tr><tr><td>2</td><td>التاريخ</td><td>تاريخ اليوم</td></tr><tr><td>3</td><td>المبلغ</td><td>المبلغ المقبوض</td></tr><tr><td>4</td><td>طريقة الدفع</td><td>نقداً / تحويل بنكي / شيك / فيزا</td></tr><tr><td>5</td><td>العميل</td><td>اختيار العميل (يُحمّل فواتيره المستحقة)</td></tr><tr><td>6</td><td>فاتورة المبيعات</td><td>اختيار الفاتورة (يظهر المتبقي تلقائياً)</td></tr><tr><td>7</td><td>البنك / الخزينة</td><td>تحديد أين سيذهب المبلغ</td></tr><tr><td>8</td><td>البيان</td><td>وصف العملية</td></tr></tbody></table>
+<p><strong>القيد المحاسبي عند الترحيل:</strong></p>
+<table><thead><tr><th>الحساب</th><th>مدين</th><th>دائن</th></tr></thead><tbody><tr><td>الخزينة / البنك (1500)</td><td>المبلغ</td><td>—</td></tr><tr><td>حساب العميل (1100)</td><td>—</td><td>المبلغ</td></tr></tbody></table>
+<p><strong>التحديثات التلقائية:</strong></p>
+<ul><li><code>SalesInvoice.paid_amount</code> += المبلغ</li></ul>
+<img src="user_manual/images/06-detail.svg" alt="سند القبض">
+<h2>5.2 سند الصرف (Payment Receipt — Outflow)</h2>
+<p><strong>خطوات الإنشاء:</strong> (مطابق لسند القبض مع فروقات)</p>
+<table><thead><tr><th>الخطوة</th><th>التفاصيل</th></tr></thead><tbody><tr><td>1</td><td>رقم السند</td><td>يُولَّد تلقائياً</td></tr><tr><td>2</td><td>المورد</td><td>اختيار المورد</td></tr><tr><td>3</td><td>فاتورة المشتريات</td><td>اختيار الفاتورة المستحقة</td></tr><tr><td>4</td><td>البنك / الخزينة</td><td>مصدر المبلغ</td></tr></tbody></table>
+<p><strong>القيد المحاسبي:</strong></p>
+<table><thead><tr><th>الحساب</th><th>مدين</th><th>دائن</th></tr></thead><tbody><tr><td>حساب الموردين (3100)</td><td>المبلغ</td><td>—</td></tr><tr><td>الخزينة / البنك (1500)</td><td>—</td><td>المبلغ</td></tr></tbody></table>
+<h2>5.3 الشيكات</h2>
+<p><strong>المسار:</strong> العمليات اليومية → الشيكات</p>
+<p><strong>الدورة:</strong></p>
+<pre><code>إيداع شيك → قيد الدفتر → تحصيل فعلي → إغلاق</code></pre>
+<table><thead><tr><th>الحالة</th><th>المعنى</th></tr></thead><tbody><tr><td>قيد الدفتر</td><td>الشيك سُجّل في الدفاتر</td></tr><tr><td>محصّل</td><td>المبلغ وصل للبنك</td></tr><tr><td>مرتد</td><td>الشيك رُفض</td></tr></tbody></table>
+<h2>5.4 التسوية البنكية</h2>
+<img src="user_manual/images/09-reconciliation.svg" alt="التسوية البنكية">
+<p><strong>المسار:</strong> المعالجة المالية → التوافق البنكي</p>
+<p><strong>خطوات العمل:</strong></p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إنشاء جلسة تسوية: البنك + الفترة + رصيد الدفاتر + رصيد كشف البنك</td></tr><tr><td>2</td><td>استيراد كشف البنك (ملف CSV من البنك)</td></tr><tr><td>3</td><td>المطابقة التلقائية (التاريخ + المبلغ)</td></tr><tr><td>4</td><td>المطابقة اليدوية للفروقات المتبقية</td></tr><tr><td>5</td><td>إقفال التسوية</td></tr></tbody></table>
+<hr>
+<h1>القسم السادس: المخازن</h1>
+<h2>6.1 إدارة المخازن</h2>
+<p><strong>المسار:</strong> العمليات اليومية → المستودعات → المخازن</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إنشاء المخزن: الاسم + الموقع + المدير</td></tr><tr><td>2</td><td>إضافة المنتجات للمخزن مع الأرصدة الافتتاحية</td></tr><tr><td>3</td><td>تحديد المخازن المخوّلة لكل مستخدم</td></tr></tbody></table>
+<h2>6.2 حركات المخزون</h2>
+<table><thead><tr><th>النوع</th><th>التأثير</th></tr></thead><tbody><tr><td>توريد (receive)</td><td>زيادة الرصيد</td></tr><tr><td>صرف (issue)</td><td>نقصان الرصيد</td></tr><tr><td>مرتجع (return)</td><td>زيادة/نقصان حسب الاتجاه</td></tr><tr><td>تحويل (transfer)</td><td>نقصان من مخزن + زيادة لمخزن آخر</td></tr></tbody></table>
+<h2>6.3 تسويات المخزون (Stock Adjustments)</h2>
+<p><strong>المسار:</strong> العمليات اليومية → المستودعات → تسويات المخزون</p>
+<table><thead><tr><th>الاستخدام</th><th>المثال</th></tr></thead><tbody><tr><td>جرد فعلي</td><td>عدّ المخزون فعلياً و.CompareTo بالدفتر</td></tr><tr><td>تلف/ضياع</td><td>تسجيل فرق النقصان</td></tr><tr><td>تصحيح</td><td>تصحيح أرصدة خاطئة</td></tr></tbody></table>
+<hr>
+<h1>القسم السابع: إدارة المشاريع</h1>
+<h2>7.1 المقاولون والعقود</h2>
+<p><strong>المسار:</strong> إدارة المشاريع → المقاولون / العقود</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>تسجيل بيانات المقاول: الاسم + الحساب المحاسبي</td></tr><tr><td>2</td><td>إنشاء العقد: المقاول + المبلغ + شروط الدفع + نسبة الاحتباس</td></tr><tr><td>3</td><td>ربط العقد بمشروع أو أكثر</td></tr></tbody></table>
+<h2>7.2 المستخلصات والمدفوعات</h2>
+<p><strong>المسار:</strong> إدارة المشاريع → المستخلصات / المدفوعات</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إنشاء مستخلص: العقد + قيمة العمل المنجز + احتباس</td></tr><tr><td>2</td><td>اعتماد المستخلص</td></tr><tr><td>3</td><td>إنشاء سند دفع للمقاول (بمبلغ المستخلص - الاحتباس)</td></tr><tr><td>4</td><td>القيد المحاسبي: مدين حساب المقاول — دائن البنك/الخزينة</td></tr></tbody></table>
+<hr>
+<h1>القسم الثامن: المعالجة المالية</h1>
+<h2>8.1 القيود اليومية اليدوية</h2>
+<img src="user_manual/images/04_journal_list.svg" alt="القيود اليومية">
+<p><strong>المسار:</strong> المعالجة المالية → الحسابات → القيود اليومية</p>
+<p><strong>خطوات الإنشاء:</strong></p>
+<table><thead><tr><th>الخطوة</th><th>الحقل</th><th>التفاصيل</th></tr></thead><tbody><tr><td>1</td><td>نوع القيد</td><td>عام / شراء / بيع / قبض / صرف / إهلاك / رواتب</td></tr><tr><td>2</td><td>التاريخ</td><td>تاريخ القيد</td></tr><tr><td>3</td><td>الوصف</td><td>وصف محتوى القيد</td></tr><tr><td>4</td><td>البنود</td><td>كل بند: حساب + مدين أو دائن</td></tr></tbody></table>
+<p><strong>القاعدة الذهبية:</strong> مجموع المدين = مجموع الدائن (لا يُقبل قيد غير مُتوازن)</p>
+<p><strong>القيود التلقائية (يولّدها النظام):</strong></p>
+<table><thead><tr><th>المستند</th><th>القيد</th></tr></thead><tbody><tr><td>فاتورة مبيعات</td><td>مدين العميل — دائن الإيرادات + VAT</td></tr><tr><td>فاتورة مشتريات</td><td>مدين المشتريات + VAT — دائن المورد</td></tr><tr><td>سند قبض</td><td>مدين الخزينة — دائن العميل</td></tr><tr><td>سند صرف</td><td>مدين المورد — دائن الخزينة</td></tr><tr><td>إهلاك أصل</td><td>مدين مصروف الإهلاك — دائن إهلاك متراكم</td></tr><tr><td>رواتب</td><td>مدين مصروف الرواتب — دائن الخزينة</td></tr></tbody></table>
+<h2>8.2 القيود الدورية (Recurring Entries)</h2>
+<p><strong>المسار:</strong> المعالجة المالية → الحسابات → القيود الدورية</p>
+<table><thead><tr><th>الاستخدام</th><th>المثال</th></tr></thead><tbody><tr><td>إيجار شهري</td><td>قيد تكراري كل شهر</td></tr><tr><td>إهلاك شهري</td><td>إهلاك الأصول الشهرية</td></tr><tr><td>خدمات اشتراك</td><td>مصروفات دورية</td></tr></tbody></table>
+<h2>8.3 ميزان المراجعة (Trial Balance)</h2>
+<img src="user_manual/images/07-report.svg" alt="ميزان المراجعة">
+<p><strong>المسار:</strong> المعالجة المالية → الحسابات → ميزان المراجعة</p>
+<table><thead><tr><th>البند</th><th>التفاصيل</th></tr></thead><tbody><tr><td><strong>الغرض</strong></td><td>التحقق من توازن القيود (مجموع المدين = مجموع الدائن)</td></tr><tr><td><strong>المعايير</strong></td><td>من تاريخ — إلى تاريخ — نوع الحساب</td></tr><tr><td><strong>العرض</strong></td><td>الكود + اسم الحساب + مدين + دائن + الرصيد</td></tr></tbody></table>
+<h2>8.4 إغلاق السنة المالية</h2>
+<p><strong>المسار:</strong> المعالجة المالية → إغلاق السنة المالية</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>التأكد من اكتمال كل القيود المحاسبية</td></tr><tr><td>2</td><td>ترحيل كل القيود المعلقة</td></tr><tr><td>3</td><td>رصد أرباح/خسائر السنة</td></tr><tr><td>4</td><td>تحويل أرباح/خسائر إلى حساب حقوق الملكية</td></tr><tr><td>5</td><td>ضبط الأرصدة الافتتاحية للسنة الجديدة</td></tr></tbody></table>
+<blockquote><strong>تحذير:</strong> عملية غير قابلة للعكس</blockquote>
+<hr>
+<h1>القسم التاسع: الدورات الدورية</h1>
+<h2>9.1 الأصول الثابتة والإهلاك</h2>
+<p><strong>المسار:</strong> الدورات الدورية → الأصول الثابتة</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إنشاء تصنيف الأصل (آلات / سيارات / مبانٍ) مع حساباته</td></tr><tr><td>2</td><td>تسجيل الأصل: الاسم + التصنيف + سعر الشراء + تاريخ الشراء + طريقة الإهلاك</td></tr><tr><td>3</td><td>حساب الإهلاك الشهري/السنوي تلقائياً</td></tr><tr><td>4</td><td>ترحيل قيد الإهلاك: مدين مصروف الإهلاك — دائن إهلاك متراكم</td></tr></tbody></table>
+<h2>9.2 الموارد البشرية والرواتب</h2>
+<p><strong>المسار:</strong> الدورات الدورية → الموارد البشرية</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>تسجيل الموظف: الاسم + القسم + الراتب + الحساب المحاسبي</td></tr><tr><td>2</td><td>تسجيل الحضور والانصراف</td></tr><tr><td>3</td><td>إنشاء كشف رواتب شهري</td></tr><tr><td>4</td><td>ترحيل قيد الرواتب: مدين مصروف الرواتب — دائن الخزينة</td></tr></tbody></table>
+<h2>9.3 الميزانية (Budget)</h2>
+<p><strong>المسار:</strong> الدورات الدورية → الميزانية</p>
+<table><thead><tr><th>البند</th><th>التفاصيل</th></tr></thead><tbody><tr><td><strong>الغرض</strong></td><td>تحديد ميزانية لكل مركز تكلفة + مراقبة الانحرافات</td></tr><tr><td><strong>الإعداد</strong></td><td>لكل حساب: المبلغ المُخمّن + الفترة + مركز التكلفة</td></tr><tr><td><strong>المقارنة</strong></td><td>الانحراف = الفعلي − المُخمّن</td></tr></tbody></table>
+<h2>9.4 العملات وأسعار الصرف</h2>
+<p><strong>المسار:</strong> الدورات الدورية → العملات</p>
+<ul><li>تسجيل العملات وأسعار صرفها إلى الجنيه المصري</li></ul>
+<hr>
+<h1>القسم العاشر: الإدارة والنظام</h1>
+<h2>10.1 التقارير المالية</h2>
+<img src="user_manual/images/07-report.svg" alt="التقارير">
+<p><strong>المسار:</strong> التقارير والتحليل</p>
+<table><thead><tr><th>التقرير</th><th>المحتوى</th></tr></thead><tbody><tr><td><strong>قائمة الدخل</strong></td><td>الإيرادات − المصروفات = صافي الربح</td></tr><tr><td><strong>الميزانية العمومية</strong></td><td>الأصول = الخصوم + حقوق الملكية</td></tr><tr><td><strong>التدفق النقدي</strong></td><td>حركة النقد (تشغيلية / استثمارية / تمويلية)</td></tr><tr><td><strong>دفتر الأستاذ العام</strong></td><td>تفصيل كل حساب بالقيود</td></tr><tr><td><strong>الموازنة مقابل الفعلي</strong></td><td>مقارنة الميزانية بالإنفاق الفعلي</td></tr></tbody></table>
+<h2>10.2 التقارير التشغيلية</h2>
+<table><thead><tr><th>التقرير</th><th>المحتوى</th></tr></thead><tbody><tr><td>يومية المبيعات</td><td>فواتير اليوم + الإيرادات</td></tr><tr><td>يومية المشتريات</td><td>فواتير المشتريات اليومية</td></tr><tr><td>أعمار الذمم المدينة</td><td>العملاء المتأخرون (30/60/90 يوم)</td></tr><tr><td>أعمار الذمم الدائنة</td><td>الموردين المستحقون</td></tr><tr><td>كشف حساب العميل</td><td>تفصيل حركات العميل</td></tr><tr><td>كشف حساب المورد</td><td>تفصيل حركات المورد</td></tr><tr><td>تقرير المخزون</td><td>الأرصدة الحالية + تنبيهات النقص</td></tr></tbody></table>
+<h2>10.3 التقارير الضريبية</h2>
+<table><thead><tr><th>التقرير</th><th>المحتوى</th></tr></thead><tbody><tr><td>إقرار VAT</td><td>ضريبة القيمة المضافة (المستحقة − المدفوعة)</td></tr><tr><td>ضريبة الخصم والتحصيل</td><td>الخصم عند المصدر</td></tr><tr><td>الملخص الضريبي الشامل</td><td>كل أنواع الضرائب</td></tr></tbody></table>
+<h2>10.4 الفواتير الضريبية (ETA)</h2>
+<p><strong>المسار:</strong> الفواتير الضريبية (ETA)</p>
+<table><thead><tr><th>الخطوة</th><th>الإجراء</th></tr></thead><tbody><tr><td>1</td><td>إعداد اتصال هيكيل الضرائب</td></tr><tr><td>2</td><td>إرسال فواتير المبيعات الضريبية</td></tr><tr><td>3</td><td>متابعة الحالة (مقبولة / مرفوضة)</td></tr></tbody></table>
+<h2>10.5 النسخ الاحتياطي</h2>
+<p><strong>المسار:</strong> الإدارة → النسخ الاحتياطي</p>
+<table><thead><tr><th>الإجراء</th><th>التفاصيل</th></tr></thead><tbody><tr><td>نسخة يدوية</td><td>إنشاء نسخة احتياطية فورية</td></tr><tr><td>نسخة تلقائية</td><td>جدولة نسخ يومية/أسبوعية</td></tr><tr><td>استعادة</td><td>استعادة من نسخة سابقة</td></tr></tbody></table>
+<h2>10.6 الذكاء الاصطناعي</h2>
+<p><strong>المسار:</strong> الذكاء الاصطناعي</p>
+<table><thead><tr><th>الوظيفة</th><th>التفاصيل</th></tr></thead><tbody><tr><td>كشف الأخطاء</td><td>فحص تلقائي للفروقات المحاسبية</td></tr><tr><td>تحليل خطأ</td><td>تحليل مفصّل لسبب الخطأ وعلاجه</td></tr><tr><td>سجل الأخطاء</td><td>تتبع الأخطاء والحلول السابقة</td></tr></tbody></table>
+<hr>
+<h1>ملخص الدورة المستندية الكاملة</h1>
+<pre><code>┌─────────────────────────────────────────────────────────────────────────┐
+│                        الدورة المستندية الكاملة                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  [الإعداد الأولي]                                                       │
+│  ├── شجرة حسابات                                                       │
+│  ├── بنوك + خزائن                                                      │
+│  └── مستخدمين + صلاحيات                                                │
+│       │                                                                 │
+│       ▼                                                                 │
+│  [إنتاج الخرسانة] ←───────── يبدأ من هنا                              │
+│  ├── خلطة → طلب عميل → أمر إنتاج → دفعات → تسليم                     │
+│  │                                                                 │
+│  ├── [المشتريات]                                                       │
+│  │   طلب شراء → عرض سعر → أمر شراء → إذن استلام → فاتورة مشتريات     │
+│  │                                       │                             │
+│  │                                       ▼                             │
+│  │                              قيد محاسبي (مدين المشتريات - دائن المورد)│
+│  │                                                                 │
+│  ├── [المبيعات]                                                        │
+│  │   طلب عميل → فاتورة مبيعات → اعتماد → ترحيل                      │
+│  │                                       │                             │
+│  │                                       ▼                             │
+│  │                              قيد محاسبي (مدين العميل - دائن الإيرادات)│
+│  │                              + حركة خروج مخزون                      │
+│  │                                                                 │
+│  ├── [الدورة النقدي]                                                   │
+│  │   سند قبض (من العميل) → قيد (مدين الخزينة - دائن العميل)          │
+│  │   سند صرف (للمورد)   → قيد (مدين المورد - دائن الخزينة)          │
+│  │   شيكات → التسوية البنكية                                         │
+│  │                                                                 │
+│  ├── [المخازن]                                                         │
+│  │   توريد → صرف → جرد → تسويات                                      │
+│  │                                                                 │
+│  ├── [المشاريع]                                                        │
+│  │   مقاولين → عقود → مستخلصات → مدفوعات                              │
+│  │                                                                 │
+│  ├── [المعالجة المالية]                                                 │
+│  │   قيود يدوية → قيود دورية → ميزان مراجعة → إغلاق سنة              │
+│  │                                                                 │
+│  └── [التقارير]                                                        │
+│      مالية + تشغيلية + ضريبية                                          │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘</code></pre>
+<hr>
+<h1 id="القسم-الحادي-عشر-الميزات-الجديدة">القسم الحادي عشر: الميزات الجديدة في الإصدار 2.2</h1>
+<h2>11.1 FIFO Costing — تكلفة المخزون بطريقة الوارد أولاً</h2>
+<p><strong>الغرض:</strong> حساب تكلفة المخزون بدقة باستخدام طريقة FIFO (First In, First Out) حيث تُحتسب تكلفة البضاعة المباعة بتكلفة أقدم طبقات المخزون أولاً.</p>
+<table><thead><tr><th>المفهوم</th><th>الشرح</th></tr></thead><tbody><tr><td>طبقة مخزون</td><td>كل دفعة واردة تُسجّل كطبقة مستقلة بسعرها</td></tr><tr><td>FIFO</td><td>عند البيع، تُخصم الكمية من أقدم طبقة أولاً</td></tr><tr><td>التكلفة</td><td>تكلفة البضاعة المباعة = سعر أقدم طبقة</td></tr><tr><td>الرصيد</td><td>رصيد المخزون = مجموع طبقات المخزون المتبقية</td></tr></tbody></table>
+<p><strong>المسار:</strong> يتم تلقائياً عند ترحيل فاتورة مبيعات أو إذن استلام.</p>
+<blockquote><strong>مهم:</strong> FIFO يضمن دقة التكلفة ويناسب صناعة الخرسانة حيث تتغير أسعار المواد الخام باستمرار.</blockquote>
+
+<h2>11.2 نظام الأمان المتعدد الطبقات</h2>
+<table><thead><tr><th>الميزة</th><th>الوصف</th><th>الحالة</th></tr></thead><tbody><tr><td>Content Security Policy (CSP)</td><td>يمنع هجمات XSS وحقن الكود</td><td><span class="badge badge-green">مفعّل</span></td></tr><tr><td>Idle Session Timeout</td><td>قطع الجلسة بعد 30 دقيقة خمول تلقائياً</td><td><span class="badge badge-green">مفعّل</span></td></tr><tr><td>Rate Limiting</td><td>منع هجمات القوة العمياء — 100 req/min للـ API</td><td><span class="badge badge-green">مفعّل</span></td></tr><tr><td>CSRF + XSS</td><td>حماية Django المدمجة ضد الهجمات</td><td><span class="badge badge-green">مفعّل</span></td></tr><tr><td>Clickjacking Protection</td><td>X-Frame-Options: DENY</td><td><span class="badge badge-green">مفعّل</span></td></tr></tbody></table>
+
+<h2>11.3 OpenAPI والتوثيق التلقائي</h2>
+<p>النظام يولّد توثيق API تلقائي باستخدام drf-spectacular:</p>
+<table><thead><tr><th>المسار</th><th>الوصف</th></tr></thead><tbody><tr><td><code>/schema/</code></td><td>مخطط OpenAPI بتنسيق JSON/YAML</td></tr><tr><td><code>/docs/</code></td><td>واجهة Swagger UI تفاعلية لاختبار الـ API</td></tr><tr><td><code>/redoc/</code></td><td>واجهة ReDoc للتوثيق النظيف</td></tr></tbody></table>
+
+<h2>11.4 HTMX و Alpine.js</h2>
+<p>واجهة أمامية تفاعلية خفيفة بدون jQuery:</p>
+<ul>
+<li><strong>HTMX:</strong> تحميل جزئي، بحث فوري، تحديثات live</li>
+<li><strong>Alpine.js:</strong> تفاعلات خفيفة (إظهار/إخفاء، ربط بيانات)</li>
+<li><strong>Form Validation:</strong> تحقق آني client-side من صحة البيانات</li>
+</ul>
+
+<h2>11.5 PWA / Offline Support — تطبيق يعمل دون إنترنت</h2>
+<p>النظام يدعم Progressive Web App (PWA) للعمل دون اتصال:</p>
+<table><thead><tr><th>المكون</th><th>الوصف</th></tr></thead><tbody><tr><td>Service Worker</td><td>يُخزن الصفحات والملفات الثابتة مؤقتاً (Cache First)</td></tr><tr><td>manifest.json</td><td>أيقونة + اسم + وصف لتثبيت التطبيق على سطح المكتب</td></tr><tr><td>التسجيل التلقائي</td><td>يُسجّل Service Worker عند تحميل الصفحة</td></tr><tr><td>وضع Offline</td><td>يعرض صفحة مخصصة عند فقدان الاتصال</td></tr></tbody></table>
+
+<h2>11.6 Redis Caching + N+1 Query Optimization</h2>
+<p><strong>Redis Caching:</strong> تخزين مؤقت للتقارير الثقيلة لتسريع الاستجابة:</p>
+<table><thead><tr><th>الـ View</th><th>مدة التخزين</th></tr></thead><tbody><tr><td>Dashboard الرئيسي</td><td>5 دقائق</td></tr><tr><td>تقارير المبيعات (4 تقارير)</td><td>10 دقائق</td></tr><tr><td>تقارير المشتريات (3 تقارير)</td><td>10 دقائق</td></tr><tr><td>API endpoints</td><td>5 دقائق</td></tr><tr><td>التسوية البنكية</td><td>10 دقائق</td></tr></tbody></table>
+<p><strong>إجمالي:</strong> @cache_page على 9 views مع Redis 7 كـ cache backend.</p>
+<p><strong>N+1 Query Optimization:</strong> تحسين استعلامات قاعدة البيانات باستخدام:</p>
+<ul>
+<li><strong>select_related:</strong> JOINs مسبقة للعلاقات ForeignKey</li>
+<li><strong>prefetch_related:</strong> دفعات منفصلة للعلاقات ManyToMany</li>
+<li><strong>annotate:</strong> تجميع الحسابات داخل الـ DB</li>
+<li><strong>Prefetch:</strong> تحكم دقيق في التصفية المسبقة</li>
+</ul>
+
+<h2>11.7 PostgreSQL + Docker Compose</h2>
+<p><strong>PostgreSQL 16</strong> كقاعدة بيانات إنتاجية مع 3 سكريبتات إعداد:</p>
+<table><thead><tr><th>السكريبت</th><th>الوظيفة</th></tr></thead><tbody><tr><td>setup_postgres.ps1</td><td>تثبيت PostgreSQL + إنشاء قاعدة بيانات + مستخدم</td></tr><tr><td>update_to_postgres.ps1</td><td>ترحيل البيانات من SQLite إلى PostgreSQL</td></tr><tr><td>migrate_to_postgres.ps1</td><td>تحويل قاعدة البيانات الحالية إلى PostgreSQL</td></tr></tbody></table>
+<p><strong>Docker Compose</strong> مع <code>docker-compose.yml</code> يتضمن:</p>
+<ul>
+<li>PostgreSQL 16 + volumes + health checks</li>
+<li>Redis 7 + health checks</li>
+<li>Gunicorn كـ WSGI server</li>
+<li>4 أنماط تشغيل: Dev / Production / Service / Docker</li>
+</ul>
+
+<h2>11.8 CI/CD Pipeline</h2>
+<p>خط أنابيب متكامل عبر GitHub Actions في <code>.github/workflows/ci.yml</code>:</p>
+<pre><code>on: [push, pull_request]
+  jobs:
+    lint:  ruff check + ruff format
+    test:  pytest -q (158 اختباراً PASS)
+    build: python manage.py collectstatic</code></pre>
+
+<h2>11.9 أدوات الجودة</h2>
+<table><thead><tr><th>الأداة</th><th>الوظيفة</th></tr></thead><tbody><tr><td>Ruff</td><td>Linting + Formatting سريع (Rust)</td></tr><tr><td>Pre-commit</td><td>.pre-commit-config.yaml — فحص تلقائي قبل كل commit</td></tr><tr><td>Coverage.py</td><td>تغطية اختبارات مع fail_under=40 في pyproject.toml</td></tr><tr><td>Factory Boy</td><td>مصانع اختبار قابلة لإعادة الاستخدام</td></tr><tr><td>pytest</td><td>158 اختباراً PASS — pytest.ini موحّد لـ 22 تطبيقاً</td></tr><tr><td>Celery / Eager</td><td>Task queue مع CELERY_TASK_ALWAYS_EAGER للتطوير</td></tr><tr><td>pyproject.toml</td><td>إعدادات مركزية لـ Ruff + pytest + coverage</td></tr><tr><td>Python Type Hints</td><td>Type hints في جميع الملفات للصيانة والاستقرار</td></tr></tbody></table>
+
+<h2>11.10 ملخص الإصدارات</h2>
+<table><thead><tr><th>الإصدار</th><th>الميزات الرئيسية</th></tr></thead><tbody><tr><td>1.0</td><td>Django + SQLite + شجرة حسابات + قيود</td></tr><tr><td>1.5</td><td>خرسانة + مشتريات + مبيعات + مخازن</td></tr><tr><td>2.0</td><td>PostgreSQL + AI + ETA + تقارير</td></tr><tr><td>2.1</td><td>Docker + CI/CD + Waitress + Backup + Whitenoise</td></tr><tr><td>2.2</td><td>FIFO + OpenAPI + HTMX + PWA + Redis Caching + N+1 Optimization + CSP + Idle Timeout + Rate Limiting + PostgreSQL + Docker Compose + Coverage + Pre-commit + 158 اختباراً — 30+ تطبيقاً — Python 3.12 + Django 4.2.30 LTS</td></tr></tbody></table>
+<hr>
+<h1>ملخص القواعد الذهبية</h1>
+<table><thead><tr><th>#</th><th>القاعدة</th></tr></thead><tbody><tr><td>1</td><td><strong>كل فاتورة تنشئ قيداً محاسبياً تلقائياً</strong> عند الترحيل</td></tr><tr><td>2</td><td><strong>القيد يجب أن يكون مُتوازناً</strong> (مجموع المدين = مجموع الدائن)</td></tr><tr><td>3</td><td><strong>الترحيل يُقفل المستند</strong> — لا يمكن التعديل المباشر بعده</td></tr><tr><td>4</td><td><strong>لتصحيح مستند مُرحّل</strong> — أنشئ قيداً عكسياً أو مرتجعاً</td></tr><tr><td>5</td><td><strong>الإلغاء متاح للمسودة فقط</strong> قبل الترحيل</td></tr><tr><td>6</td><td><strong>كل انتقال يُسجَّل</strong> في سجل الإجراءات (من + متى)</td></tr><tr><td>7</td><td><strong>سند القبض/الصرف يُحدّث</strong> رصيد العميل/المورد تلقائياً</td></tr><tr><td>8</td><td><strong>إذن الاستلام يزيد المخزون</strong> — فاتورة المبيعات تنقصه</td></tr><tr><td>9</td><td><strong>لا يمكن حذف سجل له قيود محاسبية</strong> — الحماية تمنع الحذف</td></tr><tr><td>10</td><td><strong>كل مستند يمر بـ: مسودة → اعتماد → ترحيل</strong></td></tr></tbody></table>
+<hr>
+<blockquote><strong>هذا الدليل أُعِدّ بواسطة: قسم الهندسة — نظام المحاسبة المتكامل لإنتاج الخرسانة</strong></blockquote>
+</div>
+</body>
+</html>

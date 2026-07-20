@@ -1,0 +1,28 @@
+{% extends 'base/base.html' %}
+
+{% block title %}إضافة مركز تكلفة{% endblock %}
+{% block page_title %}إضافة مركز تكلفة{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-plus"></i> مركز تكلفة جديد</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3"><label class="form-label">الكود</label><input type="text" name="code" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">الاسم</label><input type="text" name="name" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">المركز الأب</label>
+                        <select name="parent" class="form-select"><option value="">بدون</option>{% for p in parents %}<option value="{{ p.pk }}">{{ p }}</option>{% endfor %}</select>
+                    </div>
+                    <div class="mb-3"><label class="form-label">المسؤول</label><input type="text" name="manager" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">الوصف</label><textarea name="description" class="form-control" rows="3"></textarea></div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+                    <a href="{% url 'budget:cost_center_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "base/base.html" %}
+
+{% block content_header %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>قائمة المقاولين</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="{% url 'contractors:dashboard' %}">لوحة التحكم</a></li>
+          <li class="breadcrumb-item active">المقاولون</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-header">
+      <div class="row">
+        <div class="col-md-6">
+          <form method="get" class="form-inline">
+            <div class="input-group input-group-sm">
+              {{ filter_form.search }}
+              <div class="input-group-append">
+                <button type="submit" class="btn btn-info"><i class="fas fa-search"></i></button>
+              </div>
+            </div>
+            <div class="mr-2">
+              {{ filter_form.status }}
+            </div>
+            <div class="mr-2">
+              {{ filter_form.contractor_type }}
+            </div>
+          </form>
+        </div>
+        <div class="col-md-6 text-left">
+          <a href="{% url 'contractors:contractor_create' %}" class="btn btn-success btn-sm">
+            <i class="fas fa-plus"></i> مقاول جديد
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="card-body table-responsive p-0">
+      <table class="table table-hover text-wrap">
+        <thead>
+          <tr>
+            <th>الكود</th>
+            <th>الاسم</th>
+            <th>النوع</th>
+            <th>التخصص</th>
+            <th>الهاتف</th>
+            <th>الرصيد</th>
+            <th>الحالة</th>
+            <th>إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in contractors %}
+          <tr>
+            <td>{{ c.code }}</td>
+            <td><a href="{% url 'contractors:contractor_detail' pk=c.pk %}">{{ c.name }}</a></td>
+            <td>{{ c.get_contractor_type_display }}</td>
+            <td>{{ c.speciality|default:"—" }}</td>
+            <td>{{ c.phone|default:"—" }}</td>
+            <td>{{ c.current_balance|floatformat:2 }}</td>
+            <td>
+              <span class="badge badge-{% if c.status == 'active' %}success{% elif c.status == 'suspended' %}danger{% else %}warning{% endif %}">
+                {{ c.get_status_display }}
+              </span>
+            </td>
+            <td>
+              <a href="{% url 'contractors:contractor_edit' pk=c.pk %}" class="btn btn-xs btn-primary">
+                <i class="fas fa-edit"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center">لا يوجد مقاولون</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if contractors.has_other_pages %}
+    <div class="card-footer clearfix">
+      <ul class="pagination pagination-sm m-0 float-right">
+        {% if contractors.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ contractors.previous_page_number }}">&laquo;</a></li>
+        {% endif %}
+        {% for num in contractors.paginator.page_range %}
+        <li class="page-item {% if contractors.number == num %}active{% endif %}">
+          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+        {% endfor %}
+        {% if contractors.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ contractors.next_page_number }}">&raquo;</a></li>
+        {% endif %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

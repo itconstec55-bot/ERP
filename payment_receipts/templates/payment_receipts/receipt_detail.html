@@ -1,0 +1,51 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}تفاصيل السند{% endblock %}
+{% block page_title %}{{ receipt.get_receipt_type_display }}: {{ receipt.receipt_number }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+    <a href="{% url 'payment_receipts:list' %}" class="btn-back"><i class="fas fa-arrow-right"></i> العودة</a>
+    <div>
+        <a href="{% url 'payment_receipts:print' pk=receipt.pk %}" target="_blank" class="btn-print"><i class="fas fa-print"></i> طباعة</a>
+        {% if not receipt.is_posted %}
+        <a href="{% url 'payment_receipts:post' pk=receipt.pk %}" class="btn btn-success" onclick="return confirm('هل تريد ترحيل السند؟')"><i class="fas fa-check"></i> ترحيل</a>
+        <form method="post" action="{% url 'payment_receipts:delete' pk=receipt.pk %}" class="d-inline">
+            {% csrf_token %}
+            <button class="btn btn-danger" onclick="return confirm('هل أنت متأكد؟')"><i class="fas fa-trash"></i></button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header {% if receipt.receipt_type == 'receipt' %}bg-success{% else %}bg-danger{% endif %} text-white">
+                <i class="fas fa-file-invoice"></i> بيانات السند
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th style="width:30%">رقم السند:</th><td>{{ receipt.receipt_number }}</td></tr>
+                    <tr><th>التاريخ:</th><td>{{ receipt.date|date:"d/m/Y" }}</td></tr>
+                    <tr><th>النوع:</th><td><span class="badge bg-{% if receipt.receipt_type == 'receipt' %}success{% else %}danger{% endif %} fs-6">{{ receipt.get_receipt_type_display }}</span></td></tr>
+                    <tr><th>المبلغ:</th><td class="fs-4 fw-bold {% if receipt.receipt_type == 'receipt' %}text-success{% else %}text-danger{% endif %}">{{ receipt.amount|floatformat:2|intcomma }} ج.م</td></tr>
+                    <tr><th>طريقة الدفع:</th><td>{{ receipt.get_payment_method_display }}</td></tr>
+                    {% if receipt.customer %}<tr><th>العميل:</th><td>{{ receipt.customer.name }}</td></tr>{% endif %}
+                    {% if receipt.supplier %}<tr><th>المورد:</th><td>{{ receipt.supplier.name }}</td></tr>{% endif %}
+                    {% if receipt.bank %}<tr><th>البنك:</th><td>{{ receipt.bank.name }}</td></tr>{% endif %}
+                    {% if receipt.safe %}<tr><th>الخزينة:</th><td>{{ receipt.safe.name }}</td></tr>{% endif %}
+                    {% if receipt.cheque_number %}<tr><th>رقم الشيك:</th><td>{{ receipt.cheque_number }}</td></tr>{% endif %}
+                    {% if receipt.description %}<tr><th>البيان:</th><td>{{ receipt.description }}</td></tr>{% endif %}
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr><th>الحالة:</th><td><span class="badge bg-{% if receipt.is_posted %}success{% else %}secondary{% endif %} fs-6">{% if receipt.is_posted %}مرحل{% else %}مسودة{% endif %}</span></td></tr>
+                    {% if receipt.journal_entry %}
+                    <tr><th>القيد:</th><td><a href="{% url 'accounts:journal_detail' pk=receipt.journal_entry.pk %}">{{ receipt.journal_entry.entry_number }}</a></td></tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

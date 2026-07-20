@@ -1,0 +1,71 @@
+{% extends "base/base.html" %}
+
+{% block title %}الموافقات المعلقة{% endblock %}
+{% block page_title %}الموافقات المعلقة{% endblock %}
+
+{% block content %}
+
+<div class="alert alert-secondary">
+    تاريخ اليوم: {{ today|date:"d/m/Y" }} — يُعتبر البند «متأخر / قيد التصعيد» إذا تجاوز مدة الانتظار {{ escalation_days }} أيام.
+</div>
+
+<div class="card mb-4 border-warning">
+    <div class="card-header bg-warning text-dark"><i class="fas fa-clock"></i> طلبات شراء تحتاج اعتماداً ({{ pending_reqs|length }})</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr><th>الرقم</th><th>الطالب</th><th>مركز التكلفة</th><th>أيام الانتظار</th><th>الحالة</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for item in pending_reqs %}
+                    <tr {% if item.escalated %}class="table-danger"{% endif %}>
+                        <td>{{ item.number }}</td>
+                        <td>{{ item.subtitle }}</td>
+                        <td>{{ item.cost_center|default:"-" }}</td>
+                        <td>
+                            {% if item.escalated %}<span class="badge bg-danger">متأخر / تصعيد ({{ item.days }} يوم)</span>
+                            {% else %}<span class="badge bg-warning">{{ item.days }} يوم</span>{% endif %}
+                        </td>
+                        <td>{{ item.status_display }}</td>
+                        <td><a href="{{ item.url }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center">لا توجد طلبات بانتظار الموافقة</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4 border-info">
+    <div class="card-header bg-info text-white"><i class="fas fa-truck"></i> أوامر شراء بانتظار الاعتماد ({{ pos_waiting|length }})</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr><th>الرقم</th><th>المورد</th><th>أيام الانتظار</th><th>الحالة</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for item in pos_waiting %}
+                    <tr {% if item.escalated %}class="table-danger"{% endif %}>
+                        <td>{{ item.number }}</td>
+                        <td>{{ item.subtitle }}</td>
+                        <td>
+                            {% if item.escalated %}<span class="badge bg-danger">متأخر / تصعيد ({{ item.days }} يوم)</span>
+                            {% else %}<span class="badge bg-info">{{ item.days }} يوم</span>{% endif %}
+                        </td>
+                        <td>{{ item.status_display }}</td>
+                        <td><a href="{{ item.url }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center">لا توجد أوامر شراء بانتظار اعتماد</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

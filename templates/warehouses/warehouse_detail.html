@@ -1,0 +1,133 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل المخزن{% endblock %}
+{% block page_title %}{{ warehouse.code }} - {{ warehouse.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        {% if low_stock %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>تنبيه:</strong> يوجد {{ low_stock.count }} منتج تحت الحد الأدنى!
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-info-circle"></i> بيانات المخزن
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>الكود:</th><td>{{ warehouse.code }}</td></tr>
+                    <tr><th>الاسم:</th><td>{{ warehouse.name }}</td></tr>
+                    <tr><th>الموقع:</th><td>{{ warehouse.location|default:"-" }}</td></tr>
+                    <tr><th>مدير المخزن:</th><td>{{ warehouse.manager|default:"-" }}</td></tr>
+                    <tr><th>التليفون:</th><td>{{ warehouse.phone|default:"-" }}</td></tr>
+                    <tr><th>الحالة:</th>
+                        <td>{% if warehouse.is_active %}<span class="badge bg-success">نشط</span>{% else %}<span class="badge bg-danger">غير نشط</span>{% endif %}</td>
+                    </tr>
+                </table>
+                <a href="{% url 'warehouses:warehouse_edit' pk=warehouse.pk %}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-edit"></i> تعديل
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-boxes"></i> المنتجات في المخزن</span>
+                <a href="{% url 'warehouses:warehouse_product_add' pk=warehouse.pk %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> إضافة منتج
+                </a>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>المنتج</th>
+                            <th>الكمية</th>
+                            <th>الحد الأدنى</th>
+                            <th>الحد الأقصى</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for wp in products %}
+                        <tr>
+                            <td>{{ wp.product.name }}</td>
+                            <td><strong>{{ wp.quantity|floatformat:0 }}</strong></td>
+                            <td>{{ wp.minimum_quantity|floatformat:0 }}</td>
+                            <td>{{ wp.maximum_quantity|floatformat:0 }}</td>
+                            <td>
+                                {% if wp.is_low %}
+                                <span class="badge bg-danger">نفد</span>
+                                {% elif wp.quantity == 0 %}
+                                <span class="badge bg-secondary">فارغ</span>
+                                {% else %}
+                                <span class="badge bg-success">متوفر</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted">لا توجد منتجات في هذا المخزن</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-exchange-alt"></i> آخر الحركات
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>الرقم</th>
+                            <th>النوع</th>
+                            <th>المنتج</th>
+                            <th>الكمية</th>
+                            <th>التاريخ</th>
+                            <th>بواسطة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in movements %}
+                        <tr>
+                            <td><a href="{% url 'warehouses:movement_detail' pk=m.pk %}">{{ m.movement_number }}</a></td>
+                            <td>
+                                {% if m.movement_type == 'in' %}
+                                <span class="badge bg-success">وارد</span>
+                                {% elif m.movement_type == 'out' %}
+                                <span class="badge bg-danger">صادر</span>
+                                {% elif m.movement_type == 'transfer' %}
+                                <span class="badge bg-info">تحويل</span>
+                                {% elif m.movement_type == 'adjustment' %}
+                                <span class="badge bg-warning">تسوية</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ m.get_movement_type_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ m.product.name }}</td>
+                            <td>{{ m.quantity|floatformat:0 }}</td>
+                            <td>{{ m.date|date:"d/m/Y" }}</td>
+                            <td>{{ m.performed_by|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted">لا توجد حركات</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

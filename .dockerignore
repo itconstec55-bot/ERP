@@ -1,0 +1,30 @@
+# لا تُنسخ هذه المسارات داخل صورة Docker لتقليل حجمها وتجنّب تسريب البيانات
+# استبعاد ملفات التنزيل/التثبيت الضخمة من جذر المشروع (تسرّع البناء جداً)
+*.exe
+*.msi
+*.crdownload
+*.zip
+*.tar.gz
+Docker Desktop Installer*.exe
+deployment/
+backups_storage/
+logs/
+dist_build/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+.gitignore
+dist/
+staticfiles/
+media/
+db.sqlite3
+*.sqlite3
+.env
+.env.*
+!.env.example
+docs/
+docker-compose.yml
+Dockerfile

@@ -1,0 +1,78 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}إنشاء جرد مخزون{% endblock %}
+{% block page_title %}جرد مخزون جديد{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white"><i class="fas fa-plus"></i> بيانات الجرد</div>
+    <div class="card-body">
+        <form method="post" id="adjForm">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">رقم الجرد *</label>
+                    <input type="text" name="adjustment_number" class="form-control" value="{{ next_number }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">التاريخ *</label>
+                    <input type="date" name="date" class="form-control" value="{% now 'Y-m-d' %}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">نوع الجرد *</label>
+                    <select name="adjustment_type" class="form-select" required>
+                        <option value="addition">إضافة</option>
+                        <option value="deduction">خصم</option>
+                        <option value="count">جرد فعلي</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">المخزن *</label>
+                    <select name="warehouse" class="form-select" required>
+                        {% for w in warehouses %}<option value="{{ w.pk }}">{{ w.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">سبب التعديل</label>
+                    <textarea name="reason" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">ملاحظات</label>
+                    <textarea name="notes" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+
+            <h5 class="mt-4 mb-3"><i class="fas fa-boxes"></i> بنود الجرد</h5>
+            <table class="table table-bordered" id="linesTable">
+                <thead class="table-light">
+                    <tr><th>المنتج</th><th>الكمية</th><th>ملاحظات</th><th></th></tr>
+                </thead>
+                <tbody>
+                    <tr class="line-row">
+                        <td><select name="product" class="form-select form-select-sm"><option value="">اختر</option>{% for p in products %}<option value="{{ p.pk }}">{{ p.name }}</option>{% endfor %}</select></td>
+                        <td><input type="number" step="0.01" name="quantity" class="form-control form-control-sm" value="0"></td>
+                        <td><input type="text" name="line_notes" class="form-control form-control-sm"></td>
+                        <td><button type="button" class="btn btn-danger btn-sm remove-line"><i class="fas fa-times"></i></button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="addLine"><i class="fas fa-plus"></i> إضافة بند</button>
+
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+            <a href="{% url 'stock_adjustments:list' %}" class="btn btn-secondary">إلغاء</a>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('addLine').addEventListener('click', function() {
+    const row = document.querySelector('.line-row').cloneNode(true);
+    row.querySelectorAll('input').forEach(i => i.value = '');
+    row.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+    document.querySelector('#linesTable tbody').appendChild(row);
+    row.querySelector('.remove-line').addEventListener('click', function() { this.closest('tr').remove(); });
+});
+document.querySelectorAll('.remove-line').forEach(btn => btn.addEventListener('click', function() { this.closest('tr').remove(); }));
+</script>
+{% endblock %}

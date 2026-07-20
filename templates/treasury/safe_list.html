@@ -1,0 +1,64 @@
+{% extends "base/base.html" %}
+
+{% block title %}الخزائن{% endblock %}
+{% block page_title %}الخزائن{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-lock"></i> الخزائن</span>
+        <a href="{% url 'treasury:safe_create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> خزينة جديدة</a>
+        <div class="dropdown">
+            <button class="btn btn-success btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-file-excel"></i> Excel
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'treasury:export_safes' %}"><i class="fas fa-download"></i> تصدير إلى Excel</a></li>
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#importModal"><i class="fas fa-upload"></i> استيراد من Excel</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead><tr><th>الاسم</th><th>المسئول</th><th>الرصيد</th><th>الحد الأقصى</th><th>إجراءات</th></tr></thead>
+            <tbody>
+                {% for safe in safes %}
+                <tr>
+                    <td><strong>{{ safe.name }}</strong></td>
+                    <td>{{ safe.responsible_person|default:"-" }}</td>
+                    <td class="text-success"><strong>{{ safe.current_balance|floatformat:2 }} ج.م</strong></td>
+                    <td>{{ safe.maximum_limit|floatformat:2 }} ج.م</td>
+                    <td><a href="{% url 'treasury:safe_detail' pk=safe.pk %}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i></a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'treasury:import_safes' %}" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-upload"></i> استيراد من Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">اختر ملف Excel (.xlsx)</label>
+                        <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls" required>
+                    </div>
+                    <div class="alert alert-info">
+                        <small><i class="fas fa-info-circle"></i> تأكد من أن ملف Excel يحتوي على أعمدة مطابقة للحقول المطلوبة</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> استيراد</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

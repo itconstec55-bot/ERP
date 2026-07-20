@@ -1,0 +1,95 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}إغلاق السنة المالية{% endblock %}
+{% block page_title %}إغلاق السنة المالية{% endblock %}
+
+{% block content %}
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>تنبيه:</strong> عملية إغلاق السنة المالية ستقوم بترحيل أرصدة حسابات الإيرادات والمصروفات إلى حساب رأس المال، ثم إعادة تعيين هذه الأرصدة إلى صفر كأرصدة افتتاحية للسنة الجديدة.
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-2x text-success mb-2"></i>
+                <h6>إجمالي الإيرادات</h6>
+                <h3 class="text-success">{{ total_revenue|floatformat:2|intcomma }} ج.م</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-bar fa-2x text-danger mb-2"></i>
+                <h6>إجمالي المصروفات</h6>
+                <h3 class="text-danger">{{ total_expense|floatformat:2|intcomma }} ج.م</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-primary">
+            <div class="card-body text-center">
+                <i class="fas fa-coins fa-2x text-primary mb-2"></i>
+                <h6>صافي الربح/الخسارة</h6>
+                <h3 class="{% if net_profit >= 0 %}text-success{% else %}text-danger{% endif %}">{{ net_profit|floatformat:2|intcomma }} ج.م</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header"><i class="fas fa-list"></i> تفاصيل حسابات الإيرادات والمصروفات</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr><th>الكود</th><th>اسم الحساب</th><th>النوع</th><th>الرصيد</th></tr>
+            </thead>
+            <tbody>
+                {% for acc in accounts %}
+                <tr>
+                    <td>{{ acc.code }}</td>
+                    <td>{{ acc.name }}</td>
+                    <td><span class="badge bg-{% if acc.account_type.account_type == 'revenue' %}success{% else %}danger{% endif %}">{{ acc.account_type.get_account_type_display }}</span></td>
+                    <td class="{% if acc.current_balance >= 0 %}text-success{% else %}text-danger{% endif %} fw-bold">{{ acc.current_balance|floatformat:2|intcomma }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-light">
+                <tr class="fw-bold">
+                    <td colspan="3">صافي الربح</td>
+                    <td class="{% if net_profit >= 0 %}text-success{% else %}text-danger{% endif %} fs-5">{{ net_profit|floatformat:2|intcomma }} ج.م</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<div class="card mt-4 border-danger">
+    <div class="card-header bg-danger text-white"><i class="fas fa-lock"></i> تنفيذ الإغلاق</div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">السنة المالية المراد إغلاقها</label>
+                    <select name="year" class="form-select" required>
+                        {% now "Y" as current_year %}
+                        {% for y in current_year|make_list %}
+                        {% endfor %}
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('هل أنت متأكد من إغلاق السنة المالية؟ لا يمكن التراجع عن هذه العملية!')">
+                        <i class="fas fa-lock"></i> إغلاق السنة المالية
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base/base.html" %}
+{% block title %}جداول التسليم{% endblock %}
+{% block page_title %}<i class="fas fa-calendar-check me-2"></i>جداول التسليم{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <form method="get" class="d-flex gap-2">
+            <input type="date" name="date" value="{{ date }}" class="form-control">
+            <button class="btn btn-primary"><i class="fas fa-search"></i></button>
+        </form>
+        <a href="{% url 'concrete_production:delivery_create' %}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i> جدول جديد
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-3">رقم الأمر</th>
+                    <th>العميل</th>
+                    <th>التاريخ</th>
+                    <th>الفترة</th>
+                    <th>الشاحنة</th>
+                    <th>الترتيب</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in deliveries %}
+                <tr>
+                    <td class="ps-3 fw-bold">{{ d.production_order.order_number }}</td>
+                    <td>{{ d.production_order.customer_request.customer.name }}</td>
+                    <td>{{ d.delivery_date }}</td>
+                    <td>{{ d.time_slot_from|time:"H:i" }} - {{ d.time_slot_to|time:"H:i" }}</td>
+                    <td>{{ d.truck.plate_number|default:"-" }}</td>
+                    <td>{{ d.sequence }}</td>
+                    <td>
+                        {% if d.status == 'scheduled' %}<span class="badge bg-info">مجدول</span>
+                        {% elif d.status == 'confirmed' %}<span class="badge bg-primary">مؤكد</span>
+                        {% elif d.status == 'en_route' %}<span class="badge bg-warning">في الطريق</span>
+                        {% elif d.status == 'delivered' %}<span class="badge bg-success">تم التسليم</span>
+                        {% else %}<span class="badge bg-secondary">{{ d.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted p-4">لا توجد جداول تسليم</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

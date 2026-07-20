@@ -1,0 +1,44 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}متتبع سير العمل{% endblock %}
+{% block page_title %}<i class="fas fa-project-diagram me-2"></i>متتبع سير العمل بين الوحدات{% endblock %}
+
+{% block extra_css %}
+<style>
+    .wf-group { border-radius: 16px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.06); overflow:hidden; }
+    .wf-header { padding:1rem 1.2rem; color:#fff; font-weight:700; }
+    .wf-step { display:flex; align-items:center; gap:0.8rem; padding:0.9rem 1.2rem; border-bottom:1px solid #f5f5f5; text-decoration:none; color:inherit; transition: background .15s; }
+    .wf-step:last-child { border-bottom:none; }
+    .wf-step:hover { background:#f8f9fa; }
+    .wf-icon { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.9rem; }
+    .wf-count { margin-right:auto; font-weight:700; font-size:1.1rem; }
+    .flow-arrow { text-align:center; color:#bbb; font-size:1.2rem; margin:0.3rem 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<p class="text-muted mb-4">تتبع مسار المستندات عبر وحدات النظام لضمان سلامة الدورة المستندية من البداية للنهاية.</p>
+
+<div class="row">
+    {% for stage in stages %}
+    <div class="col-xl-3 col-lg-6 mb-4">
+        <div class="card wf-group">
+            <div class="wf-header" style="background:{{ stage.color }};">
+                <i class="fas fa-layer-group me-2"></i>{{ stage.group }}
+            </div>
+            {% for step in stage.steps %}
+            <a href="{{ step.url }}" class="wf-step">
+                <div class="wf-icon" style="background:{{ stage.color }};"><i class="fas {{ step.icon }}"></i></div>
+                <div>
+                    <div class="fw-bold">{{ step.name }}</div>
+                </div>
+                <div class="wf-count" style="color:{{ stage.color }};">{{ step.count|intcomma }}</div>
+            </a>
+            {% if not forloop.last %}<div class="flow-arrow"><i class="fas fa-angle-down"></i></div>{% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

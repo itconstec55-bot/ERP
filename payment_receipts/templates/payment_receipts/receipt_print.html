@@ -1,0 +1,56 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ receipt.get_receipt_type_display }} - {{ receipt.receipt_number }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    {% load static %}
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        * { font-family: 'Cairo', 'Arial', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-size: 12px; color: #333; direction: rtl; }
+        .container { max-width: 210mm; margin: 0 auto; padding: 10px; }
+        .receipt-type { text-align: center; font-size: 22px; font-weight: 800; margin: 15px 0; color: var(--print-primary); }
+        .amount-box { text-align: center; margin: 15px 0; padding: 12px; border: 2px solid var(--print-primary); border-radius: 10px; }
+        .amount-box .amount { font-size: 26px; font-weight: 800; color: var(--print-primary); }
+        .amount-box .currency { font-size: 13px; color: #666; }
+        table.info { width: 100%; margin: 15px 0; border-collapse: collapse; }
+        table.info td { padding: 7px 12px; border-bottom: 1px solid #eee; font-size: 11px; }
+        table.info td:first-child { width: 30%; font-weight: 600; color: #666; }
+    </style>
+</head>
+<body class="{% if receipt.receipt_type == 'receipt' %}print--receipt{% else %}print--payment{% endif %}">
+    <div class="no-print" style="text-align:center; padding:10px; background:#f0f0f0; margin-bottom:10px; border-radius:8px;">
+        <button onclick="window.print()" style="padding:8px 20px; background:{% if receipt.receipt_type == 'receipt' %}#1b5e20{% else %}#c62828{% endif %}; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px;">طباعة السند</button>
+        <button onclick="window.close()" style="padding:8px 20px; background:#666; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; margin-right:10px;">إغلاق</button>
+    </div>
+
+    <div class="container">
+        {% include 'components/print_header.html' with doc_title=receipt.get_receipt_type_display doc_number=receipt.receipt_number doc_date=receipt.date %}
+
+        <div class="receipt-type">{{ receipt.get_receipt_type_display }}</div>
+
+        <div class="amount-box">
+            <div style="font-size:13px; color:#666;">المبلغ</div>
+            <div class="amount">{{ receipt.amount|floatformat:2|intcomma }} <span class="currency">جنيه مصري</span></div>
+        </div>
+
+        <table class="info">
+            <tr><td>رقم السند:</td><td>{{ receipt.receipt_number }}</td></tr>
+            <tr><td>التاريخ:</td><td>{{ receipt.date|date:"d/m/Y" }}</td></tr>
+            <tr><td>طريقة الدفع:</td><td>{{ receipt.get_payment_method_display }}</td></tr>
+            {% if receipt.customer %}<tr><td>العميل:</td><td>{{ receipt.customer.name }}</td></tr>{% endif %}
+            {% if receipt.supplier %}<tr><td>المورد:</td><td>{{ receipt.supplier.name }}</td></tr>{% endif %}
+            {% if receipt.bank %}<tr><td>البنك:</td><td>{{ receipt.bank.name }}</td></tr>{% endif %}
+            {% if receipt.safe %}<tr><td>الخزينة:</td><td>{{ receipt.safe.name }}</td></tr>{% endif %}
+            {% if receipt.cheque_number %}<tr><td>رقم الشيك:</td><td>{{ receipt.cheque_number }}</td></tr>{% endif %}
+            {% if receipt.description %}<tr><td>البيان:</td><td>{{ receipt.description }}</td></tr>{% endif %}
+        </table>
+
+        {% include 'components/print_signatures.html' with box1='توقيع المستلم' box3='توقيع المسؤول' %}
+
+        {% include 'components/print_footer.html' %}
+    </div>
+</body>
+</html>

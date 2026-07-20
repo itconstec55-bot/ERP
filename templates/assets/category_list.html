@@ -1,0 +1,27 @@
+{% extends "base/base.html" %}
+
+{% block title %}تصنيفات الأصول{% endblock %}
+{% block page_title %}تصنيفات الأصول{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-tags"></i> تصنيفات الأصول</span>
+        <a href="{% url 'assets:category_create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> تصنيف جديد</a>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead><tr><th>الاسم</th><th>نسبة الإهلاك %</th><th>إجراءات</th></tr></thead>
+            <tbody>
+                {% for cat in categories %}
+                <tr>
+                    <td>{{ cat.name }}</td>
+                    <td>{{ cat.depreciation_rate }}%</td>
+                    <td><span class="badge bg-info">{{ cat.accounts.count }} حساب</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

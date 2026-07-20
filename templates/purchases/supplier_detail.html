@@ -1,0 +1,69 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل المورد{% endblock %}
+{% block page_title %}{{ supplier.code }} - {{ supplier.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-info-circle"></i> بيانات المورد</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>الكود:</th><td>{{ supplier.code }}</td></tr>
+                    <tr><th>الاسم:</th><td>{{ supplier.name }}</td></tr>
+                    <tr><th>النوع:</th><td>{{ supplier.get_supplier_type_display }}</td></tr>
+                    <tr><th>رقم الضريبة:</th><td>{{ supplier.tax_number|default:"-" }}</td></tr>
+                    <tr><th>التليفون:</th><td>{{ supplier.phone|default:"-" }}</td></tr>
+                    <tr><th>المحمول:</th><td>{{ supplier.mobile|default:"-" }}</td></tr>
+                    <tr><th>العنوان:</th><td>{{ supplier.address|default:"-" }}</td></tr>
+                    <tr><th>الرصيد:</th>
+                        <td class="text-danger"><strong>{{ supplier.current_balance|floatformat:2 }} ج.م</strong></td>
+                    </tr>
+                </table>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'purchases:supplier_edit' pk=supplier.pk %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> تعديل
+                    </a>
+                    {% if supplier.mobile or supplier.phone %}
+                    <form method="POST" action="{% url 'purchases:supplier_statement_whatsapp' pk=supplier.pk %}" style="display:inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="fab fa-whatsapp"></i> كشف الحساب واتساب
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-shopping-cart"></i> فواتير المشتريات</div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>رقم الفاتورة</th><th>التاريخ</th><th>الإجمالي</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in invoices %}
+                        <tr>
+                            <td><a href="{% url 'purchases:invoice_detail' pk=invoice.pk %}">{{ invoice.invoice_number }}</a></td>
+                            <td>{{ invoice.date|date:"d/m/Y" }}</td>
+                            <td>{{ invoice.total_amount|floatformat:2 }}</td>
+                            <td class="text-success">{{ invoice.paid_amount|floatformat:2 }}</td>
+                            <td class="text-danger">{{ invoice.remaining_amount|floatformat:2 }}</td>
+                            <td>
+                                {% if invoice.is_posted %}<span class="badge bg-success">مرحل</span>{% else %}<span class="badge bg-secondary">مسودة</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted">لا توجد فواتير</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

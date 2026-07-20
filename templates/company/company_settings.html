@@ -1,0 +1,233 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}إعدادات الشركة{% endblock %}
+{% block page_title %}إعدادات الشركة{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-building"></i> بيانات الشركة
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <h6 class="text-primary mb-3"><i class="fas fa-info-circle"></i> المعلومات الأساسية</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">اسم الشركة *</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">الاسم بالإنجليزية</label>
+                            {{ form.name_en }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">الرقم الضريبي</label>
+                            {{ form.tax_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">السجل التجاري</label>
+                            {{ form.commercial_register }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">رقم الشركة</label>
+                            {{ form.company_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">شعار الشركة</label>
+                            {{ form.logo }}
+                            {% if company.logo %}
+                            <div class="mt-2">
+                                <img src="{{ company.logo.url }}" alt="شعار الشركة" style="max-height: 60px;">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6 class="text-primary mb-3"><i class="fas fa-map-marker-alt"></i> العنوان والتواصل</h6>
+
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label">العنوان</label>
+                            {{ form.address }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">المدينة</label>
+                            {{ form.city }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">الدولة</label>
+                            {{ form.country }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">الهاتف</label>
+                            {{ form.phone }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">المحمول</label>
+                            {{ form.mobile }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">الفاكس</label>
+                            {{ form.fax }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">البريد الإلكتروني</label>
+                            {{ form.email }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">الموقع الإلكتروني</label>
+                            {{ form.website }}
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6 class="text-primary mb-3"><i class="fas fa-cog"></i> إعدادات النظام</h6>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label">العملة</label>
+                            {{ form.currency }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">كود العملة</label>
+                            {{ form.currency_code }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">نسبة VAT %</label>
+                            {{ form.vat_rate }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">بداية السنة المالية</label>
+                            {{ form.fiscal_year_start }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">نهاية السنة المالية</label>
+                            {{ form.fiscal_year_end }}
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6 class="text-primary mb-3"><i class="fas fa-university"></i> المعلومات البنكية</h6>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">اسم البنك</label>
+                            {{ form.bank_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">رقم الحساب</label>
+                            {{ form.bank_account_number }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">IBAN</label>
+                            {{ form.bank_iban }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">SWIFT Code</label>
+                            {{ form.bank_swift }}
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="mb-3">
+                        <label class="form-label">ملاحظات</label>
+                        {{ form.registration_notes }}
+                    </div>
+
+                    <div class="text-start">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> حفظ الإعدادات
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-image"></i> شعار الشركة
+            </div>
+            <div class="card-body text-center">
+                {% if company.logo %}
+                <img src="{{ company.logo.url }}" alt="شعار الشركة" style="max-width: 100%; max-height: 150px;">
+                {% else %}
+                <div class="text-muted py-4">
+                    <i class="fas fa-image fa-3x mb-3"></i>
+                    <p>لم يتم رفع شعار بعد</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-building"></i> بيانات الشركة
+            </div>
+            <div class="card-body">
+                <p><strong>الاسم:</strong> {{ company.name }}</p>
+                <p><strong>الرقم الضريبي:</strong> {{ company.tax_number|default:"-" }}</p>
+                <p><strong>الهاتف:</strong> {{ company.phone|default:"-" }}</p>
+                <p><strong>المدينة:</strong> {{ company.city|default:"-" }}</p>
+                <p><strong>العملة:</strong> {{ company.currency }} ({{ company.currency_code }})</p>
+                <p><strong>VAT:</strong> {{ company.vat_rate }}%</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span><i class="fas fa-code-branch"></i> الفروع</span>
+                <a href="{% url 'company:branch_create' %}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i> إضافة فرع
+                </a>
+            </div>
+            <div class="card-body">
+                {% for branch in branches %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                    <div>
+                        <strong>{{ branch.name }}</strong>
+                        {% if branch.is_default %}<span class="badge bg-primary">رئيسي</span>{% endif %}
+                        <br><small class="text-muted">{{ branch.city|default:"" }}</small>
+                    </div>
+                    <div>
+                        <a href="{% url 'company:branch_edit' branch.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'company:branch_delete' branch.pk %}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">لا توجد فروع</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

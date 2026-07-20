@@ -1,0 +1,96 @@
+{% extends 'base/base.html' %}
+{% load humanize %}
+
+{% block title %}تقرير الموازنة {{ year }}{% endblock %}
+{% block page_title %}تقرير الموازنة الشامل{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #1565c0, #0d47a1);">
+            <h3>{{ total_budgeted|intcomma }}</h3>
+            <p>إجمالي المخطط</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #2e7d32, #1b5e20);">
+            <h3>{{ total_actual|intcomma }}</h3>
+            <p>إجمالي الفعلي</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #e65100, #bf360c);">
+            <h3>{{ exec_pct }}%</h3>
+            <p>نسبة التنفيذ الكلية</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #6a1b9a, #4a148c);">
+            <h3>{{ report_data|length }}</h3>
+            <p>عدد الموازنات</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between">
+        <span><i class="fas fa-chart-bar"></i> تقرير الموازنة {{ year }}</span>
+        <form method="get" class="d-flex gap-2">
+            <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026" {% if year == 2026 %}selected{% endif %}>2026</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+            </select>
+        </form>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الاسم</th>
+                    <th>الحساب</th>
+                    <th>مركز التكلفة</th>
+                    <th>المخطط</th>
+                    <th>الفعلي</th>
+                    <th>الانحراف</th>
+                    <th>نسبة التنفيذ</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in report_data %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><a href="{% url 'budget:budget_detail' pk=b.pk %}">{{ b.name }}</a></td>
+                    <td>{{ b.account.code }} - {{ b.account.name }}</td>
+                    <td>{{ b.cost_center|default:"-" }}</td>
+                    <td>{{ b.budgeted_amount|intcomma }}</td>
+                    <td>{{ b.actual_amount|intcomma }}</td>
+                    <td>
+                        {% if b.variance > 0 %}
+                        <span class="text-danger">+{{ b.variance|intcomma }}</span>
+                        {% elif b.variance < 0 %}
+                        <span class="text-success">{{ b.variance|intcomma }}</span>
+                        {% else %}
+                        <span>0</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="progress" style="height: 20px; min-width: 80px;">
+                            <div class="progress-bar {% if b.pct > 100 %}bg-danger{% elif b.pct > 80 %}bg-warning{% else %}bg-success{% endif %}"
+                                 style="width: {{ b.pct }}%">{{ b.pct }}%</div>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-{% if b.status == 'active' %}success{% elif b.status == 'draft' %}secondary{% else %}dark{% endif %}">{{ b.get_status_display }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center py-4 text-muted">لا توجد موازنات لهذا العام</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

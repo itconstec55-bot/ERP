@@ -1,0 +1,90 @@
+{% extends "base/base.html" %}
+
+{% block title %}عروض أسعار المبيعات{% endblock %}
+{% block page_title %}قائمة عروض أسعار المبيعات{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-file-invoice-dollar"></i> عروض أسعار المبيعات</span>
+        <a href="{% url 'sales_quotation:quotation_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> عرض سعر جديد
+        </a>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">كل الحالات</option>
+                    <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>مسودة</option>
+                    <option value="sent" {% if status_filter == 'sent' %}selected{% endif %}>مرسلة</option>
+                    <option value="accepted" {% if status_filter == 'accepted' %}selected{% endif %}>مقبولة</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>مرفوضة</option>
+                    <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>منتهية الصلاحية</option>
+                    <option value="converted" {% if status_filter == 'converted' %}selected{% endif %}>محولة لفاتورة</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-secondary"><i class="fas fa-filter"></i> تصفية</button>
+                <a href="{% url 'sales_quotation:quotation_list' %}" class="btn btn-light">إعادة تعيين</a>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>رقم العرض</th>
+                        <th>العميل</th>
+                        <th>التاريخ</th>
+                        <th>صالح حتى</th>
+                        <th>الحالة</th>
+                        <th>الإجمالي</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in quotations %}
+                    <tr>
+                        <td>{{ q.quotation_number }}</td>
+                        <td>{{ q.customer.name }}</td>
+                        <td>{{ q.date|date:"d/m/Y" }}</td>
+                        <td>{{ q.valid_until|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if q.status == 'draft' %}<span class="badge bg-secondary">مسودة</span>
+                            {% elif q.status == 'sent' %}<span class="badge bg-info">مرسلة</span>
+                            {% elif q.status == 'accepted' %}<span class="badge bg-success">مقبولة</span>
+                            {% elif q.status == 'rejected' %}<span class="badge bg-danger">مرفوضة</span>
+                            {% elif q.status == 'expired' %}<span class="badge bg-warning">منتهية الصلاحية</span>
+                            {% elif q.status == 'converted' %}<span class="badge bg-primary">محولة لفاتورة</span>{% endif %}
+                        </td>
+                        <td>{{ q.total_amount|floatformat:2 }} ج.م</td>
+                        <td>
+                            <a href="{% url 'sales_quotation:quotation_detail' pk=q.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center">لا توجد عروض أسعار</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if quotations.has_other_pages %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if quotations.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ quotations.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">السابق</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">صفحة {{ quotations.number }} من {{ quotations.paginator.num_pages }}</span></li>
+                {% if quotations.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ quotations.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">التالي</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

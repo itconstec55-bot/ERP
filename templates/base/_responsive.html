@@ -1,0 +1,23 @@
+{% load static %}
+{# قواعد التجاوب المشتركة — مستخرجة من base.html لتوحيد الصفحات المستقلة (دخول/404) #}
+<style>
+    @media (max-width: 767.98px) {
+        .row > [class*="col-"] { flex: 0 0 100%; max-width: 100%; width: 100%; }
+        table th[style*="width"] { width: auto !important; white-space: normal; }
+        .card-body > canvas { max-width: 100% !important; }
+    }
+    @media (max-width: 575.98px) {
+        #globalSearch { width: 100% !important; max-width: 100% !important; }
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('table.table').forEach(function (tbl) {
+            if (tbl.closest('.table-responsive')) return;
+            var wrap = document.createElement('div');
+            wrap.className = 'table-responsive';
+            tbl.parentNode.insertBefore(wrap, tbl);
+            wrap.appendChild(tbl);
+        });
+    });
+</script>

@@ -1,0 +1,71 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}السيلو{% endblock %}
+{% block page_title %}<i class="fas fa-cubes me-2"></i>السيلو{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="m-0 fw-bold">قائمة السيلو</h5>
+        <a href="{% url 'concrete_production:silo_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-1"></i>إضافة سيلة
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-3">الكود</th>
+                    <th>الاسم</th>
+                    <th>النوع</th>
+                    <th>السعة (طن)</th>
+                    <th>المخزون (طن)</th>
+                    <th>الحد الأدنى</th>
+                    <th>نسبة التعبئة</th>
+                    <th>الحالة</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for silo in silos %}
+                <tr>
+                    <td class="ps-3 fw-bold">{{ silo.code }}</td>
+                    <td><a href="{% url 'concrete_production:silo_detail' pk=silo.pk %}">{{ silo.name }}</a></td>
+                    <td>{{ silo.cement_type|default:"—" }}</td>
+                    <td>{{ silo.capacity_tons|intcomma }}</td>
+                    <td class="fw-bold">{{ silo.current_stock_tons|intcomma }}</td>
+                    <td class="text-danger">{{ silo.minimum_order_tons|intcomma }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="height:8px;">
+                                <div class="progress-bar {% if silo.status == 'critical' %}bg-danger{% elif silo.status == 'low' %}bg-warning{% else %}bg-success{% endif %}"
+                                     style="width:{{ silo.fill_percentage }}%"></div>
+                            </div>
+                            <small>{{ silo.fill_percentage|floatformat:0 }}%</small>
+                        </div>
+                    </td>
+                    <td>
+                        {% if silo.status == 'critical' %}
+                            <span class="badge bg-danger">حرج</span>
+                        {% elif silo.status == 'low' %}
+                            <span class="badge bg-warning text-dark">منخفض</span>
+                        {% else %}
+                            <span class="badge bg-success">ممتاز</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'concrete_production:silo_detail' pk=silo.pk %}" class="btn btn-outline-primary" title="التفاصيل"><i class="fas fa-eye"></i></a>
+                            <a href="{% url 'concrete_production:silo_edit' pk=silo.pk %}" class="btn btn-outline-secondary" title="تعديل"><i class="fas fa-edit"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center text-muted p-4">لا توجد سلاسل مسجلة</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}قائمة الشيكات{% endblock %}
+{% block page_title %}الشيكات{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+    <a href="{% url 'cheques:cheque_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> إضافة شيك
+    </a>
+    <form method="get" class="d-flex gap-2">
+        <select name="type" class="form-select form-select-sm" style="width:auto;">
+            <option value="">كل الأنواع</option>
+            <option value="received" {% if request.GET.type == 'received' %}selected{% endif %}>وارد</option>
+            <option value="issued" {% if request.GET.type == 'issued' %}selected{% endif %}>صادر</option>
+        </select>
+        <select name="status" class="form-select form-select-sm" style="width:auto;">
+            <option value="">كل الحالات</option>
+            <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>قيد الانتظار</option>
+            <option value="cleared" {% if request.GET.status == 'cleared' %}selected{% endif %}>محصل</option>
+            <option value="bounced" {% if request.GET.status == 'bounced' %}selected{% endif %}>مرتجع</option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-search"></i></button>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr><th>رقم الشيك</th><th>البنك</th><th>المبلغ</th><th>النوع</th><th>الدافع/المستفيد</th><th>الاستحقاق</th><th>الحالة</th></tr>
+            </thead>
+            <tbody>
+                {% for cheque in cheques %}
+                <tr>
+                    <td><a href="{% url 'cheques:cheque_detail' pk=cheque.pk %}">{{ cheque.cheque_number }}</a></td>
+                    <td>{{ cheque.bank_name }}</td>
+                    <td>{{ cheque.amount|floatformat:2|intcomma }}</td>
+                    <td><span class="badge bg-{% if cheque.cheque_type == 'received' %}success{% else %}warning{% endif %}">{{ cheque.get_cheque_type_display }}</span></td>
+                    <td>{{ cheque.payee_name|default:"-" }}</td>
+                    <td>{{ cheque.due_date|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if cheque.status == 'pending' %}<span class="badge bg-secondary">قيد الانتظار</span>
+                        {% elif cheque.status == 'deposited' %}<span class="badge bg-info">ودع في البنك</span>
+                        {% elif cheque.status == 'cleared' %}<span class="badge bg-success">محصل</span>
+                        {% elif cheque.status == 'bounced' %}<span class="badge bg-danger">مرتجع</span>
+                        {% else %}<span class="badge bg-dark">ملغي</span>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-4">لا توجد شيكات</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if cheques.has_other_pages %}
+    <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+            {% if cheques.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ cheques.previous_page_number }}&type={{ request.GET.type }}&status={{ request.GET.status }}">السابق</a></li>
+            {% endif %}
+            {% for num in cheques.paginator.page_range %}
+            <li class="page-item {% if cheques.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}&type={{ request.GET.type }}&status={{ request.GET.status }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            {% if cheques.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ cheques.next_page_number }}&type={{ request.GET.type }}&status={{ request.GET.status }}">التالي</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'base/base.html' %}
+{% load humanize %}
+
+{% block title %}إشعارات المدين والدائن{% endblock %}
+{% block page_title %}إشعارات المدين والدائن{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'credit_notes:credit_note_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> إشعار جديد</a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between">
+        <span><i class="fas fa-file-invoice"></i> الإشعارات</span>
+        <div>
+            <a href="?type=credit_note" class="btn btn-sm btn-light">إشعارات دائن</a>
+            <a href="?type=debit_note" class="btn btn-sm btn-light">إشعارات مدين</a>
+            <a href="?" class="btn btn-sm btn-light">الكل</a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>رقم</th><th>النوع</th><th>التاريخ</th><th>العميل/المورد</th><th>الفاتورة الأصلية</th><th>المبلغ</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody>
+                {% for n in notes %}
+                <tr>
+                    <td><strong>{{ n.note_number }}</strong></td>
+                    <td><span class="badge bg-{% if n.note_type == 'credit_note' %}info{% else %}warning{% endif %}">{{ n.get_note_type_display }}</span></td>
+                    <td>{{ n.date|date:"d/m/Y" }}</td>
+                    <td>{% if n.customer %}{{ n.customer.name }}{% elif n.supplier %}{{ n.supplier.name }}{% else %}-{% endif %}</td>
+                    <td>{% if n.original_sales_invoice %}{{ n.original_sales_invoice.invoice_number }}{% elif n.original_purchase_invoice %}{{ n.original_purchase_invoice.invoice_number }}{% elif n.original_invoice_number %}{{ n.original_invoice_number }}{% else %}-{% endif %}</td>
+                    <td>{{ n.total_amount|intcomma }}</td>
+                    <td><span class="badge bg-{% if n.is_posted %}success{% else %}secondary{% endif %}">{% if n.is_posted %}مرحل{% else %}مسودة{% endif %}</span></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'credit_notes:credit_note_detail' n.pk %}" class="btn btn-outline-info"><i class="fas fa-eye"></i></a>
+                            {% if not n.is_posted %}
+                            <form method="post" action="{% url 'credit_notes:credit_note_post' n.pk %}" class="d-inline">{% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-success" title="ترحيل"><i class="fas fa-check"></i></button>
+                            </form>
+                            <form method="post" action="{% url 'credit_notes:credit_note_delete' n.pk %}" class="d-inline" onsubmit="return confirm('هل أنت متأكد؟')">{% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center py-4 text-muted">لا توجد إشعارات بعد</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

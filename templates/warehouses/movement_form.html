@@ -1,0 +1,27 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}حركة مخزون جديدة{% endblock %}
+{% block page_title %}تسجيل حركة مخزون{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-exchange-alt"></i> بيانات الحركة
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> حفظ
+                </button>
+                <a href="{% url 'warehouses:movement_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-right"></i> رجوع
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

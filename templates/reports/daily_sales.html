@@ -1,0 +1,98 @@
+{% extends "base/base.html" %}
+
+{% block title %}يومية المبيعات{% endblock %}
+{% block page_title %}يومية المبيعات{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-cash-register"></i> يومية المبيعات</span>
+        <form method="get" class="d-flex gap-2">
+            <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">عدد الفواتير</h6>
+                        <h4 class="text-primary">{{ grand_total.count }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">إجمالي المبيعات</h6>
+                        <h4 class="text-success">{{ grand_total.total|floatformat:2 }} ج.م</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-info">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">المحصّل</h6>
+                        <h4 class="text-info">{{ grand_total.collected|floatformat:2 }} ج.م</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">الربح الإجمالي</h6>
+                        <h4 class="text-warning">{{ grand_total.profit|floatformat:2 }} ج.م</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>التاريخ</th>
+                    <th>عدد الفواتير</th>
+                    <th>المبيعات (بدون ضريبة)</th>
+                    <th>الضريبة</th>
+                    <th>الإجمالي</th>
+                    <th>المحصّل</th>
+                    <th>المتبقي</th>
+                    <th>الربح</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in daily_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><strong>{{ d.date|date:"d/m/Y" }}</strong></td>
+                    <td>{{ d.count }}</td>
+                    <td>{{ d.subtotal|floatformat:2 }}</td>
+                    <td>{{ d.vat|floatformat:2 }}</td>
+                    <td><strong>{{ d.total|floatformat:2 }}</strong></td>
+                    <td>{{ d.collected|floatformat:2 }}</td>
+                    <td class="text-danger">{{ d.remaining|floatformat:2 }}</td>
+                    <td class="text-success">{{ d.profit|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center text-muted">لا توجد مبيعات في هذه الفترة</td></tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="table-dark">
+                    <th colspan="2">الإجمالي</th>
+                    <th>{{ grand_total.count }}</th>
+                    <th>{{ grand_total.subtotal|floatformat:2 }}</th>
+                    <th>{{ grand_total.vat|floatformat:2 }}</th>
+                    <th>{{ grand_total.total|floatformat:2 }}</th>
+                    <th>{{ grand_total.collected|floatformat:2 }}</th>
+                    <th>{{ grand_total.remaining|floatformat:2 }}</th>
+                    <th>{{ grand_total.profit|floatformat:2 }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endblock %}

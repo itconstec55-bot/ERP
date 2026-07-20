@@ -1,0 +1,164 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}اللوحة المالية الموحدة{% endblock %}
+{% block page_title %}<i class="fas fa-chart-pie me-2"></i>اللوحة المالية الموحدة{% endblock %}
+
+{% block extra_css %}
+<style>
+    .fin-card { border-radius: 16px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.06); transition: transform .2s; }
+    .fin-card:hover { transform: translateY(-3px); }
+    .kpi { font-size: 1.6rem; font-weight: 700; }
+    .kpi-label { font-size: 0.8rem; color: #888; }
+    .bucket-row { display:flex; align-items:center; justify-content:space-between; padding:0.4rem 0; border-bottom:1px solid #f5f5f5; }
+    .bucket-row:last-child { border-bottom:none; }
+    .aging-bar { height:8px; border-radius:4px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card fin-card p-3" style="border-right:5px solid #0984e3;">
+            <div class="kpi-label">المركز النقدي (بنوك + خزائن)</div>
+            <div class="kpi text-primary">{{ cash_position|floatformat:0|intcomma }} <small style="font-size:0.9rem;">ج.م</small></div>
+            <div class="mt-2 d-flex justify-content-between small text-muted">
+                <span>بنوك: {{ total_bank_balance|floatformat:0|intcomma }}</span>
+                <span>خزائن: {{ total_safe_balance|floatformat:0|intcomma }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card fin-card p-3" style="border-right:5px solid #00b894;">
+            <div class="kpi-label">صافي التدفق النقدي اليوم</div>
+            <div class="kpi {% if net_cash_flow_today >= 0 %}text-success{% else %}text-danger{% endif %}">
+                {% if net_cash_flow_today >= 0 %}+{% endif %}{{ net_cash_flow_today|floatformat:0|intcomma }}
+            </div>
+            <div class="mt-2 d-flex justify-content-between small">
+                <span class="text-success">وارد: {{ bank_inflow_today|add:safe_inflow_today|floatformat:0|intcomma }}</span>
+                <span class="text-danger">صادر: {{ bank_outflow_today|add:safe_outflow_today|floatformat:0|intcomma }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card fin-card p-3" style="border-right:5px solid #6c5ce7;">
+            <div class="kpi-label">هامش الربح الشهري</div>
+            <div class="kpi text-info">{{ profit_margin|floatformat:1 }}%</div>
+            <div class="mt-2 small text-muted">
+                مبيعات: {{ total_sales_month|floatformat:0|intcomma }} | أرباح: {{ total_profit_month|floatformat:0|intcomma }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    {# ── أعمار الذمم ── #}
+    <div class="col-lg-6 mb-3">
+        <div class="card fin-card" style="height:100%;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 fw-bold"><i class="fas fa-users me-2 text-success"></i>أعمار الذمم (العملاء)</h6>
+                <span class="badge bg-success">{{ total_ar|floatformat:0|intcomma }} ج.م</span>
+            </div>
+            <div class="card-body">
+                {% with ar=ar_buckets %}
+                <div class="bucket-row">
+                    <span>حالي</span>
+                    <span class="fw-bold">{{ ar.current|floatformat:0|intcomma }}</span>
+                </div>
+                <div class="bucket-row">
+                    <span>1 - 30 يوم</span>
+                    <span class="fw-bold text-warning">{{ ar.b1_30|floatformat:0|intcomma }}</span>
+                </div>
+                <div class="bucket-row">
+                    <span>31 - 60 يوم</span>
+                    <span class="fw-bold text-warning">{{ ar.b31_60|floatformat:0|intcomma }}</span>
+                </div>
+                <div class="bucket-row">
+                    <span>61 - 90 يوم</span>
+                    <span class="fw-bold text-danger">{{ ar.b61_90|floatformat:0|intcomma }}</span>
+                </div>
+                <div class="bucket-row">
+                    <span>أكثر من 90 يوم</span>
+                    <span class="fw-bold text-danger">{{ ar.b90_plus|floatformat:0|intcomma }}</span>
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+
+    {# ── أعمار الدائن ── #}
+    <div class="col-lg-6 mb-3">
+        <div class="card fin-card" style="height:100%;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 fw-bold"><i class="fas fa-truck me-2 text-info"></i>أعمار الدائن (الموردون)</h6>
+                <span class="badge bg-info">{{ total_ap|floatformat:0|intcomma }} ج.م</span>
+            </div>
+            <div class="card-body">
+                {% with ap=ap_buckets %}
+                <div class="bucket-row">
+                    <span>حالي</span>
+                    <span class="fw-bold">{{ ap.current|floatformat:0|intcomma }}</span>
+                </div>
+                <div class="bucket-row">
+                    <span>1 - 30 يوم</span>
+                    <span class="fw-bold text-warning">{{ ap.b1_30|floatformat:0|intcomma }}</span>
+                </div>
+                <div class="bucket-row">
+                    <span>31 - 60 يوم</span>
+                    <span class="fw-bold text-warning">{{ ap.b31_60|floatformat:0|intcomma }}</span>
+                </div>
+                <div class="bucket-row">
+                    <span>61 - 90 يوم</span>
+                    <span class="fw-bold text-danger">{{ ap.b61_90|floatformat:0|intcomma }}</span>
+                </div>
+                <div class="bucket-row">
+                    <span>أكثر من 90 يوم</span>
+                    <span class="fw-bold text-danger">{{ ap.b90_plus|floatformat:0|intcomma }}</span>
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-6 mb-3">
+        <div class="card fin-card" style="height:100%;">
+            <div class="card-header"><h6 class="m-0 fw-bold"><i class="fas fa-crown me-2 text-warning"></i>أفضل 5 عملاء (مبيعات)</h6></div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <tbody>
+                    {% for c in top_customers %}
+                        <tr><td class="ps-3">{{ c.customer__name|default:"—" }}</td><td class="text-end fw-bold">{{ c.total|floatformat:0|intcomma }} ج.م</td></tr>
+                    {% empty %}
+                        <tr><td colspan="2" class="text-center text-muted p-3">لا توجد بيانات</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-3">
+        <div class="card fin-card" style="height:100%;">
+            <div class="card-header"><h6 class="m-0 fw-bold"><i class="fas fa-handshake me-2 text-info"></i>أفضل 5 موردين (مشتريات)</h6></div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <tbody>
+                    {% for s in top_suppliers %}
+                        <tr><td class="ps-3">{{ s.supplier__name|default:"—" }}</td><td class="text-end fw-bold">{{ s.total|floatformat:0|intcomma }} ج.م</td></tr>
+                    {% empty %}
+                        <tr><td colspan="2" class="text-center text-muted p-3">لا توجد بيانات</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="text-center">
+    <a href="{% url 'reports:report_list' %}" class="btn btn-outline-primary">
+        <i class="fas fa-file-alt me-1"></i>جميع التقارير المحاسبية
+    </a>
+</div>
+{% endblock %}

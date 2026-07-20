@@ -1,0 +1,28 @@
+{% extends "base/base.html" %}
+
+{% block title %}حذف الفرع{% endblock %}
+{% block page_title %}حذف الفرع: {{ branch.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-exclamation-triangle"></i> تأكيد الحذف
+            </div>
+            <div class="card-body">
+                <p>هل أنت متأكد من حذف الفرع <strong>{{ branch.name }}</strong>؟</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> حذف
+                    </button>
+                    <a href="{% url 'company:company_settings' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-right"></i> إلغاء
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

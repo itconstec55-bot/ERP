@@ -1,0 +1,57 @@
+{% extends 'base/base.html' %}
+{% load humanize %}
+{% load access_tags %}
+
+{% block title %}بنود كشف الحساب البنكي{% endblock %}
+{% block page_title %}بنود كشف الحساب البنكي{% endblock %}
+
+{% block content %}
+{% can_screen 'bank_reconciliation.statement' 'add' as bank_can_add %}
+<div class="mb-3">
+    {% if bank_can_add %}<a href="{% url 'bank_reconciliation:item_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة بند</a>{% endif %}
+    <a href="{% url 'bank_reconciliation:dashboard' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-right"></i> لوحة التحكم</a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-4">
+                <select name="bank" class="form-select form-select-sm">
+                    <option value="">جميع الحسابات</option>
+                    {% for b in banks %}<option value="{{ b.pk }}" {% if request.GET.bank == b.pk|stringformat:"d" %}selected{% endif %}>{{ b }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">جميع الحالات</option>
+                    <option value="unmatched" {% if request.GET.status == 'unmatched' %}selected{% endif %}>غير مطابق</option>
+                    <option value="matched" {% if request.GET.status == 'matched' %}selected{% endif %}>مطابق</option>
+                </select>
+            </div>
+            <div class="col-md-2"><button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-search"></i> بحث</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>التاريخ</th><th>الحساب</th><th>الوصف</th><th>المدين</th><th>الدائن</th><th>الحالة</th></tr></thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.transaction_date|date:"d/m/Y" }}</td>
+                    <td>{{ item.bank_account }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{% if item.debit_amount %}{{ item.debit_amount|intcomma }}{% endif %}</td>
+                    <td>{% if item.credit_amount %}{{ item.credit_amount|intcomma }}{% endif %}</td>
+                    <td><span class="badge bg-{% if item.status == 'matched' %}success{% else %}warning{% endif %}">{{ item.get_status_display }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-4 text-muted">لا توجد بنود</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

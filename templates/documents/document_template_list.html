@@ -1,0 +1,64 @@
+{% extends "base/base.html" %}
+{% load access_tags %}
+
+{% block title %}قوالب المستندات{% endblock %}
+{% block page_title %}قوالب المستندات{% endblock %}
+
+{% block content %}
+{% can_screen 'documents.document' 'add' as doc_can_add %}
+{% can_screen 'documents.document' 'edit' as doc_can_edit %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-file-alt"></i> قوالب المستندات</span>
+        {% if doc_can_add %}
+        <a href="{% url 'documents:document_template_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> قالب جديد
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>اسم القالب</th>
+                    <th>نوع المستند</th>
+                    <th>افتراضي</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in templates %}
+                <tr>
+                    <td><strong>{{ t.name }}</strong></td>
+                    <td><span class="badge bg-secondary">{{ t.document_type }}</span></td>
+                    <td>
+                        {% if t.is_default %}
+                        <span class="badge bg-primary">افتراضي</span>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if t.is_active %}
+                        <span class="badge bg-success">نشط</span>
+                        {% else %}
+                        <span class="badge bg-danger">غير نشط</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if doc_can_edit %}
+                        <a href="{% url 'documents:document_template_edit' pk=t.pk %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted">لا توجد قوالب</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

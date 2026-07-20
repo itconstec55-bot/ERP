@@ -1,0 +1,91 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}تفاصيل الفاتورة الضريبية{% endblock %}
+{% block page_title %}تفاصيل الفاتورة الضريبية {{ tax_invoice.tax_invoice_number }}{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-file-invoice"></i> الفاتورة الضريبية: {{ tax_invoice.tax_invoice_number }}</span>
+        <div class="d-flex gap-2">
+            {% if tax_invoice.status == 'submitted' %}
+            <form method="post" action="{% url 'tax_invoices:tax_invoice_check_status' tax_invoice.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-info btn-sm">
+                    <i class="fas fa-sync"></i> متابعة الحالة
+                </button>
+            </form>
+            {% endif %}
+            {% if tax_invoice.portal_link %}
+            <a href="{{ tax_invoice.portal_link }}" target="_blank" class="btn btn-outline-success btn-sm">
+                <i class="fas fa-external-link-alt"></i> بوابة الضرائب
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-sm">
+                    <tr><th>رقم الفاتورة</th><td>{{ tax_invoice.tax_invoice_number }}</td></tr>
+                    <tr><th>النوع</th><td>{{ tax_invoice.get_document_type_display }}</td></tr>
+                    <tr><th>الحالة</th><td>{{ tax_invoice.get_status_display }}</td></tr>
+                    <tr><th>فاتورة المبيعات</th><td>
+                        {% if tax_invoice.sales_invoice %}
+                        <a href="{% url 'sales:invoice_detail' tax_invoice.sales_invoice.id %}">{{ tax_invoice.sales_invoice.invoice_number }}</a>
+                        {% else %}—{% endif %}
+                    </td></tr>
+                    <tr><th>إجمالي المبيعات</th><td>{{ tax_invoice.total_sale_amount|floatformat:2 }}</td></tr>
+                    <tr><th>الخصم</th><td>{{ tax_invoice.total_discount_amount|floatformat:2 }}</td></tr>
+                    <tr><th>الصافي</th><td>{{ tax_invoice.net_amount|floatformat:2 }}</td></tr>
+                    <tr><th>ضريبة القيمة المضافة</th><td>{{ tax_invoice.total_vat_amount|floatformat:2 }}</td></tr>
+                    <tr><th>الإجمالي شامل الضريبة</th><td><strong>{{ tax_invoice.total_amount|floatformat:2 }} ج.م</strong></td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-sm">
+                    <tr><th>ETA UUID</th><td><code>{{ tax_invoice.eta_uuid|default:"—" }}</code></td></tr>
+                    <tr><th>Submission UUID</th><td><code>{{ tax_invoice.eta_submission_uuid|default:"—" }}</code></td></tr>
+                    <tr><th>الرقم الطويل للتحقق</th><td><code>{{ tax_invoice.eta_long_id|default:"—" }}</code></td></tr>
+                    <tr><th>Internal ID</th><td><code>{{ tax_invoice.eta_internal_id|default:"—" }}</code></td></tr>
+                    <tr><th>تاريخ الإرسال</th><td>{{ tax_invoice.submitted_at|date:"d/m/Y H:i"|default:"—" }}</td></tr>
+                    <tr><th>تاريخ التحقق</th><td>{{ tax_invoice.validated_at|date:"d/m/Y H:i"|default:"—" }}</td></tr>
+                </table>
+            </div>
+        </div>
+
+        {% if tax_invoice.error_message %}
+        <div class="alert alert-danger mt-3">
+            <strong>رسالة الخطأ:</strong><br>
+            {{ tax_invoice.error_message }}
+        </div>
+        {% endif %}
+
+        {% if tax_invoice.eta_qr_code %}
+        <div class="mt-3 text-center">
+            <h6>QR Code</h6>
+            <img src="data:image/png;base64,{{ tax_invoice.eta_qr_code }}" alt="QR Code" style="max-width: 200px;">
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-code"></i> صيغة المستند المُرسل لمنظومة الفاتورة الإلكترونية (ETA JSON)
+    </div>
+    <div class="card-body">
+        {% if document.error %}
+        <div class="alert alert-warning">{{ document.error }}</div>
+        {% else %}
+        <pre class="bg-light p-3" style="direction: ltr; text-align: left; max-height: 500px; overflow: auto;">{{ document|safe }}</pre>
+        {% endif %}
+
+        {% if tax_invoice.submission_log %}
+        <h6 class="mt-3">سجل الإرسال (استجابة مصلحة الضرائب)</h6>
+        <pre class="bg-light p-3" style="direction: ltr; text-align: left; max-height: 400px; overflow: auto;">{{ tax_invoice.submission_log }}</pre>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

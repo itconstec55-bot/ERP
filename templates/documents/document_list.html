@@ -1,0 +1,114 @@
+{% extends "base/base.html" %}
+{% load access_tags %}
+
+{% block title %}المستندات{% endblock %}
+{% block page_title %}المستندات{% endblock %}
+
+{% block content %}
+{% can_screen 'documents.document' 'add' as doc_can_add %}
+{% can_screen 'documents.document' 'edit' as doc_can_edit %}
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <a href="{% url 'documents:document_list' %}" class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline-primary{% endif %}">الكل</a>
+            <a href="?status=draft{% if current_type %}&type={{ current_type }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="btn btn-sm {% if current_status == 'draft' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">مسودة ({{ status_counts.draft|default:0 }})</a>
+            <a href="?status=pending{% if current_type %}&type={{ current_type }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="btn btn-sm {% if current_status == 'pending' %}btn-warning{% else %}btn-outline-warning{% endif %}">قيد المراجعة ({{ status_counts.pending|default:0 }})</a>
+            <a href="?status=approved{% if current_type %}&type={{ current_type }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="btn btn-sm {% if current_status == 'approved' %}btn-success{% else %}btn-outline-success{% endif %}">معتمد ({{ status_counts.approved|default:0 }})</a>
+            <a href="?status=rejected{% if current_type %}&type={{ current_type }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="btn btn-sm {% if current_status == 'rejected' %}btn-danger{% else %}btn-outline-danger{% endif %}">مرفوض ({{ status_counts.rejected|default:0 }})</a>
+            <a href="?status=archived{% if current_type %}&type={{ current_type }}{% endif %}{% if search %}&q={{ search }}{% endif %}" class="btn btn-sm {% if current_status == 'archived' %}btn-info{% else %}btn-outline-info{% endif %}">مؤرشف ({{ status_counts.archived|default:0 }})</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-folder-open"></i> المستندات</span>
+        <div class="d-flex gap-2">
+            <select class="form-select form-select-sm" onchange="location.href='?type='+this.value{% if current_status %}+'&status={{ current_status }}'{% endif %}{% if search %}+'&q={{ search }}'{% endif %}" style="width:auto;">
+                <option value="">جميع الأنواع</option>
+                {% for t in doc_types %}
+                <option value="{{ t.pk }}" {% if current_type == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.name }}</option>
+                {% endfor %}
+            </select>
+            <form class="d-flex" method="get">
+                {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+                {% if current_type %}<input type="hidden" name="type" value="{{ current_type }}">{% endif %}
+                <input type="text" name="q" value="{{ search }}" class="form-control form-control-sm" placeholder="بحث..." style="width:180px;">
+                <button class="btn btn-outline-secondary btn-sm ms-1" type="submit"><i class="fas fa-search"></i></button>
+            </form>
+            {% if doc_can_add %}
+            <a href="{% url 'documents:document_create' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> مستند جديد
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>الرقم</th>
+                    <th>النوع</th>
+                    <th>العنوان</th>
+                    <th>التاريخ</th>
+                    <th>الاستحقاق</th>
+                    <th>الأولوية</th>
+                    <th>الحالة</th>
+                    <th>المسؤول</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in documents %}
+                <tr>
+                    <td><strong>{{ doc.document_number }}</strong></td>
+                    <td><span class="badge bg-secondary">{{ doc.document_type }}</span></td>
+                    <td>{{ doc.title }}</td>
+                    <td>{{ doc.date|date:"d/m/Y" }}</td>
+                    <td>{% if doc.due_date %}{{ doc.due_date|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+                    <td>
+                        {% if doc.priority == 'urgent' %}
+                        <span class="badge bg-danger">عاجلة</span>
+                        {% elif doc.priority == 'high' %}
+                        <span class="badge bg-warning text-dark">عالية</span>
+                        {% elif doc.priority == 'medium' %}
+                        <span class="badge bg-info">متوسطة</span>
+                        {% else %}
+                        <span class="badge bg-light text-dark">منخفضة</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if doc.status == 'draft' %}
+                        <span class="badge bg-secondary">مسودة</span>
+                        {% elif doc.status == 'pending' %}
+                        <span class="badge bg-warning text-dark">قيد المراجعة</span>
+                        {% elif doc.status == 'approved' %}
+                        <span class="badge bg-success">معتمد</span>
+                        {% elif doc.status == 'rejected' %}
+                        <span class="badge bg-danger">مرفوض</span>
+                        {% elif doc.status == 'archived' %}
+                        <span class="badge bg-info">مؤرشف</span>
+                        {% elif doc.status == 'cancelled' %}
+                        <span class="badge bg-dark">ملغي</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ doc.assigned_to|default:"-" }}</td>
+                    <td>
+                        <a href="{% url 'documents:document_detail' pk=doc.pk %}" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        {% if doc_can_edit %}
+                        <a href="{% url 'documents:document_edit' pk=doc.pk %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center text-muted">لا توجد مستندات</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

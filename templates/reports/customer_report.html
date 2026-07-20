@@ -1,0 +1,36 @@
+{% extends "base/base.html" %}
+
+{% block title %}تقرير العملاء{% endblock %}
+{% block page_title %}تقرير العملاء{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><i class="fas fa-users"></i> تقرير العملاء</div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>الكود</th><th>الاسم</th><th>النوع</th><th>رقم الضريبة</th>
+                    <th>عدد الفواتير</th><th>إجمالي المبيعات</th><th>المتحصّل</th><th>المتبقي</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.code }}</td>
+                    <td><a href="{% url 'reports:customer_detail_report' customer_id=customer.pk %}">{{ customer.name }}</a></td>
+                    <td><span class="badge bg-info">{{ customer.get_customer_type_display }}</span></td>
+                    <td>{{ customer.tax_number|default:"-" }}</td>
+                    <td><span class="badge bg-success">{{ customer.sales_count|default:0 }}</span></td>
+                    <td>{{ customer.total_sales|default:0|floatformat:2 }}</td>
+                    <td class="text-success">{{ customer.total_collected|default:0|floatformat:2 }}</td>
+                    <td class="text-danger">{{ customer.current_balance|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center text-muted">لا يوجد عملاء</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

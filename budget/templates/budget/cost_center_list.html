@@ -1,0 +1,32 @@
+{% extends 'base/base.html' %}
+
+{% block title %}مراكز التكلفة{% endblock %}
+{% block page_title %}مراكز التكلفة{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'budget:cost_center_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة مركز</a>
+    <a href="{% url 'budget:budget_list' %}" class="btn btn-outline-secondary"><i class="fas fa-chart-bar"></i> الموازنات</a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white"><i class="fas fa-sitemap"></i> مراكز التكلفة</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>الكود</th><th>الاسم</th><th>المسؤول</th><th>الحالة</th></tr></thead>
+            <tbody>
+                {% for c in centers %}
+                <tr>
+                    <td><code>{{ c.code }}</code></td>
+                    <td><a href="{% url 'budget:cost_center_detail' pk=c.pk %}">{{ c.name }}</a></td>
+                    <td>{{ c.manager|default:"-" }}</td>
+                    <td><span class="badge bg-success">نشط</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center py-4 text-muted">لا توجد مراكز بعد</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

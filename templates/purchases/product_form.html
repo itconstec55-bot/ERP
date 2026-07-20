@@ -1,0 +1,21 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if product %}تعديل المنتج{% else %}منتج جديد{% endif %}{% endblock %}
+{% block page_title %}{% if product %}تعديل: {{ product.name }}{% else %}إضافة منتج جديد{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><i class="fas fa-box"></i> بيانات المنتج</div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+                <a href="{% url 'warehouses:product_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-right"></i> رجوع</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

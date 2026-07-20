@@ -1,0 +1,148 @@
+{% extends "base/base.html" %}
+
+{% block content_header %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>{{ title }}</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="{% url 'contractors:dashboard' %}">لوحة التحكم</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'contractors:certificate_list' %}">المستخلصات</a></li>
+          <li class="breadcrumb-item active">{{ title }}</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <form method="post">
+    {% csrf_token %}
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card card-primary">
+          <div class="card-header">
+            <h3 class="card-title">بيانات المستخلص</h3>
+          </div>
+          <div class="card-body">
+            {% if form.errors %}
+            <div class="alert alert-danger">
+              {% for field, errors in form.errors.items %}
+              <p><strong>{{ field }}:</strong> {{ errors|join:", " }}</p>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>{{ form.contract.label }}</label>
+                  {{ form.contract }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>{{ form.period_number.label }}</label>
+                  {{ form.period_number }}
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>{{ form.period_from.label }}</label>
+                  {{ form.period_from }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>{{ form.period_to.label }}</label>
+                  {{ form.period_to }}
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>{{ form.previous_amount.label }}</label>
+                  {{ form.previous_amount }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>{{ form.current_amount.label }}</label>
+                  {{ form.current_amount }}
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>{{ form.notes.label }}</label>
+              {{ form.notes }}
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-secondary">
+          <div class="card-header">
+            <h3 class="card-title">بنود المستخلص</h3>
+          </div>
+          <div class="card-body">
+            {{ formset.management_form }}
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>بند العقد</th>
+                    <th>الكمية السابقة</th>
+                    <th>الكمية الحالية</th>
+                    <th>الإجمالي المنفّذ</th>
+                    <th>المبلغ</th>
+                    <th>حذف</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item_form in formset %}
+                  <tr>
+                    {% for field in item_form %}
+                    {% if not field.is_hidden %}
+                    <td>{{ field }}</td>
+                    {% endif %}
+                    {% endfor %}
+                    {% if item_form.instance.pk %}
+                    <td>{{ item_form.DELETE }}</td>
+                    {% endif %}
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> حفظ المستخلص
+            </button>
+            <a href="{% url 'contractors:certificate_list' %}" class="btn btn-secondary">
+              <i class="fas fa-times"></i> إلغاء
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

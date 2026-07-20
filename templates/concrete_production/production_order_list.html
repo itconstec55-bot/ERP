@@ -1,0 +1,85 @@
+{% extends "base/base.html" %}
+{% block title %}أوامر الإنتاج{% endblock %}
+{% block page_title %}<i class="fas fa-hard-hat me-2"></i>أوامر الإنتاج{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <form method="get" class="d-flex gap-2 flex-wrap">
+            {{ filter_form.status }}
+            {{ filter_form.priority }}
+            {{ filter_form.date_from }}
+            {{ filter_form.date_to }}
+            <button class="btn btn-primary"><i class="fas fa-filter"></i></button>
+        </form>
+        <a href="{% url 'concrete_production:production_order_create' %}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i> أمر إنتاج جديد
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-3">رقم الأمر</th>
+                    <th>العميل</th>
+                    <th>الخلطة</th>
+                    <th>الكمية المطلوبة</th>
+                    <th>الكمية المسلمة</th>
+                    <th>نسبة الإنجاز</th>
+                    <th>الأولوية</th>
+                    <th>الحالة</th>
+                    <th>التاريخ</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td class="ps-3 fw-bold">{{ order.order_number }}</td>
+                    <td>{{ order.customer_request.customer.name }}</td>
+                    <td>{{ order.mix_design.code }} ({{ order.mix_design.strength_class }})</td>
+                    <td>{{ order.quantity_m3 }} م³</td>
+                    <td>{{ order.quantity_delivered }} م³</td>
+                    <td>
+                        <div class="progress" style="height: 6px; width: 80px;">
+                            <div class="progress-bar {% if order.completion_percentage >= 100 %}bg-success{% elif order.completion_percentage >= 50 %}bg-info{% else %}bg-warning{% endif %}"
+                                 style="width: {{ order.completion_percentage }}%"></div>
+                        </div>
+                        <small>{{ order.completion_percentage|floatformat:0 }}%</small>
+                    </td>
+                    <td>
+                        {% if order.priority == 'urgent' %}<span class="badge bg-warning">عاجل</span>
+                        {% elif order.priority == 'very_urgent' %}<span class="badge bg-danger">عاجل جداً</span>
+                        {% else %}<span class="badge bg-secondary">عادي</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if order.status == 'draft' %}<span class="badge bg-secondary">مسودة</span>
+                        {% elif order.status == 'scheduled' %}<span class="badge bg-info">مجدول</span>
+                        {% elif order.status == 'in_progress' %}<span class="badge bg-primary">قيد التنفيذ</span>
+                        {% elif order.status == 'completed' %}<span class="badge bg-success">مكتمل</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ order.scheduled_date|default:"-" }}</td>
+                    <td>
+                        <a href="{% url 'concrete_production:production_order_detail' pk=order.pk %}" class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="10" class="text-center text-muted p-4">لا توجد أوامر إنتاج</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if orders.has_other_pages %}
+    <div class="card-footer">
+        <nav><ul class="pagination mb-0 justify-content-center">
+            {% if orders.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ orders.previous_page_number }}">السابق</a></li>{% endif %}
+            {% for num in orders.paginator.page_range %}
+            <li class="page-item {% if orders.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endfor %}
+            {% if orders.has_next %}<li class="page-item"><a class="page-link" href="?page={{ orders.next_page_number }}">التالي</a></li>{% endif %}
+        </ul></nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

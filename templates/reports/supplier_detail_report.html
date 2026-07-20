@@ -1,0 +1,47 @@
+{% extends "base/base.html" %}
+
+{% block title %}تقرير المورد التفصيلي{% endblock %}
+{% block page_title %}تقرير: {{ supplier.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-truck"></i> بيانات المورد</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>الاسم:</th><td>{{ supplier.name }}</td></tr>
+                    <tr><th>الرقم الضريبي:</th><td>{{ supplier.tax_number|default:"-" }}</td></tr>
+                    <tr><th>إجمالي المشتريات:</th><td class="text-primary"><strong>{{ total_purchases|floatformat:2 }} ج.م</strong></td></tr>
+                    <tr><th>المدفوع:</th><td class="text-success">{{ total_paid|floatformat:2 }} ج.م</td></tr>
+                    <tr><th>المتبقي:</th><td class="text-danger">{{ total_remaining|floatformat:2 }} ج.م</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-shopping-cart"></i> فواتير المشتريات</div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>ضريبية</th><th>المبلغ</th><th>VAT</th><th>الإجمالي</th><th>المدفوع</th><th>المتبقي</th></tr></thead>
+                    <tbody>
+                        {% for invoice in invoices %}
+                        <tr>
+                            <td>{{ invoice.invoice_number }}</td>
+                            <td>{{ invoice.date|date:"d/m/Y" }}</td>
+                            <td>{% if invoice.is_tax_invoice %}<span class="badge bg-success">نعم</span>{% else %}<span class="badge bg-secondary">لا</span>{% endif %}</td>
+                            <td>{{ invoice.subtotal|floatformat:2 }}</td>
+                            <td>{{ invoice.vat_amount|floatformat:2 }}</td>
+                            <td class="text-primary">{{ invoice.total_amount|floatformat:2 }}</td>
+                            <td class="text-success">{{ invoice.paid_amount|floatformat:2 }}</td>
+                            <td class="text-danger">{{ invoice.remaining_amount|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base/base.html" %}
+
+{% block title %}تقرير الخصم والتحصيل{% endblock %}
+{% block page_title %}تقرير ضريبة الخصم والتحصيل{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-percentage"></i> ضريبة الخصم والتحصيل</span>
+        <form method="get" class="d-flex gap-2">
+            <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <strong>ضريبة الخصم والتحصيل:</strong> وفقاً للقانون المصري - النسب: 1% (شركات) / 3% (جهات حكومية) / 5% (مقاولات)
+        </div>
+
+        <div class="row mb-4">
+            {% for rate, data in rate_summary.items %}
+            <div class="col-md-3">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">نسبة {{ rate }}%</h6>
+                        <p class="mb-1">{{ data.count }} فاتورة</p>
+                        <p class="mb-1">المبلغ: {{ data.subtotal|floatformat:2 }}</p>
+                        <h5 class="text-danger">{{ data.amount|floatformat:2 }} ج.م</h5>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>رقم الفاتورة</th>
+                    <th>المورد</th>
+                    <th>التاريخ</th>
+                    <th>المبلغ</th>
+                    <th>النسبة</th>
+                    <th>الضريبة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in withholding_items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.invoice.invoice_number }}</td>
+                    <td>{{ item.invoice.supplier.name }}</td>
+                    <td>{{ item.invoice.date|date:"d/m/Y" }}</td>
+                    <td>{{ item.subtotal|floatformat:2 }}</td>
+                    <td><span class="badge bg-primary">{{ item.rate }}%</span></td>
+                    <td class="text-danger"><strong>{{ item.amount|floatformat:2 }}</strong></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted">لا توجد فواتير في هذه الفترة</td></tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="table-dark">
+                    <th colspan="4">الإجمالي</th>
+                    <th>{{ total_subtotal|floatformat:2 }}</th>
+                    <th></th>
+                    <th class="text-danger">{{ total_withholding|floatformat:2 }} ج.م</th>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="mt-3">
+            <strong>ملاحظات وفقاً للقانون المصري:</strong>
+            <ul>
+                <li>1% على التعاملات مع الشركات</li>
+                <li>3% على التعاملات مع الجهات الحكومية</li>
+                <li>5% على التعاملات مع المقاولين</li>
+                <li>تُخصم عند الدفع أو الصرف</li>
+                <li>تُقدَّم في إقرار شهري مع رصد الضريبة</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

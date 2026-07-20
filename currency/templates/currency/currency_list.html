@@ -1,0 +1,44 @@
+{% extends 'base/base.html' %}
+{% load humanize %}
+{% load access_tags %}
+
+{% block title %}العملات وأسعار الصرف{% endblock %}
+{% block page_title %}العملات وأسعار الصرف{% endblock %}
+
+{% block content %}
+{% can_screen 'currency.currency' 'add' as cur_can_add %}
+{% can_screen 'currency.currency' 'edit' as cur_can_edit %}
+<div class="mb-3">
+    {% if cur_can_add %}<a href="{% url 'currency:currency_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة عملة</a>{% endif %}
+    <a href="{% url 'currency:exchange_rate_history' %}" class="btn btn-outline-secondary"><i class="fas fa-history"></i> سجل أسعار الصرف</a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white"><i class="fas fa-coins"></i> العملات</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>الكود</th><th>الاسم</th><th>الرمز</th><th>سعر الصرف</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody>
+                {% for c in currencies %}
+                <tr>
+                    <td><code>{{ c.code }}</code></td>
+                    <td>{{ c.name }}</td>
+                    <td>{{ c.symbol }}</td>
+                    <td>{{ c.exchange_rate_to_egp|intcomma }}</td>
+                    <td>
+                        {% if c.is_base %}
+                            <span class="badge bg-warning text-dark">أساسية</span>
+                        {% else %}
+                            <span class="badge bg-success">نشط</span>
+                        {% endif %}
+                    </td>
+                    <td>{% if cur_can_edit %}<a href="{% url 'currency:currency_edit' c.pk %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-4 text-muted">لا توجد عملات بعد</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

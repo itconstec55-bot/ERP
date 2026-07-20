@@ -1,0 +1,66 @@
+{% extends "base/base.html" %}
+{% block title %}الدفعات الإنتاجية{% endblock %}
+{% block page_title %}<i class="fas fa-industry me-2"></i>الدفعات الإنتاجية{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <select class="form-select" style="width: 150px;" onchange="location.href='?status='+this.value">
+            <option value="">الكل</option>
+            <option value="queued" {% if status == 'queued' %}selected{% endif %}>في الانتظار</option>
+            <option value="mixing" {% if status == 'mixing' %}selected{% endif %}>جاري الخلط</option>
+            <option value="in_transit" {% if status == 'in_transit' %}selected{% endif %}>في الطريق</option>
+            <option value="pouring" {% if status == 'pouring' %}selected{% endif %}>جاري الصب</option>
+            <option value="completed" {% if status == 'completed' %}selected{% endif %}>مكتمل</option>
+        </select>
+        <a href="{% url 'concrete_production:batch_create' %}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i> دفعة جديدة
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-3">رقم الدفعة</th>
+                    <th>أمر الإنتاج</th>
+                    <th>العميل</th>
+                    <th>الشاحنة</th>
+                    <th>المطلوب</th>
+                    <th>الفعلي</th>
+                    <th>الحالة</th>
+                    <th>التأخير</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for batch in batches %}
+                <tr>
+                    <td class="ps-3 fw-bold">{{ batch.batch_number }}</td>
+                    <td><a href="{% url 'concrete_production:production_order_detail' pk=batch.production_order.pk %}">{{ batch.production_order.order_number }}</a></td>
+                    <td>{{ batch.production_order.customer_request.customer.name }}</td>
+                    <td>{{ batch.truck.plate_number|default:"-" }}</td>
+                    <td>{{ batch.quantity_m3 }} م³</td>
+                    <td>{{ batch.actual_quantity_m3 }} م³</td>
+                    <td>
+                        {% if batch.status == 'completed' %}<span class="badge bg-success">مكتمل</span>
+                        {% elif batch.status == 'in_transit' %}<span class="badge bg-info">في الطريق</span>
+                        {% elif batch.status == 'pouring' %}<span class="badge bg-primary">جاري الصب</span>
+                        {% elif batch.status == 'mixing' %}<span class="badge bg-warning">جاري الخلط</span>
+                        {% else %}<span class="badge bg-secondary">{{ batch.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if batch.transit_duration %}
+                        <small>{{ batch.transit_duration }}</small>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td><a href="{% url 'concrete_production:batch_detail' pk=batch.pk %}" class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center text-muted p-4">لا توجد دفعات</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

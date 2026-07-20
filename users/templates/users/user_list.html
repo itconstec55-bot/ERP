@@ -1,0 +1,83 @@
+{% extends 'base/base.html' %}
+{% load access_tags %}
+
+{% block title %}المستخدمين{% endblock %}
+{% block page_title %}إدارة المستخدمين{% endblock %}
+
+{% block content %}
+{% can_screen 'system.users' 'add' as usr_can_add %}
+{% can_screen 'system.users' 'edit' as usr_can_edit %}
+{% can_screen 'system.users' 'delete' as usr_can_delete %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        {% if usr_can_add %}
+        <a href="{% url 'users:user_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إضافة مستخدم
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <i class="fas fa-users"></i> المستخدمين ({{ users|length }})
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>المستخدم</th>
+                        <th>الاسم الكامل</th>
+                        <th>البريد</th>
+                        <th>الحالة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ u.username }}</strong></td>
+                        <td>{{ u.get_full_name|default:"-" }}</td>
+                        <td>{{ u.email|default:"-" }}</td>
+                        <td>
+                            {% if u.is_superuser %}
+                                <span class="badge bg-warning text-dark"><i class="fas fa-crown"></i> مدير</span>
+                            {% elif u.is_staff %}
+                                <span class="badge bg-info"><i class="fas fa-user-shield"></i> موظف</span>
+                            {% elif u.is_active %}
+                                <span class="badge bg-success"><i class="fas fa-check"></i> نشط</span>
+                            {% else %}
+                                <span class="badge bg-danger"><i class="fas fa-times"></i> غير نشط</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                {% if usr_can_edit or u == request.user %}
+                                <a href="{% url 'users:user_edit' u.pk %}" class="btn btn-outline-primary" title="تعديل">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'users:change_password' u.pk %}" class="btn btn-outline-warning" title="تغيير كلمة المرور">
+                                    <i class="fas fa-key"></i>
+                                </a>
+                                {% endif %}
+                                {% if usr_can_delete and u != request.user %}
+                                <form method="post" action="{% url 'users:user_delete' u.pk %}" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا المستخدم؟')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

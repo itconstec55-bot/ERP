@@ -1,0 +1,135 @@
+{% extends 'base/base.html' %}
+
+{% block title %}إعدادات الربط{% endblock %}
+{% block page_title %}إعدادات الربط والمزامنة{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-network-wired"></i> إعدادات الربط
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <h6>معلومات الجهاز</h6>
+                        <div class="alert alert-info">
+                            <strong>معرف الجهاز:</strong> <code>{{ machine.machine_id }}</code><br>
+                            <strong>الاسم:</strong> {{ machine.name }}<br>
+                            <strong>مفتاح API:</strong> <code>{{ machine.api_key|truncatechars:20 }}...</code>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            {{ form.auto_sync_enabled }}
+                            <label class="form-check-label" for="{{ form.auto_sync_enabled.id_for_label }}">
+                                تفعيل المزامنة التلقائية
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            {{ form.sync_on_startup }}
+                            <label class="form-check-label" for="{{ form.sync_on_startup.id_for_label }}">
+                                مزامنة عند بدء التشغيل
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">فترة المزامنة (دقائق)</label>
+                        {{ form.sync_interval_minutes }}
+                    </div>
+
+                    <hr>
+
+                    <h6>إعدادات الاتصال بالـ Host</h6>
+                    <p class="text-muted small">أدخل هذه الإعدادات فقط إذا كان هذا الجهاز <strong>Client</strong></p>
+
+                    <div class="mb-3">
+                        <label class="form-label">عنوان IP للـ Host</label>
+                        {{ form.host_address }}
+                        <small class="text-muted">مثال: 192.168.1.100 أو myserver.ddns.net</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Port الـ Host</label>
+                        {{ form.host_port }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">مفتاح الربط</label>
+                        {{ form.sync_key }}
+                        <small class="text-muted">يجب أن يكون مطابقاً لمفتاح الـ Host</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-save"></i> حفظ الإعدادات
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-info-circle"></i> دليل الإعداد
+            </div>
+            <div class="card-body">
+                <h6 class="text-primary">الجهاز الأول (Host):</h6>
+                <ol class="small">
+                    <li>اترك نوع الجهاز كـ "مستقل" أو اختر "Host"</li>
+                    <li>تأكد أن السيرفر يعمل على Port 8000</li>
+                    <li>افتح الـ Port في الفايروول</li>
+                    <li>اعطِ الجهاز الآخر مفتاح الـ API</li>
+                </ol>
+
+                <h6 class="text-success mt-3">الجهاز الثاني (Client):</h6>
+                <ol class="small">
+                    <li>ادخل عنوان IP للـ Host</li>
+                    <li>ادخل Port الـ Host (8000)</li>
+                    <li>ادخل مفتاح الـ API من الـ Host</li>
+                    <li>اضغط "اختبار الاتصال"</li>
+                    <li>اضغط "مزامنة الآن"</li>
+                </ol>
+
+                <h6 class="text-warning mt-3">ملاحظات مهمة:</h6>
+                <ul class="small text-muted">
+                    <li>يجب أن يكون الجهازين على نفس الشبكة (LAN) أو متوصلين عبر الإنترنت</li>
+                    <li>للإنترنت: افتح Port 800-forward على الراوتر</li>
+                    <li>مفتاح الـ API هو كلمة سر الربط بين الجهازين</li>
+                    <li>البيانات تُرسل كـ JSON مشفر</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <i class="fas fa-shield-alt"></i> الأمان
+            </div>
+            <div class="card-body">
+                <h6>تشفير الاتصال:</h6>
+                <p class="small text-muted">جميع البيانات تُرسل عبر HTTP. للإنتاج، يُنصح باستخدام HTTPS.</p>
+
+                <h6>مفتاح API:</h6>
+                <p class="small text-muted">مفتاح عشوائي من 64 حرف يُستخدم للمصادقة بين الأجهزة.</p>
+
+                <h6>صلاحيات الوصول:</h6>
+                <ul class="small text-muted">
+                    <li>API push/pull يتطلب مفتاح API صالح</li>
+                    <li>صفحة الإعدادات تتطلب تسجيل دخول</li>
+                    <li>المزامنة التلقائية يمكن تفعيلها/تعطيلها</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{% if rj %}تعديل قيد دوري{% else %}قيد دوري جديد{% endif %}{% endblock %}
+{% block page_title %}{% if rj %}تعديل: {{ rj.name }}{% else %}قيد دوري جديد{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-sync-alt"></i> بيانات القيد الدوري</div>
+            <div class="card-body">
+                <form method="post" id="recurringForm">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-4"><label class="form-label">الاسم</label><input type="text" name="name" class="form-control" value="{{ rj.name|default:'' }}" required></div>
+                        <div class="col-md-3"><label class="form-label">التكرار</label>
+                            <select name="frequency" class="form-select" required>
+                                <option value="monthly" {% if rj.frequency == 'monthly' %}selected{% endif %}>شهري</option>
+                                <option value="weekly" {% if rj.frequency == 'weekly' %}selected{% endif %}>أسبوعي</option>
+                                <option value="quarterly" {% if rj.frequency == 'quarterly' %}selected{% endif %}>ربع سنوي</option>
+                                <option value="yearly" {% if rj.frequency == 'yearly' %}selected{% endif %}>سنوي</option>
+                                <option value="daily" {% if rj.frequency == 'daily' %}selected{% endif %}>يومي</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2"><label class="form-label">يوم الشهر</label><input type="number" name="day_of_month" class="form-control" value="{{ rj.day_of_month|default:'1' }}" min="1" max="28"></div>
+                        <div class="col-md-3"><label class="form-label">التاريخ التالي</label><input type="date" name="next_due_date" class="form-control" value="{{ rj.next_due_date|default:'' }}" required></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4"><label class="form-label">نوع القيد</label>
+                            <select name="journal_type" class="form-select">
+                                <option value="general" {% if rj.journal_type == 'general' %}selected{% endif %}>قيد عام</option>
+                                <option value="receipt" {% if rj.journal_type == 'receipt' %}selected{% endif %}>قبض</option>
+                                <option value="payment" {% if rj.journal_type == 'payment' %}selected{% endif %}>صرف</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4"><label class="form-label">المرجع</label><input type="text" name="reference" class="form-control" value="{{ rj.reference|default:'' }}"></div>
+                        {% if rj %}<div class="col-md-4"><label class="form-label">الحالة</label>
+                            <select name="status" class="form-select">
+                                <option value="active" {% if rj.status == 'active' %}selected{% endif %}>نشط</option>
+                                <option value="paused" {% if rj.status == 'paused' %}selected{% endif %}>متوقف</option>
+                            </select>
+                        </div>{% endif %}
+                    </div>
+                    <div class="mb-3"><label class="form-label">الوصف</label><textarea name="description" class="form-control" rows="2">{{ rj.description|default:'' }}</textarea></div>
+
+                    <h6 class="text-primary mb-3"><i class="fas fa-list"></i> بنود القيد</h6>
+                    <div id="linesContainer">
+                        <table class="table table-sm" id="linesTable">
+                            <thead><tr><th>الحساب</th><th>البيان</th><th>المدين</th><th>الدائن</th><th></th></tr></thead>
+                            <tbody>
+                                {% if existing_lines %}
+                                    {% for line in existing_lines %}
+                                    <tr>
+                                        <td><select name="line_account" class="form-select form-select-sm" required>{% for a in accounts %}<option value="{{ a.pk }}" {% if line.account_id == a.pk %}selected{% endif %}>{{ a.code }} - {{ a.name }}</option>{% endfor %}</select></td>
+                                        <td><input type="text" name="line_description" class="form-control form-control-sm" value="{{ line.description }}"></td>
+                                        <td><input type="number" name="line_debit" class="form-control form-control-sm" step="0.01" value="{{ line.debit }}"></td>
+                                        <td><input type="number" name="line_credit" class="form-control form-control-sm" step="0.01" value="{{ line.credit }}"></td>
+                                        <td><button type="button" class="btn btn-sm btn-outline-danger remove-line"><i class="fas fa-times"></i></button></td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td><select name="line_account" class="form-select form-select-sm" required>{% for a in accounts %}<option value="{{ a.pk }}">{{ a.code }} - {{ a.name }}</option>{% endfor %}</select></td>
+                                        <td><input type="text" name="line_description" class="form-control form-control-sm"></td>
+                                        <td><input type="number" name="line_debit" class="form-control form-control-sm" step="0.01" value="0"></td>
+                                        <td><input type="number" name="line_credit" class="form-control form-control-sm" step="0.01" value="0"></td>
+                                        <td><button type="button" class="btn btn-sm btn-outline-danger remove-line"><i class="fas fa-times"></i></button></td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-success mb-3" onclick="addLine()"><i class="fas fa-plus"></i> إضافة بند</button>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+                        <a href="{% url 'recurring:recurring_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function addLine() {
+    var tbody = document.querySelector('#linesTable tbody');
+    var firstRow = tbody.querySelector('tr');
+    var newRow = firstRow.cloneNode(true);
+    newRow.querySelectorAll('input').forEach(function(i) { i.value = ''; });
+    tbody.appendChild(newRow);
+}
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-line') || e.target.closest('.remove-line')) {
+        var row = e.target.closest('tr');
+        if (document.querySelectorAll('#linesTable tbody tr').length > 1) row.remove();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}قيد محاسبي جديد{% endblock %}
+{% block page_title %}إنشاء قيد محاسبي جديد{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-journal-whills"></i> بيانات القيد
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">{{ form.entry_type|as_crispy_field }}</div>
+                <div class="col-md-6">{{ form.date|as_crispy_field }}</div>
+            </div>
+            <div class="row">
+                <div class="col-md-8">{{ form.description|as_crispy_field }}</div>
+                <div class="col-md-4">{{ form.reference|as_crispy_field }}</div>
+            </div>
+
+            <h5 class="mt-4 mb-3">بنود القيد</h5>
+            {{ formset.management_form }}
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>الحساب</th>
+                        <th>مدين</th>
+                        <th>دائن</th>
+                        <th>البيان</th>
+                        <th>حذف</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for form in formset %}
+                    <tr>
+                        <td>{{ form.account }}</td>
+                        <td>{{ form.debit }}</td>
+                        <td>{{ form.credit }}</td>
+                        <td>{{ form.description }}</td>
+                        <td>{{ form.DELETE }}</td>
+                        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> حفظ القيد
+                </button>
+                <a href="{% url 'accounts:journal_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-right"></i> رجوع
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

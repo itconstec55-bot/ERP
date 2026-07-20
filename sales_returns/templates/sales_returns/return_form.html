@@ -1,0 +1,91 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}إنشاء مرتجع مبيعات{% endblock %}
+{% block page_title %}مرتجع مبيعات جديد{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white"><i class="fas fa-plus"></i> بيانات المرتجع</div>
+    <div class="card-body">
+        <form method="post" id="returnForm">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">رقم المرتجع *</label>
+                    <input type="text" name="return_number" class="form-control" value="{{ next_number }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">التاريخ *</label>
+                    <input type="date" name="date" class="form-control" value="{% now 'Y-m-d' %}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">العميل *</label>
+                    <select name="customer" class="form-select" required>
+                        <option value="">اختر العميل</option>
+                        {% for c in customers %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">سبب المرتجع</label>
+                    <textarea name="reason" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+
+            <h5 class="mt-4 mb-3"><i class="fas fa-boxes"></i> بنود المرتجع</h5>
+            <table class="table table-bordered" id="linesTable">
+                <thead class="table-light">
+                    <tr><th>المنتج</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي</th><th></th></tr>
+                </thead>
+                <tbody>
+                    <tr class="line-row">
+                        <td><select name="product" class="form-select form-select-sm"><option value="">اختر</option>{% for p in products %}<option value="{{ p.pk }}">{{ p.name }}</option>{% endfor %}</select></td>
+                        <td><input type="number" step="0.01" name="quantity" class="form-control form-control-sm qty" value="1"></td>
+                        <td><input type="number" step="0.01" name="unit_price" class="form-control form-control-sm price" value="0"></td>
+                        <td class="line-total">0</td>
+                        <td><button type="button" class="btn btn-danger btn-sm remove-line"><i class="fas fa-times"></i></button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="addLine"><i class="fas fa-plus"></i> إضافة بند</button>
+
+            <div class="text-end mb-3">
+                <h5>المجموع الفرعي: <span id="subtotal">0</span> ج.م</h5>
+                <h5>VAT 14%: <span id="vat">0</span> ج.م</h5>
+                <h4 class="text-primary">الإجمالي: <span id="total">0</span> ج.م</h4>
+            </div>
+
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+            <a href="{% url 'sales_returns:list' %}" class="btn btn-secondary">إلغاء</a>
+        </form>
+    </div>
+</div>
+
+<script>
+function calcTotals() {
+    let subtotal = 0;
+    document.querySelectorAll('.line-row').forEach(row => {
+        const qty = parseFloat(row.querySelector('.qty').value) || 0;
+        const price = parseFloat(row.querySelector('.price').value) || 0;
+        const total = qty * price;
+        row.querySelector('.line-total').textContent = total.toLocaleString('ar-EG', {minimumFractionDigits: 2});
+        subtotal += total;
+    });
+    const vat = subtotal * 0.14;
+    document.getElementById('subtotal').textContent = subtotal.toLocaleString('ar-EG', {minimumFractionDigits: 2});
+    document.getElementById('vat').textContent = vat.toLocaleString('ar-EG', {minimumFractionDigits: 2});
+    document.getElementById('total').textContent = (subtotal + vat).toLocaleString('ar-EG', {minimumFractionDigits: 2});
+}
+document.querySelectorAll('.qty, .price').forEach(el => el.addEventListener('input', calcTotals));
+document.getElementById('addLine').addEventListener('click', function() {
+    const row = document.querySelector('.line-row').cloneNode(true);
+    row.querySelectorAll('input').forEach(i => i.value = i.name === 'quantity' ? '1' : '0');
+    row.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+    row.querySelector('.line-total').textContent = '0';
+    document.querySelector('#linesTable tbody').appendChild(row);
+    row.querySelectorAll('.qty, .price').forEach(el => el.addEventListener('input', calcTotals));
+    row.querySelector('.remove-line').addEventListener('click', function() { this.closest('tr').remove(); calcTotals(); });
+});
+document.querySelectorAll('.remove-line').forEach(btn => btn.addEventListener('click', function() { this.closest('tr').remove(); calcTotals(); }));
+</script>
+{% endblock %}

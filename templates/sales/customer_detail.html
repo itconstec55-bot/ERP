@@ -1,0 +1,59 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل العميل{% endblock %}
+{% block page_title %}{{ customer.code }} - {{ customer.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white"><i class="fas fa-info-circle"></i> بيانات العميل</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>الكود:</th><td>{{ customer.code }}</td></tr>
+                    <tr><th>الاسم:</th><td>{{ customer.name }}</td></tr>
+                    <tr><th>النوع:</th><td>{{ customer.get_customer_type_display }}</td></tr>
+                    <tr><th>رقم الضريبة:</th><td>{{ customer.tax_number|default:"-" }}</td></tr>
+                    <tr><th>التليفون:</th><td>{{ customer.phone|default:"-" }}</td></tr>
+                    <tr><th>المحمول:</th><td>{{ customer.mobile|default:"-" }}</td></tr>
+                    <tr><th>الرصيد:</th>
+                        <td class="text-success"><strong>{{ customer.current_balance|floatformat:2 }} ج.م</strong></td>
+                    </tr>
+                </table>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'sales:customer_edit' pk=customer.pk %}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> تعديل</a>
+                    {% if customer.mobile or customer.phone %}
+                    <a href="{% url 'sales:customer_statement_whatsapp' pk=customer.pk %}" class="btn btn-success btn-sm">
+                        <i class="fab fa-whatsapp"></i> كشف الحساب واتساب
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-cash-register"></i> فواتير المبيعات</div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>الإجمالي</th><th>المحصّل</th><th>المتبقي</th><th>الربح</th></tr></thead>
+                    <tbody>
+                        {% for invoice in invoices %}
+                        <tr>
+                            <td><a href="{% url 'sales:invoice_detail' pk=invoice.pk %}">{{ invoice.invoice_number }}</a></td>
+                            <td>{{ invoice.date|date:"d/m/Y" }}</td>
+                            <td>{{ invoice.total_amount|floatformat:2 }}</td>
+                            <td class="text-success">{{ invoice.paid_amount|floatformat:2 }}</td>
+                            <td class="text-danger">{{ invoice.remaining_amount|floatformat:2 }}</td>
+                            <td class="text-primary">{{ invoice.gross_profit|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted">لا توجد فواتير</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

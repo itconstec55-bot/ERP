@@ -1,0 +1,82 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}الموازنة مقابل الفعلي{% endblock %}
+{% block page_title %}تقرير الموازنة مقابل الفعلي{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/print.css' %}" rel="stylesheet">
+<style>
+    @media screen { .print-header-wrapper, .print-footer-wrapper { display: none; } }
+    @media print { .print-header-wrapper, .print-footer-wrapper { display: block !important; } }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'components/print_header.html' with doc_title='تقرير الموازنة مقابل الفعلي' doc_date=date_to %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between flex-wrap gap-2">
+        <span><i class="fas fa-balance-scale"></i> الموازنة مقابل الفعلي ({{ year }}{% if month %} - {% for m,l in months %}{% if m == month %}{{ l }}{% endif %}{% endfor %}{% endif %})</span>
+        <form method="get" class="d-flex gap-2 flex-wrap">
+            <select name="year" class="form-select form-select-sm" style="width:auto">
+                {% for y in years %}
+                <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+            <select name="month" class="form-select form-select-sm" style="width:auto">
+                <option value="">كل الشهور</option>
+                {% for m,l in months %}
+                <option value="{{ m }}" {% if m == month %}selected{% endif %}>{{ l }}</option>
+                {% endfor %}
+            </select>
+            <select name="cost_center" class="form-select form-select-sm" style="width:auto">
+                <option value="">كل مراكز التكلفة</option>
+                {% for cc in cost_centers %}
+                <option value="{{ cc.id }}" {% if cc.id|stringformat:'s' == selected_cost_center %}selected{% endif %}>{{ cc.code }} - {{ cc.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+            <a href="{% url 'reports:export_report' 'budget-vs-actual' %}?year={{ year }}&month={{ month|default:'' }}&cost_center={{ selected_cost_center|default:'' }}" class="btn btn-success btn-sm"><i class="fas fa-file-excel"></i></a>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>الكود</th><th>الحساب</th><th>المخطط</th>
+                        <th>الفعلي</th><th>الفرق</th><th>نسبة الفرق %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in rows %}
+                    <tr>
+                        <td>{{ r.account_code }}</td>
+                        <td>{{ r.account_name }}</td>
+                        <td class="text-end">{{ r.planned|floatformat:2 }}</td>
+                        <td class="text-end">{{ r.actual|floatformat:2 }}</td>
+                        <td class="text-end {% if r.variance < 0 %}text-danger{% else %}text-success{% endif %}">
+                            <strong>{{ r.variance|floatformat:2 }}</strong>
+                        </td>
+                        <td class="text-end">{{ r.variance_pct|floatformat:1 }}%</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted">لا توجد موازنات لهذه الفترة</td></tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-primary">
+                    <tr>
+                        <th colspan="2">الإجمالي</th>
+                        <th class="text-end">{{ total_budgeted|floatformat:2 }}</th>
+                        <th class="text-end">{{ total_actual|floatformat:2 }}</th>
+                        <th class="text-end">{{ total_variance|floatformat:2 }}</th>
+                        <th class="text-end">{{ total_variance_pct|floatformat:1 }}%</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <p class="text-muted small mb-0">النطاق المحاسبي: من {{ date_from|date:"Y-m-d" }} إلى {{ date_to|date:"Y-m-d" }}</p>
+    </div>
+</div>
+{% include 'components/print_footer.html' %}
+{% endblock %}

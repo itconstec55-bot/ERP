@@ -1,0 +1,72 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل الموظف{% endblock %}
+{% block page_title %}{{ employee.full_name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white"><i class="fas fa-id-badge"></i> بيانات الموظف</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>الرقم:</th><td>{{ employee.employee_number }}</td></tr>
+                    <tr><th>الاسم:</th><td>{{ employee.full_name }}</td></tr>
+                    <tr><th>رقم الهوية:</th><td>{{ employee.national_id }}</td></tr>
+                    <tr><th>الجنس:</th><td>{{ employee.get_gender_display }}</td></tr>
+                    <tr><th>الحالة الاجتماعية:</th><td>{{ employee.get_marital_status_display }}</td></tr>
+                    <tr><th>القسم:</th><td>{{ employee.department|default:"-" }}</td></tr>
+                    <tr><th>الوظيفة:</th><td>{{ employee.position }}</td></tr>
+                    <tr><th>تاريخ التعيين:</th><td>{{ employee.hire_date|date:"d/m/Y" }}</td></tr>
+                    <tr><th>الراتب:</th><td class="text-primary"><strong>{{ employee.salary|floatformat:2 }} ج.م</strong></td></tr>
+                </table>
+                <a href="{% url 'hr:employee_edit' pk=employee.pk %}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> تعديل</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-calendar-check"></i> آخر الحضور</div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead><tr><th>التاريخ</th><th>الحالة</th><th>الحضور</th><th>الانصراف</th></tr></thead>
+                    <tbody>
+                        {% for att in attendances %}
+                        <tr>
+                            <td>{{ att.date|date:"d/m" }}</td>
+                            <td><span class="badge bg-{% if att.status == 'present' %}success{% elif att.status == 'absent' %}danger{% elif att.status == 'late' %}warning{% else %}info{% endif %}">{{ att.get_status_display }}</span></td>
+                            <td>{{ att.check_in|time:"H:i" }}</td>
+                            <td>{{ att.check_out|time:"H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center text-muted">لا توجد سجلات</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-money-check-alt"></i> آخر الرواتب</div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead><tr><th>الفترة</th><th>الإجمالي</th><th>الخصومات</th><th>الصافي</th></tr></thead>
+                    <tbody>
+                        {% for sal in salaries %}
+                        <tr>
+                            <td>{{ sal.month }}/{{ sal.year }}</td>
+                            <td>{{ sal.basic_salary|floatformat:0 }}</td>
+                            <td class="text-danger">{{ sal.deductions|add:sal.social_insurance|add:sal.income_tax|floatformat:0 }}</td>
+                            <td class="text-success">{{ sal.net_salary|floatformat:0 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center text-muted">لا توجد رواتب</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل طلب الإجازة{% endblock %}
+{% block page_title %}تفاصيل طلب الإجازة{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-calendar-alt"></i> طلب إجازة — {{ leave.employee.full_name }}</span>
+        <div>
+            {% if leave.status == 'pending' %}
+            <form method="post" action="{% url 'hr:leave_approve' pk=leave.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> اعتماد</button>
+            </form>
+            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="collapse" data-bs-target="#rejectForm"><i class="fas fa-times"></i> رفض</button>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>بيانات الموظف</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>الموظف</strong></td><td><a href="{% url 'hr:employee_detail' pk=leave.employee.pk %}">{{ leave.employee.full_name }}</a></td></tr>
+                    <tr><td><strong>نوع الإجازة</strong></td><td>{{ leave.leave_type.name }}</td></tr>
+                    <tr><td><strong>من تاريخ</strong></td><td>{{ leave.start_date|date:"d/m/Y" }}</td></tr>
+                    <tr><td><strong>إلى تاريخ</strong></td><td>{{ leave.end_date|date:"d/m/Y" }}</td></tr>
+                    <tr><td><strong>عدد الأيام</strong></td><td>{{ leave.days }}</td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6>الحالة</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>الحالة</strong></td><td>
+                        {% if leave.status == 'pending' %}<span class="badge bg-warning">قيد المراجعة</span>
+                        {% elif leave.status == 'approved' %}<span class="badge bg-success">معتمدة</span>
+                        {% elif leave.status == 'rejected' %}<span class="badge bg-danger">مرفوضة</span>
+                        {% else %}<span class="badge bg-secondary">{{ leave.get_status_display }}</span>{% endif %}
+                    </td></tr>
+                    <tr><td><strong>اعتمد بواسطة</strong></td><td>{{ leave.approved_by|default:"-" }}</td></tr>
+                    <tr><td><strong>تاريخ الاعتماد</strong></td><td>{{ leave.approved_date|date:"d/m/Y H:i"|default:"-" }}</td></tr>
+                    {% if leave.rejection_reason %}
+                    <tr><td><strong>سبب الرفض</strong></td><td class="text-danger">{{ leave.rejection_reason }}</td></tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+        {% if leave.reason %}
+        <p><strong>السبب:</strong> {{ leave.reason }}</p>
+        {% endif %}
+
+        {% if leave.status == 'pending' %}
+        <div class="collapse mt-3" id="rejectForm">
+            <div class="card card-body">
+                <form method="post" action="{% url 'hr:leave_reject' pk=leave.pk %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label"><strong>سبب الرفض</strong></label>
+                        <textarea name="rejection_reason" class="form-control" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> تأكيد الرفض</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
