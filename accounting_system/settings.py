@@ -252,6 +252,13 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Logging Configuration
+# تأكد من وجود مجلد logs قبل إعداد الـ handlers (تفادياً لفشل RotatingFileHandler)
+_LOGS_DIR = BASE_DIR / 'logs'
+try:
+    _LOGS_DIR.mkdir(parents=True, exist_ok=True)
+except OSError:
+    pass
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
