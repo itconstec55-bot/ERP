@@ -198,3 +198,49 @@ Reinstall dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+
+---
+
+## Method 5: Automated CI/CD Deployment (GitHub Actions → Docker on a Linux server)
+
+The repository includes `.github/workflows/ci.yml` which, on every push to `main`/`develop`, runs lint + tests, builds static files, then deploys via SSH using Docker Compose. Deployment is **skipped automatically** if the deploy secrets are not configured (the pipeline stays green).
+
+### Required GitHub repository secrets (Settings → Secrets and variables → Actions)
+| Secret | Value |
+|--------|-------|
+| `DEPLOY_HOST` | Public IP or hostname of the Linux server |
+| `DEPLOY_USER` | SSH user on the server (e.g. `deploy`) |
+| `DEPLOY_SSH_KEY` | Full private key (`-----BEGIN OPENSSH PRIVATE KEY-----` … `-----END…-----`) |
+| `DEPLOY_PORT` | Optional, default `22` |
+| `DEPLOY_PATH` | Optional, default `~/erp` |
+
+### Prepare the server once
+Use the provided script `deploy/server_setup.sh` (run as root on Ubuntu 22.04+). It installs Docker, creates the `deploy` user, generates the SSH deploy key (print its private part into `DEPLOY_SSH_KEY`), clones the repo to `~/erp`, and writes a starter `.env`.
+
+```bash
+sudo bash deploy/server_setup.sh
+cat /home/deploy/.ssh/erp_deploy_key   # copy this into GitHub secret DEPLOY_SSH_KEY
+# then edit /home/deploy/erp/.env and set a strong DJANGO_SECRET_KEY
+```
+
+### What the deploy step runs on the server
+```bash
+cd ~/erp
+git pull --ff-only origin main        # or develop
+docker compose pull
+docker compose up -d --build
+docker compose exec -T web python manage.py migrate --noinput
+docker compose exec -T web python manage.py collectstatic --noinput
+docker compose ps
+```
+
+### Local verification (no remote server required)
+The deploy path was verified locally by running the same steps Django-side:
+```bash
+python manage.py migrate --noinput
+python manage.py collectstatic --noinput
+# with DJANGO_DEBUG=false and a strong DJANGO_SECRET_KEY
+python manage.py runserver 127.0.0.1:8012
+# /monitoring/ and /accounts/login/ both return HTTP 200
+```
+Note: `gunicorn` only runs inside the Linux container (it imports Unix-only `fcntl`); the Dockerfile handles this correctly.
