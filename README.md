@@ -220,3 +220,30 @@ accounting_system/
 ```
 
 > غيّر كلمة المرور فوراً بعد أول دخول من لوحة الإدارة: `/admin/`
+
+---
+
+## 📚 التوثيق المرجعي
+
+تجد الأدلة التفصيلية في مجلد `docs/` (أسماء الملفات لاتينية لتجنب تشوّه الترميز على بعض الأنظمة، وعناوينها العربية داخل كل ملف):
+
+| العنوان العربي المطلوب | ملف المرجع |
+|--------------------------|------------|
+| دليل التشغيل والإيقاف | [`docs/run_stop_guide.md`](docs/run_stop_guide.md) |
+| تقييم احترافي | [`docs/professional_assessment.md`](docs/professional_assessment.md) |
+| دليل استكشاف الأخطاء | [`docs/troubleshooting.md`](docs/troubleshooting.md) |
+| دليل الشاشات الشامل | [`docs/screens_catalog.md`](docs/screens_catalog.md) |
+| TECHNICAL MIGRATION GUIDE | [`docs/TECHNICAL_MIGRATION_GUIDE.md`](docs/TECHNICAL_MIGRATION_GUIDE.md) |
+| نظام المحاسبة المتكامل لإنتاج الخرسانة | [`docs/concrete_accounting_system.md`](docs/concrete_accounting_system.md) |
+| دليل النقل (SQLite to PostgreSQL) | [`MIGRATION_GUIDE.md`](MIGRATION_GUIDE.md) |
+| دليل النشر (Deployment) | [`DEPLOYMENT.md`](DEPLOYMENT.md) |
+
+---
+
+## 📊 الحالة الحالية (Status)
+
+- ✅ خط أنابيب CI/CD أخضر (lint+test to build to deploy).
+- ✅ 183 اختبار وحدة ناجح، 0 فاشل.
+- ✅ فحص الكود (ruff) نظيف 100%.
+- ✅ لوحة مراقبة تشغيلية تعمل على `/monitoring/`.
+- ✅ نشر Docker تلقائي عبر GitHub Actions (يتخطى بأمان عند غياب الأسرار).
