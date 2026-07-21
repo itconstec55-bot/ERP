@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل التشغيل والإيقاف - نظام المحاسبة المتكامل</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Cairo:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #1c2333;
+            --bg-card: #1a1f2e;
+            --bg-code: #0d1117;
+            --gold-primary: #d4a843;
+            --gold-light: #f0d68a;
+            --gold-dark: #b8912e;
+            --gold-muted: #a3862d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #636c76;
+            --border-color: #30363d;
+            --border-gold: rgba(212, 168, 67, 0.3);
+            --success: #3fb950;
+            --warning: #d29922;
+            --danger: #f85149;
+            --info: #58a6ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Cairo', 'Noto Kufi Arabic', Tahoma, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.8;
+            direction: rtl;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--gold-dark);
+            border-radius: 4px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 50%, #1a1520 100%);
+            border-bottom: 2px solid var(--gold-primary);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(212, 168, 67, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .header-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .header h1 {
+            font-family: 'Noto Kufi Arabic', 'Cairo', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--gold-light);
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .header .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            position: relative;
+        }
+
+        .header .version-badge {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.3rem 1rem;
+            background: rgba(212, 168, 67, 0.15);
+            border: 1px solid var(--border-gold);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--gold-primary);
+            position: relative;
+        }
+
+        /* Navigation */
+        .nav-container {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav a:hover {
+            color: var(--gold-light);
+            background: rgba(212, 168, 67, 0.1);
+            border-color: var(--border-gold);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--border-gold);
+        }
+
+        .section-number {
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
+            color: var(--bg-primary);
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-family: 'Noto Kufi Arabic', 'Cairo', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--gold-light);
+        }
+
+        .section-subtitle {
+            font-family: 'Noto Kufi Arabic', 'Cairo', serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gold-primary);
+            margin: 2rem 0 1rem 0;
+            padding-right: 1rem;
+            border-right: 3px solid var(--gold-primary);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: border-color 0.3s;
+        }
+
+        .card:hover {
+            border-color: var(--border-gold);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gold-light);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Requirements Grid */
+        .requirements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .req-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: all 0.2s;
+        }
+
+        .req-item:hover {
+            border-color: var(--border-gold);
+            transform: translateY(-1px);
+        }
+
+        .req-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(212, 168, 67, 0.12);
+            border: 1px solid var(--border-gold);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .req-info h4 {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            margin-bottom: 0.2rem;
+        }
+
+        .req-info p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Steps */
+        .steps {
+            counter-reset: step-counter;
+        }
+
+        .step {
+            counter-increment: step-counter;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.2rem 1.2rem 1.2rem 3.5rem;
+            margin-bottom: 0.8rem;
+            position: relative;
+            transition: border-color 0.2s;
+        }
+
+        .step:hover {
+            border-color: var(--border-gold);
+        }
+
+        .step::before {
+            content: counter(step-counter);
+            position: absolute;
+            right: 1rem;
+            top: 1.2rem;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
+            color: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .step-content h4 {
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.4rem;
+        }
+
+        .step-content p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Code Blocks */
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.15rem 0.5rem;
+            font-size: 0.88rem;
+            color: var(--gold-light);
+            direction: ltr;
+            unicode-bidi: embed;
+            display: inline-block;
+        }
+
+        .code-block {
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .code-header {
+            background: var(--bg-tertiary);
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-header span {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .code-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .code-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .code-dots span:nth-child(1) { background: #f85149; }
+        .code-dots span:nth-child(2) { background: #d29922; }
+        .code-dots span:nth-child(3) { background: #3fb950; }
+
+        .code-body {
+            padding: 1rem;
+            direction: ltr;
+            unicode-bidi: embed;
+            overflow-x: auto;
+        }
+
+        .code-body code {
+            border: none;
+            padding: 0;
+            background: transparent;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .comment { color: #6e7681; }
+        .cmd { color: var(--gold-light); }
+        .path { color: #79c0ff; }
+        .flag { color: #ff7b72; }
+        .string { color: #a5d6ff; }
+
+        /* Screenshot Placeholder */
+        .screenshot-placeholder {
+            background: var(--bg-tertiary);
+            border: 2px dashed var(--border-gold);
+            border-radius: 12px;
+            padding: 2.5rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            transition: all 0.3s;
+        }
+
+        .screenshot-placeholder:hover {
+            border-color: var(--gold-primary);
+            background: rgba(212, 168, 67, 0.04);
+        }
+
+        .screenshot-icon {
+            font-size: 3rem;
+            margin-bottom: 0.8rem;
+            opacity: 0.6;
+        }
+
+        .screenshot-placeholder h4 {
+            color: var(--gold-primary);
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .screenshot-placeholder p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Info Boxes */
+        .info-box {
+            border-radius: 10px;
+            padding: 1.2rem 1.5rem;
+            margin: 1.2rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .info-box-icon {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            margin-top: 0.2rem;
+        }
+
+        .info-box-content {
+            flex: 1;
+        }
+
+        .info-box-content strong {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-size: 0.95rem;
+        }
+
+        .info-box-content p {
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .info-box-content ul {
+            margin-top: 0.5rem;
+            padding-right: 1.2rem;
+            font-size: 0.9rem;
+        }
+
+        .info-box-content li {
+            margin-bottom: 0.3rem;
+        }
+
+        .info-warning {
+            background: rgba(210, 153, 34, 0.08);
+            border: 1px solid rgba(210, 153, 34, 0.3);
+        }
+
+        .info-warning .info-box-content strong { color: var(--warning); }
+
+        .info-danger {
+            background: rgba(248, 81, 73, 0.08);
+            border: 1px solid rgba(248, 81, 73, 0.3);
+        }
+
+        .info-danger .info-box-content strong { color: var(--danger); }
+
+        .info-success {
+            background: rgba(63, 185, 80, 0.08);
+            border: 1px solid rgba(63, 185, 80, 0.3);
+        }
+
+        .info-success .info-box-content strong { color: var(--success); }
+
+        .info-info {
+            background: rgba(88, 166, 255, 0.08);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+        }
+
+        .info-info .info-box-content strong { color: var(--info); }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .tab {
+            padding: 0.7rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--gold-light);
+        }
+
+        .tab.active {
+            color: var(--gold-primary);
+            border-bottom-color: var(--gold-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1rem 0;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            color: var(--gold-primary);
+            font-weight: 600;
+            padding: 0.8rem 1rem;
+            text-align: right;
+            font-size: 0.9rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(212, 168, 67, 0.03);
+        }
+
+        /* Status Indicators */
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.2rem 0.7rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .status-healthy { background: rgba(63, 185, 80, 0.15); color: var(--success); }
+        .status-healthy .status-dot { background: var(--success); }
+        .status-warning { background: rgba(210, 153, 34, 0.15); color: var(--warning); }
+        .status-warning .status-dot { background: var(--warning); }
+        .status-error { background: rgba(248, 81, 73, 0.15); color: var(--danger); }
+        .status-error .status-dot { background: var(--danger); }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.95rem;
+        }
+
+        .check-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .check-done {
+            background: rgba(63, 185, 80, 0.2);
+            color: var(--success);
+        }
+
+        .check-pending {
+            background: rgba(139, 148, 158, 0.2);
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 2px solid var(--border-gold);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .footer .footer-line {
+            width: 60px;
+            height: 2px;
+            background: var(--gold-primary);
+            margin: 1rem auto;
+        }
+
+        /* Quick Links */
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .quick-link {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.2rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
+        }
+
+        .quick-link:hover {
+            border-color: var(--gold-primary);
+            transform: translateY(-2px);
+        }
+
+        .quick-link-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .quick-link h4 {
+            color: var(--gold-light);
+            font-size: 0.95rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .quick-link p {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header h1 { font-size: 1.6rem; }
+            .requirements-grid { grid-template-columns: 1fr; }
+            .quick-links { grid-template-columns: 1fr; }
+            .nav { gap: 0.3rem; }
+            .nav a { font-size: 0.8rem; padding: 0.3rem 0.7rem; }
+        }
+
+        /* Print */
+        @media print {
+            .nav-container { display: none; }
+            body { background: white; color: #1a1a1a; }
+            .header { border-bottom: 2px solid #333; }
+            .header h1 { color: #333; }
+            .card, .step, .req-item { border: 1px solid #ccc; background: #f9f9f9; }
+            code { background: #f0f0f0; color: #333; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <span class="header-icon">&#128203;</span>
+        <h1>دليل التشغيل والإيقاف</h1>
+        <p class="subtitle">نظام المحاسبة المتكامل</p>
+        <span class="version-badge">الإصدار 2.0 &mdash; آخر تحديث: يوليو 2026</span>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="nav">
+            <a href="#requirements">&#128295; المتطلبات</a>
+            <a href="#methods">&#9881; طرق التشغيل</a>
+            <a href="#stop">&#9209; الإيقاف الآمن</a>
+            <a href="#health">&#128154; فحص الصحة</a>
+            <a href="#troubleshoot">&#128269; استكشاف الأعطال</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+
+        <!-- Title Section -->
+        <div class="section">
+            <div class="quick-links">
+                <a href="#requirements" class="quick-link">
+                    <div class="quick-link-icon">&#128295;</div>
+                    <h4>المتطلبات</h4>
+                    <p>البرامج والأدوات المطلوبة لتشغيل النظام</p>
+                </a>
+                <a href="#dev" class="quick-link">
+                    <div class="quick-link-icon">&#128187;</div>
+                    <h4>تشغيل التطوير</h4>
+                    <p>خطوات تشغيل بيئة التطوير المحلية</p>
+                </a>
+                <a href="#docker" class="quick-link">
+                    <div class="quick-link-icon">&#128203;</div>
+                    <h4>تشغيل Docker</h4>
+                    <p>نشر النظام عبر Docker Compose</p>
+                </a>
+                <a href="#production" class="quick-link">
+                    <div class="quick-link-icon">&#128225;</div>
+                    <h4>تشغيل الإنتاج</h4>
+                    <p>تشغيل Waitress على Windows</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- ===== Section 1: Requirements ===== -->
+        <section id="requirements" class="section">
+            <div class="section-header">
+                <span class="section-number">1</span>
+                <h2 class="section-title">متطلبات التشغيل</h2>
+            </div>
+
+            <div class="info-box info-info">
+                <span class="info-box-icon">&#128161;</span>
+                <div class="info-box-content">
+                    <strong>ملاحظة هامة</strong>
+                    <p>يجب التأكد من تثبيت جميع المتطلبات التالية قبل محاولة تشغيل النظام. يُنصح باستخدام أحدث إصدار متاح لكل برنامج.</p>
+                </div>
+            </div>
+
+            <div class="requirements-grid">
+                <div class="req-item">
+                    <div class="req-icon">&#127920;</div>
+                    <div class="req-info">
+                        <h4>Python 3.12</h4>
+                        <p>بيئة تشغيل لغة بايثون. يُفضّل استخدام أحدث إصدار من Python 3.12 مع pip المحدّث.</p>
+                    </div>
+                </div>
+                <div class="req-item">
+                    <div class="req-icon">&#128451;</div>
+                    <div class="req-info">
+                        <h4>PostgreSQL 15+</h4>
+                        <p>قاعدة البيانات للإنتاج. يمكن استخدام SQLite للتطوير والاختبار.</p>
+                    </div>
+                </div>
+                <div class="req-item">
+                    <div class="req-icon">&#128640;</div>
+                    <div class="req-info">
+                        <h4>Redis 7+</h4>
+                        <p>مطلوب لتشغيل المهام المجدولة وتخزين مؤقت للكش.</p>
+                    </div>
+                </div>
+                <div class="req-item">
+                    <div class="req-icon">&#128187;</div>
+                    <div class="req-info">
+                        <h4>ذاكرة RAM</h4>
+                        <p>4 جيجابايت كحد أدنى. 8 جيجابايت موصى به للإنتاج.</p>
+                    </div>
+                </div>
+                <div class="req-item">
+                    <div class="req-icon">&#128193;</div>
+                    <div class="req-info">
+                        <h4>مساحة التخزين</h4>
+                        <p>500 ميجابايت للتطبيق + حجم قاعدة البيانات.</p>
+                    </div>
+                </div>
+                <div class="req-item">
+                    <div class="req-icon">&#128202;</div>
+                    <div class="req-info">
+                        <h4>Docker (اختياري)</h4>
+                        <p>الإصدار 20.10+ و Docker Compose v2 للنشر عبر الحاويات.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="screenshot-placeholder">
+                <div class="screenshot-icon">&#128247;</div>
+                <h4>لقطة شاشة: قائمة البرامج المطلوبة</h4>
+                <p>صفحة عرض المتطلبات في واجهة النظام</p>
+            </div>
+
+            <div class="info-box info-success">
+                <span class="info-box-icon">&#10003;</span>
+                <div class="info-box-content">
+                    <strong>قائمة التحقق من المتطلبات</strong>
+                    <ul class="checklist">
+                        <li><span class="check-icon check-done">&#10003;</span> Python 3.12 مثبّت ومُفعّل</li>
+                        <li><span class="check-icon check-done">&#10003;</span> PostgreSQL 15+ (أو SQLite للتطوير)</li>
+                        <li><span class="check-icon check-done">&#10003;</span> Redis 7+ (للإنتاج)</li>
+                        <li><span class="check-icon check-done">&#10003;</span> الحد الأدنى من ذاكرة RAM (4GB)</li>
+                        <li><span class="check-icon check-pending">&#9679;</span> Docker و Docker Compose (اختياري)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Section 2: Running Methods ===== -->
+        <section id="methods" class="section">
+            <div class="section-header">
+                <span class="section-number">2</span>
+                <h2 class="section-title">طرق التشغيل</h2>
+            </div>
+
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1rem;">
+                يدعم النظام ثلاث طرق مختلفة للتشغيل. اختر الطريقة المناسبة حسب بيئتك ومتطلباتك.
+            </p>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="dev" onclick="switchTab('dev', this)">&#128187; بيئة التطوير</button>
+                <button class="tab" data-tab="docker" onclick="switchTab('docker', this)">&#128203; Docker</button>
+                <button class="tab" data-tab="prod" onclick="switchTab('prod', this)">&#9889; Waitress (إنتاج)</button>
+            </div>
+
+            <!-- Tab: Development -->
+            <div id="tab-dev" class="tab-content active">
+                <div class="card">
+                    <div class="card-title">&#128187; الطريقة الأولى: تشغيل التطوير (Development)</div>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                        هذه الطريقة مناسبة للتطوير والاختبار المحلي. تستخدم سيرفر Django المدمج مع ميزة إعادة التحميل التلقائي.
+                    </p>
+
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>فتح Terminal</h4>
+                                <p>افتح سطر الأوامر (PowerShell أو CMD) وانتقل إلى مجلد المشروع.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>تفعيل البيئة الافتراضية</h4>
+                                <p>فعّل بيئة Python الافتراضية لتثبيت التبعيات المعزولة.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>تعيين متغيرات البيئة</h4>
+                                <p>قم بتعيين المتغيرات اللازمة أو استخدم ملف <code>.env</code> المُعد مسبقاً.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>تشغيل الترحيلات</h4>
+                                <p>طبّق التغييرات على بنية قاعدة البيانات.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>تشغيل السيرفر</h4>
+                                <p>شغّل سيرفر التطوير على العنوان <code>0.0.0.0:8012</code>.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>فتح المتصفح</h4>
+                                <p>افتح المتصفح وانتقل إلى الرابط المحدد للوصول إلى النظام.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="code-block">
+                        <div class="code-header">
+                            <div class="code-dots"><span></span><span></span><span></span></div>
+                            <span>Terminal - PowerShell</span>
+                        </div>
+                        <div class="code-body">
+                            <code>
+<span class="comment"># الانتقال إلى مجلد المشروع</span>
+<span class="cmd">cd</span> <span class="path">D:\accounting_system</span>
+
+<span class="comment"># تفعيل البيئة الافتراضية</span>
+<span class="cmd">venv\Scripts\activate</span>
+
+<span class="comment"># تعيين متغيرات البيئة</span>
+<span class="cmd">$env:DJANGO_SETTINGS_MODULE</span>=<span class="string">"config.settings.development"</span>
+
+<span class="comment"># تشغيل الترحيلات</span>
+<span class="cmd">python</span> <span class="path">manage.py</span> <span class="flag">migrate</span>
+
+<span class="comment"># تشغيل سيرفر التطوير</span>
+<span class="cmd">python</span> <span class="path">manage.py</span> <span class="flag">runserver</span> <span class="string">0.0.0.0:8012</span>
+                            </code>
+                        </div>
+                    </div>
+
+                    <div class="info-box info-info">
+                        <span class="info-box-icon">&#128279;</span>
+                        <div class="info-box-content">
+                            <strong>رابط الدخول</strong>
+                            <p>بعد تشغيل السيرفر بنجاح، افتح المتصفح على: <code>http://localhost:8012</code></p>
+                        </div>
+                    </div>
+
+                    <div class="screenshot-placeholder">
+                        <div class="screenshot-icon">&#128247;</div>
+                        <h4>لقطة شاشة: شاشة تسجيل الدخول</h4>
+                        <p>صفحة تسجيل الدخول إلى النظام بعد التشغيل</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Docker -->
+            <div id="tab-docker" class="tab-content">
+                <div class="card">
+                    <div class="card-title">&#128203; الطريقة الثانية: تشغيل الإنتاج عبر Docker</div>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                        طريقة النشر عبر الحاويات. الأفضل للإنتاج والتكامل المستمر. توفر بيئة موحّدة وقابلة للتكرار.
+                    </p>
+
+                    <div class="info-box info-warning">
+                        <span class="info-box-icon">&#9888;</span>
+                        <div class="info-box-content">
+                            <strong>ملاحظة</strong>
+                            <p>يجب تثبيت Docker و Docker Compose على جهازك قبل المتابعة. تأكد من تشغيل Docker daemon.</p>
+                        </div>
+                    </div>
+
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>التأكد من تثبيت Docker و Docker Compose</h4>
+                                <p>تحقق من الإصدار المثبّت عبر الأوامر التالية.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>إعداد ملف البيئة</h4>
+                                <p>انسخ ملف <code>.env.example</code> إلى <code>.env</code> وعدّل الإعدادات حسب بيئتك.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>بناء وتشغيل الحاويات</h4>
+                                <p>شغّل أمر البناء والتشغيل. سيقوم Docker Compose ببناء الصور وتشغيل جميع الخدمات.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>التحقق من التشغيل</h4>
+                                <p>افتح المتصفح على المنفذ المحدد للتأكد من عمل النظام بشكل صحيح.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="code-block">
+                        <div class="code-header">
+                            <div class="code-dots"><span></span><span></span><span></span></div>
+                            <span>Terminal - Docker</span>
+                        </div>
+                        <div class="code-body">
+                            <code>
+<span class="comment"># التحقق من تثبيت Docker</span>
+<span class="cmd">docker</span> <span class="flag">--version</span>
+<span class="cmd">docker compose</span> <span class="flag">version</span>
+
+<span class="comment"># نسخ ملف البيئة</span>
+<span class="cmd">copy</span> <span class="path">.env.example</span> <span class="path">.env</span>
+
+<span class="comment"># تعديل ملف الإعدادات</span>
+<span class="comment"># افتح ملف .env وعدّل القيم حسب بيئتك</span>
+
+<span class="comment"># بناء وتشغيل الحاويات</span>
+<span class="cmd">docker compose</span> <span class="flag">up</span> <span class="flag">-d</span> <span class="flag">--build</span>
+
+<span class="comment"># عرض حالة الحاويات</span>
+<span class="cmd">docker compose</span> <span class="flag">ps</span>
+
+<span class="comment"># عرض السجلات</span>
+<span class="cmd">docker compose</span> <span class="flag">logs</span> <span class="flag">-f</span>
+                            </code>
+                        </div>
+                    </div>
+
+                    <div class="screenshot-placeholder">
+                        <div class="screenshot-icon">&#128247;</div>
+                        <h4>لقطة شاشة: Docker Compose قيد التشغيل</h4>
+                        <p>نافذة Terminal تعرض حالات الحاويات النشطة</p>
+                    </div>
+
+                    <div class="screenshot-placeholder">
+                        <div class="screenshot-icon">&#128247;</div>
+                        <h4>لقطة شاشة: إعدادات .env</h4>
+                        <p>ملف الإعدادات مع القيم المُعدّة مسبقاً</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Production Waitress -->
+            <div id="tab-prod" class="tab-content">
+                <div class="card">
+                    <div class="card-title">&#9889; الطريقة الثالثة: تشغيل الإنتاج عبر Waitress (Windows)</div>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                        مناسب للنشر على خوادم Windows في بيئة الإنتاج. يستخدم Waitress كبديل احترافي لسيرفر التطوير.
+                    </p>
+
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>التأكد من تثبيت التبعيات</h4>
+                                <p>ثبّت تبعيات الإنتاج من ملف <code>requirements.txt</code>.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>إعداد ملف البيئة</h4>
+                                <p>تأكد من وجود ملف <code>.env</code> بالإعدادات الصحيحة لبيئة الإنتاج.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>تشغيل Waitress</h4>
+                                <p>شغّل سيرفر Waitress عبر ملف التشغيل المُعد.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="code-block">
+                        <div class="code-header">
+                            <div class="code-dots"><span></span><span></span><span></span></div>
+                            <span>Terminal - Waitress Production</span>
+                        </div>
+                        <div class="code-body">
+                            <code>
+<span class="comment"># تفعيل البيئة الافتراضية</span>
+<span class="cmd">venv\Scripts\activate</span>
+
+<span class="comment"># تثبيت التبعيات</span>
+<span class="cmd">pip install</span> <span class="flag">-r</span> <span class="path">requirements.txt</span>
+
+<span class="comment"># تشغيل Waitress</span>
+<span class="cmd">python</span> <span class="path">run_waitress.py</span>
+                            </code>
+                        </div>
+                    </div>
+
+                    <div class="info-box info-danger">
+                        <span class="info-box-icon">&#128680;</span>
+                        <div class="info-box-content">
+                            <strong>تحذير أمني</strong>
+                            <p>لا تستخدم سيرفر التطوير (<code>runserver</code>) في بيئة الإنتاج. استخدم Waitress أو Docker مع Nginx دائماً.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Section 3: Safe Stop ===== -->
+        <section id="stop" class="section">
+            <div class="section-header">
+                <span class="section-number">3</span>
+                <h2 class="section-title">الإيقاف الآمن</h2>
+            </div>
+
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1rem;">
+                الإيقاف السليم يضمن عدم فقدان البيانات وسلامة قاعدة البيانات.
+            </p>
+
+            <div class="info-box info-danger">
+                <span class="info-box-icon">&#128680;</span>
+                <div class="info-box-content">
+                    <strong>مهم جداً</strong>
+                    <p>لا تُغلق النافذة مباشرة بدون إيقاف السيرفر بشكل صحيح. استخدم دائماً الخطوات التالية لضمان سلامة البيانات.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">&#128229; الإيقاف العادي</div>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-content">
+                            <h4>الضغط على Ctrl + C</h4>
+                            <p>في نافذة Terminal التي يعمل فيها السيرفر، اضغط <code>Ctrl + C</code> لإيقاف السيرفر بشكل سلس.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">
+                            <h4>انتظار اكتمال الإيقاف</h4>
+                            <p>انتظر حتى يظهر التأكيد على إيقاف جميع العمليات قبل إغلاق النافذة.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">&#128203; الإيقاف عبر Docker</div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <div class="code-dots"><span></span><span></span><span></span></div>
+                        <span>Terminal - Docker</span>
+                    </div>
+                    <div class="code-body">
+                        <code>
+<span class="comment"># إيقاف جميع الحاويات</span>
+<span class="cmd">docker compose</span> <span class="flag">down</span>
+
+<span class="comment"># إيقاف وحذف البيانات المؤقتة</span>
+<span class="cmd">docker compose</span> <span class="flag">down</span> <span class="flag">-v</span>
+                        </code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">&#128190; عمل نسخة احتياطية قبل الإيقاف</div>
+                <div class="info-box info-warning">
+                    <span class="info-box-icon">&#128161;</span>
+                    <div class="info-box-content">
+                        <strong>توصية</strong>
+                        <p>يُنصح دائماً بعمل نسخة احتياطية قبل أي إجراء تعديل أو إيقاف طويل المدة.</p>
+                    </div>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <div class="code-dots"><span></span><span></span><span></span></div>
+                        <span>Terminal - Backup</span>
+                    </div>
+                    <div class="code-body">
+                        <code>
+<span class="comment"># عمل نسخة احتياطية من قاعدة البيانات</span>
+<span class="cmd">python</span> <span class="path">manage.py</span> <span class="flag">backup</span>
+
+<span class="comment"># النسخة الاحتياطية ستُحفظ في مجلد:</span>
+<span class="comment"># backups/</span>
+                        </code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="screenshot-placeholder">
+                <div class="screenshot-icon">&#128247;</div>
+                <h4>لقطة شاشة: لوحة التحكم الرئيسية</h4>
+                <p>واجهة النظام الرئيسية مع خيارات النسخ الاحتياطي</p>
+            </div>
+        </section>
+
+        <!-- ===== Section 4: Health Check ===== -->
+        <section id="health" class="section">
+            <div class="section-header">
+                <span class="section-number">4</span>
+                <h2 class="section-title">فحص صحة النظام</h2>
+            </div>
+
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1rem;">
+                يوفر النظام نقاط نهاية مخصصة لمراقبة حالته والتأكد من عمل جميع المكونات بشكل سليم.
+            </p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>النقطة</th>
+                            <th>الرابط</th>
+                            <th>الوصف</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>فحص الصحة العام</strong></td>
+                            <td><code>/health/</code></td>
+                            <td>فحص شامل لجميع مكونات النظام</td>
+                            <td><span class="status status-healthy"><span class="status-dot"></span> متاح</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>لوحة المراقبة</strong></td>
+                            <td><code>/monitoring/</code></td>
+                            <td>لوحة مراقبة تفاعلية مع رسوم بيانية</td>
+                            <td><span class="status status-healthy"><span class="status-dot"></span> متاح</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>فحص قاعدة البيانات</strong></td>
+                            <td><code>/health/db/</code></td>
+                            <td>التحقق من اتصال قاعدة البيانات</td>
+                            <td><span class="status status-healthy"><span class="status-dot"></span> متاح</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>فحص Redis</strong></td>
+                            <td><code>/health/redis/</code></td>
+                            <td>التحقق من خدمة Redis</td>
+                            <td><span class="status status-warning"><span class="status-dot"></span> اختياري</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <div class="code-dots"><span></span><span></span><span></span></div>
+                    <span>أوامر فحص الصحة</span>
+                </div>
+                <div class="code-body">
+                    <code>
+<span class="comment"># فحص الصحة عبر المتصفح</span>
+<span class="cmd">http://localhost:8012/health/</span>
+
+<span class="comment"># فحص الصحة عبر سطر الأوامر (curl)</span>
+<span class="cmd">curl</span> <span class="flag">-s</span> <span class="string">http://localhost:8012/health/</span>
+
+<span class="comment"># فتح لوحة المراقبة</span>
+<span class="cmd">http://localhost:8012/monitoring/</span>
+                    </code>
+                </div>
+            </div>
+
+            <div class="screenshot-placeholder">
+                <div class="screenshot-icon">&#128247;</div>
+                <h4>لقطة شاشة: صفحة فحص الصحة</h4>
+                <p>صفحة تعرض حالة جميع مكونات النظام بألوان مميزة</p>
+            </div>
+
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-title">&#128200; مكونات الفحص</div>
+                <div class="table-wrapper" style="border: none; margin: 0;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>المكون</th>
+                                <th>ما الذي يُفحص؟</th>
+                                <th>النتيجة عند الفشل</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>قاعدة البيانات</td>
+                                <td>الاتصال والاستجابة</td>
+                                <td><span class="status status-error"><span class="status-dot"></span> خطأ</span></td>
+                            </tr>
+                            <tr>
+                                <td>ملفات الوسائط</td>
+                                <td>قابلية الكتابة</td>
+                                <td><span class="status status-warning"><span class="status-dot"></span> تحذير</span></td>
+                            </tr>
+                            <tr>
+                                <td>الذاكرة</td>
+                                <td>الاستهلاك المتاح</td>
+                                <td><span class="status status-warning"><span class="status-dot"></span> تحذير</span></td>
+                            </tr>
+                            <tr>
+                                <td>Redis</td>
+                                <td>الاتصال والخزن المؤقت</td>
+                                <td><span class="status status-warning"><span class="status-dot"></span> تحذير</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Section 5: Troubleshooting ===== -->
+        <section id="troubleshoot" class="section">
+            <div class="section-header">
+                <span class="section-number">5</span>
+                <h2 class="section-title">استكشاف الأخطاء وإصلاحها</h2>
+            </div>
+
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1rem;">
+                دليل سريع لحل أكثر الأخطاء شيوعاً التي قد تواجهك أثناء تشغيل النظام.
+            </p>
+
+            <!-- Issue 1 -->
+            <div class="card">
+                <div class="card-title" style="color: var(--danger);">&#128308; المشكلة 1: السيرفر لا يعمل</div>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.95rem;">
+                    في حال عدم تشغيل السيرفر أو ظهور رسالة خطأ عند المحاولة:
+                </p>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-content">
+                            <h4>فحص السجلات</h4>
+                            <p>راجع ملف السجلات للتحقق من سبب الخطأ.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">
+                            <h4>إعادة تشغيل السيرفر</h4>
+                            <p>أوقف وأعد تشغيل السيرفر.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">
+                            <h4>التحقق من المنفذ</h4>
+                            <p>تأكد من عدم استخدام المنفذ 8012 من برنامج آخر.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <div class="code-dots"><span></span><span></span><span></span></div>
+                        <span>الخطوات العلاجية</span>
+                    </div>
+                    <div class="code-body">
+                        <code>
+<span class="comment"># مراجعة السجلات</span>
+<span class="cmd">type</span> <span class="path">logs\accounting.log</span>
+
+<span class="comment"># التحقق من المنفذ المستخدم</span>
+<span class="cmd">netstat</span> <span class="flag">-ano</span> <span class="flag">| findstr</span> <span class="string">8012</span>
+
+<span class="comment"># إعادة تشغيل السيرفر</span>
+<span class="cmd">python</span> <span class="path">manage.py</span> <span class="flag">runserver</span> <span class="string">0.0.0.0:8012</span>
+                        </code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Issue 2 -->
+            <div class="card">
+                <div class="card-title" style="color: var(--danger);">&#128308; المشكلة 2: خطأ في اتصال قاعدة البيانات</div>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.95rem;">
+                    رسالة خطأ تشير إلى عدم القدرة على الاتصال بقاعدة البيانات:
+                </p>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-content">
+                            <h4>التحقق من تشغيل PostgreSQL</h4>
+                            <p>تأكد من أن خدمة PostgreSQL تعمل بشكل صحيح.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">
+                            <h4>التحقق من الإعدادات</h4>
+                            <p>راجع إعدادات الاتصال في ملف <code>.env</code> أو <code>settings.py</code>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">
+                            <h4>اختبار الاتصال</h4>
+                            <p>استخدم أداة مثل <code>pgAdmin</code> لاختبار الاتصال يدوياً.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <div class="code-dots"><span></span><span></span><span></span></div>
+                        <span>الخطوات العلاجية</span>
+                    </div>
+                    <div class="code-body">
+                        <code>
+<span class="comment"># التحقق من حالة PostgreSQL</span>
+<span class="cmd">pg_isready</span> <span class="flag">-h</span> <span class="string">localhost</span> <span class="flag">-p</span> <span class="string">5432</span>
+
+<span class="comment"># اختبار الاتصال بقاعدة البيانات</span>
+<span class="cmd">psql</span> <span class="flag">-U</span> <span class="string">postgres</span> <span class="flag">-d</span> <span class="string">accounting_db</span>
+
+<span class="comment"># إعادة ترحيل قاعدة البيانات</span>
+<span class="cmd">python</span> <span class="path">manage.py</span> <span class="flag">migrate</span>
+                        </code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Issue 3 -->
+            <div class="card">
+                <div class="card-title" style="color: var(--warning);">&#128992; المشكلة 3: مشاكل الملفات والصلاحيات</div>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.95rem;">
+                    أخطاء تتعلق بقراءة أو كتابة الملفات:
+                </p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <div class="code-dots"><span></span><span></span><span></span></div>
+                        <span>الخطوات العلاجية</span>
+                    </div>
+                    <div class="code-body">
+                        <code>
+<span class="comment"># جمع الملفات الساكنة</span>
+<span class="cmd">python</span> <span class="path">manage.py</span> <span class="flag">collectstatic</span> <span class="flag">--noinput</span>
+
+<span class="comment"># إنشاء مجلد السجلات إذا لم يكن موجوداً</span>
+<span class="cmd">if not exist</span> <span class="path">logs</span> <span class="cmd">mkdir</span> <span class="path">logs</span>
+
+<span class="comment"># التحقق من صلاحيات الكتابة</span>
+<span class="cmd">icacls</span> <span class="path">D:\accounting_system</span>
+                        </code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Issue 4 -->
+            <div class="card">
+                <div class="card-title" style="color: var(--warning);">&#128992; المشكلة 4: المهام المجدولة لا تعمل</div>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.95rem;">
+                    في حال عدم عمل المهام الآلية أو التقارير المجدولة:
+                </p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <div class="code-dots"><span></span><span></span><span></span></div>
+                        <span>الخطوات العلاجية</span>
+                    </div>
+                    <div class="code-body">
+                        <code>
+<span class="comment"># التحقق من حالة Redis</span>
+<span class="cmd">redis-cli</span> <span class="flag">ping</span>
+
+<span class="comment"># مراجعة سجلات Celery (إذا كان مستخدماً)</span>
+<span class="cmd">type</span> <span class="path">logs\celery.log</span>
+
+<span class="comment"># إعادة تشغيل خدمة المهام المجدولة</span>
+<span class="cmd">celery</span> <span class="flag">-A</span> <span class="string">config</span> <span class="flag">worker</span> <span class="flag">--loglevel=info</span>
+                        </code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Reference -->
+            <div class="card">
+                <div class="card-title">&#128214; مرجع سريع للأخطاء الشائعة</div>
+                <div class="table-wrapper" style="border: none; margin: 0;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الخطأ</th>
+                                <th>السبب المحتمل</th>
+                                <th>الحل</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>ModuleNotFoundError</code></td>
+                                <td>التبعيات غير مثبّتة</td>
+                                <td><code>pip install -r requirements.txt</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>OperationalError: connection</code></td>
+                                <td>قاعدة البيانات غير متاحة</td>
+                                <td>تحقق من PostgreSQL</td>
+                            </tr>
+                            <tr>
+                                <td><code>Permission denied</code></td>
+                                <td>صلاحيات المجلدات</td>
+                                <td>تحقق من صلاحيات الكتابة</td>
+                            </tr>
+                            <tr>
+                                <td><code>Address already in use</code></td>
+                                <td>المنفذ مستخدم مسبقاً</td>
+                                <td>غيّر المنفذ أو أوقف البرنامج الآخر</td>
+                            </tr>
+                            <tr>
+                                <td><code>Static files not found</code></td>
+                                <td>الملفات الساكنة غير مجمّعة</td>
+                                <td><code>python manage.py collectstatic</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="screenshot-placeholder">
+                <div class="screenshot-icon">&#128247;</div>
+                <h4>لقطة شاشة: شاشة تسجيل الأخطاء</h4>
+                <p>نافذة السجلات تعرض تفاصيل الأخطاء والتحذيرات</p>
+            </div>
+        </section>
+
+        <!-- ===== Summary ===== -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-number">&#10003;</span>
+                <h2 class="section-title">ملخص سريع</h2>
+            </div>
+
+            <div class="card">
+                <div class="card-title">&#9889; أوامر سريعة</div>
+                <div class="table-wrapper" style="border: none; margin: 0;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الإجراء</th>
+                                <th>الأمر</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>تشغيل التطوير</td>
+                                <td><code>python manage.py runserver 0.0.0.0:8012</code></td>
+                            </tr>
+                            <tr>
+                                <td>تشغيل الإنتاج</td>
+                                <td><code>python run_waitress.py</code></td>
+                            </tr>
+                            <tr>
+                                <td>تشغيل Docker</td>
+                                <td><code>docker compose up -d --build</code></td>
+                            </tr>
+                            <tr>
+                                <td>إيقاف Docker</td>
+                                <td><code>docker compose down</code></td>
+                            </tr>
+                            <tr>
+                                <td>ترحيل قاعدة البيانات</td>
+                                <td><code>python manage.py migrate</code></td>
+                            </tr>
+                            <tr>
+                                <td>عمل نسخة احتياطية</td>
+                                <td><code>python manage.py backup</code></td>
+                            </tr>
+                            <tr>
+                                <td>فحص الصحة</td>
+                                <td><code>http://localhost:8012/health/</code></td>
+                            </tr>
+                            <tr>
+                                <td>لوحة المراقبة</td>
+                                <td><code>http://localhost:8012/monitoring/</code></td>
+                            </tr>
+                            <tr>
+                                <td>مراجعة السجلات</td>
+                                <td><code>logs/accounting.log</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p><strong style="color: var(--gold-primary);">نظام المحاسبة المتكامل</strong></p>
+        <div class="footer-line"></div>
+        <p>دليل التشغيل والإيقاف &mdash; الإصدار 2.0</p>
+        <p style="margin-top: 0.5rem;">تاريخ الإنشاء: يوليو 2026</p>
+    </footer>
+
+    <!-- Tabs JavaScript -->
+    <script>
+        function switchTab(tabId, btn) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(function(el) {
+                el.classList.remove('active');
+            });
+
+            // Remove active from all tabs
+            document.querySelectorAll('.tab').forEach(function(el) {
+                el.classList.remove('active');
+            });
+
+            // Show selected tab content
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            // Mark selected tab as active
+            btn.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>

@@ -1,1383 +1,1216 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>دليل الإجراءات التقنية الموحدة - نظام المحاسبة المتكامل</title>
-<style>
-@page { size: A4; margin: 1.5cm; }
-@media print {
-    body { font-size: 10pt; }
-    h1 { page-break-before: always; }
-    h1:first-of-type { page-break-before: avoid; }
-    pre { page-break-inside: avoid; }
-    table { page-break-inside: avoid; }
-}
-* { box-sizing: border-box; }
-body {
-    font-family: 'Segoe UI', Tahoma, 'Arial', sans-serif;
-    direction: rtl;
-    unicode-bidi: embed;
-    line-height: 1.8;
-    color: #333;
-    max-width: 210mm;
-    margin: 0 auto;
-    padding: 20px 40px;
-    background: #fff;
-}
-h1 {
-    color: #1a237e;
-    border-bottom: 3px solid #1a237e;
-    padding-bottom: 10px;
-    font-size: 24px;
-    margin-top: 40px;
-}
-h2 {
-    color: #0d47a1;
-    border-bottom: 2px solid #0d47a1;
-    padding-bottom: 8px;
-    font-size: 20px;
-    margin-top: 30px;
-}
-h3 {
-    color: #1565c0;
-    font-size: 16px;
-    margin-top: 20px;
-}
-h4 {
-    color: #1976d2;
-    font-size: 14px;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 15px 0;
-    font-size: 12px;
-}
-th {
-    background: #1a237e;
-    color: #fff;
-    padding: 8px 10px;
-    text-align: right;
-    font-weight: 600;
-}
-td {
-    padding: 6px 10px;
-    border: 1px solid #ddd;
-}
-tr:nth-child(even) { background: #f5f7fa; }
-tr:hover { background: #e8eaf6; }
-code {
-    background: #f5f5f5;
-    padding: 2px 5px;
-    border-radius: 3px;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 12px;
-    color: #c62828;
-    direction: ltr;
-    unicode-bidi: embed;
-}
-pre {
-    background: #1e1e1e;
-    color: #d4d4d4;
-    padding: 14px;
-    border-radius: 6px;
-    overflow-x: auto;
-    direction: ltr;
-    unicode-bidi: embed;
-    font-size: 12px;
-    line-height: 1.4;
-    border: 1px solid #333;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-}
-pre code {
-    background: none;
-    color: #d4d4d4;
-    padding: 0;
-    font-size: 12px;
-}
-blockquote {
-    border-right: 4px solid #1a237e;
-    padding: 8px 16px;
-    margin: 12px 0;
-    background: #e8eaf6;
-    border-radius: 0 6px 6px 0;
-}
-hr {
-    border: none;
-    height: 2px;
-    background: linear-gradient(to right, #1a237e, #0d47a1);
-    margin: 25px 0;
-}
-strong { color: #1a237e; }
-ul, ol { padding-right: 20px; }
-li { margin-bottom: 4px; }
-.cover {
-    text-align: center;
-    padding: 60px 20px;
-    border-bottom: 3px solid #1a237e;
-    margin-bottom: 30px;
-}
-.toc {
-    background: #f5f7fa;
-    padding: 15px;
-    border-radius: 8px;
-    margin: 15px 0;
-}
-a { color: #1565c0; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل النقل والترقية التقني - Technical Migration Guide</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #1c2333;
+            --bg-card: #1a1f2e;
+            --gold-primary: #d4a843;
+            --gold-light: #f0d078;
+            --gold-dark: #b8922e;
+            --gold-muted: #a08530;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border-color: #30363d;
+            --border-gold: #d4a84333;
+            --code-bg: #0d1117;
+            --success: #3fb950;
+            --info: #58a6ff;
+            --warning: #d29922;
+            --danger: #f85149;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, 'Noto Sans Arabic', 'Noto Kufi Arabic', Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.8;
+            direction: rtl;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border-bottom: 2px solid var(--gold-primary);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .header h1 {
+            color: var(--gold-primary);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .header .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: var(--gold-dark);
+            color: var(--bg-primary);
+            padding: 0.2rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .toc {
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .toc h2 {
+            color: var(--gold-primary);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .toc ol {
+            padding-right: 1.5rem;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin-bottom: 0.4rem;
+        }
+
+        .toc a {
+            color: var(--info);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .toc a:hover {
+            color: var(--gold-light);
+            text-decoration: underline;
+        }
+
+        section {
+            margin-bottom: 2.5rem;
+        }
+
+        h2.section-title {
+            color: var(--gold-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--gold-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2.section-title .num {
+            background: var(--gold-dark);
+            color: var(--bg-primary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        h3 {
+            color: var(--gold-light);
+            font-size: 1.15rem;
+            margin: 1.2rem 0 0.6rem;
+        }
+
+        h4 {
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin: 1rem 0 0.4rem;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .info-card.warn {
+            border-right-color: var(--warning);
+        }
+
+        .info-card.danger {
+            border-right-color: var(--danger);
+        }
+
+        .info-card.success {
+            border-right-color: var(--success);
+        }
+
+        .info-card .label {
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .info-card.warn .label { color: var(--warning); }
+        .info-card.danger .label { color: var(--danger); }
+        .info-card.success .label { color: var(--success); }
+
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem 1.2rem;
+            overflow-x: auto;
+            margin: 0.8rem 0;
+            direction: ltr;
+            text-align: left;
+        }
+
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.88rem;
+            color: var(--gold-light);
+        }
+
+        pre code {
+            color: var(--text-primary);
+        }
+
+        .cmd-comment {
+            color: var(--text-muted);
+        }
+
+        .cmd-flag {
+            color: var(--success);
+        }
+
+        .cmd-string {
+            color: #a5d6ff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            color: var(--gold-primary);
+            padding: 0.7rem 1rem;
+            text-align: right;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        tr:hover td {
+            background: var(--bg-secondary);
+        }
+
+        ul, ol {
+            padding-right: 1.5rem;
+            padding-left: 0;
+            margin: 0.5rem 0;
+        }
+
+        li {
+            margin-bottom: 0.3rem;
+            color: var(--text-secondary);
+        }
+
+        .step-num {
+            display: inline-block;
+            background: var(--gold-dark);
+            color: var(--bg-primary);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+
+        .file-tree {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem 1.5rem;
+            font-family: 'Cascadia Code', monospace;
+            font-size: 0.85rem;
+            direction: ltr;
+            text-align: left;
+            color: var(--text-secondary);
+            margin: 0.8rem 0;
+        }
+
+        .file-tree .dir { color: var(--info); }
+        .file-tree .file { color: var(--gold-light); }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .footer span {
+            color: var(--gold-primary);
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header h1 { font-size: 1.3rem; }
+            pre { font-size: 0.8rem; padding: 0.8rem; }
+        }
+    </style>
 </head>
 <body>
-<div class="cover">
-<h1 style="border:none;font-size:28px;margin:0;">&#x1F4CB; دليل الإجراءات التقنية الموحدة</h1>
-<h2 style="border:none;font-size:20px;color:#666;margin:10px 0 0 0;">نظام المحاسبة المتكامل - تواريدات</h2>
-<p style="color:#999;font-size:14px;">رقم الإصدار: 1.0 | تاريخ الإعداد: 15 يوليو 2026</p>
+
+<div class="header">
+    <h1>دليل النقل والترقية التقني</h1>
+    <div class="subtitle">TECHNICAL_MIGRATION_GUIDE</div>
+    <span class="version-badge">v1.0.0</span>
 </div>
-<h1 id="_1">دليل الإجراءات التقنية الموحد</h1>
-<h2 id="-">نظام المحاسبة المتكامل - تواريدات</h2>
-<p><strong>رقم الإصدار:</strong> 1.0
-<strong>تاريخ الإعداد:</strong> 15 يوليو 2026
-<strong>الجهة المسؤولة:</strong> قسم تقنية المعلومات
-<strong>مستوى السرية:</strong> داخلي</p>
-<hr />
-<h1 id="_2">الفهرس</h1>
-<ol>
-<li><a href="#الباب-الأول-نقل-البيانات-والترحيل">الباب الأول: نقل البيانات والترحيل</a></li>
-<li>1.1 تحديد المتطلبات قبل النقل</li>
-<li>1.2 إنشاء النسخة الاحتياطية الكاملة</li>
-<li>1.3 فحص سلامة النسخة الاحتياطية</li>
-<li>1.4 نقل الملفات إلى الجهاز الهدف</li>
-<li>1.5 فك الضغط وتوسيع المجلدات</li>
-<li>
-<p>1.6 فحص سلامة الملفات بعد النقل</p>
-</li>
-<li>
-<p><a href="#الباب-الثاني-التثبيت-وإعادة-التثبيت">الباب الثاني: التثبيت وإعادة التثبيت</a></p>
-</li>
-<li>2.1 تثبيت البرامج الأساسية</li>
-<li>2.2 تثبيت التبعيات البرمجية</li>
-<li>2.3 إعداد قاعدة البيانات</li>
-<li>2.4 تهيئة بيئة التطبيق</li>
-<li>2.5 إعادة التثبيت من الصفر</li>
-<li>
-<p>2.6 استعادة قاعدة البيانات من النسخة الاحتياطية</p>
-</li>
-<li>
-<p><a href="#الباب-الثالث-تغيير-بيئة-العمل">الباب الثالث: تغيير بيئة العمل</a></p>
-</li>
-<li>3.1 بنية ملفات البيئة</li>
-<li>3.2 التحويل من Development إلى Production</li>
-<li>3.3 التحويل من Production إلى Development</li>
-<li>3.4 إدارة متغيرات البيئة الآمنة</li>
-<li>
-<p>3.5 النقاط الحرجة عند تغيير البيئة</p>
-</li>
-<li>
-<p><a href="#الباب-الرابع-عمليات-المزامنة">الباب الرابع: عمليات المزامنة</a></p>
-</li>
-<li>4.1 نموذج المزامنة المركزي (Central Database)</li>
-<li>4.2 نموذج المزامنة المعمارية (Master-Slave)</li>
-<li>4.3 نموذج المزامنة ثنائية الاتجاه (Bidirectional)</li>
-<li>4.4 إجراءات المزامنة اليومية</li>
-<li>4.5 استكشاف أخطاء المزامنة وإصلاحها</li>
-<li>4.6 ضمان سلامة البيانات أثناء المزامنة</li>
-<li>
-<p><a href="#_29">الباب الخامس: الميزات التقنية المتقدمة (الإصدار 2.2)</a></p>
-</li>
-<li>5.1 FIFO Costing — تكلفة المخزون بالوارد أولاً</li>
-<li>5.2 OpenAPI + Swagger + ReDoc</li>
-<li>5.3 HTMX + Alpine.js</li>
-<li>5.4 PWA / Offline Support</li>
-<li>5.5 Redis Caching — @cache_page على 9 views</li>
-<li>5.6 N+1 Query Optimization</li>
-<li>5.7 أمان متعدد الطبقات — CSP + Idle Timeout + Rate Limiting</li>
-<li>5.8 أدوات DevOps — Coverage + Pre-commit + pytest.ini + pyproject.toml</li>
-<li>5.9 Docker Compose + Health Checks</li>
-<li>5.10 Celery / Eager Mode</li>
-<li>5.11 متغيرات البيئة الكاملة (.env.example)</li>
-<li>5.12 ملخص الإصدار 2.2</li>
-</ol>
-<hr />
-<h1 id="_3">الباب الأول: نقل البيانات والترحيل</h1>
-<h2 id="11">1.1 تحديد المتطلبات قبل النقل</h2>
-<h3 id="_4">أجهزة المصدر والهدف</h3>
-<table>
-<thead>
-<tr>
-<th>البند</th>
-<th>الجهاز المصدر (القديم)</th>
-<th>الجهاز الهدف (الجديد)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>نظام التشغيل</td>
-<td>Windows 10/11</td>
-<td>Windows 10/11 أو Server 2022</td>
-</tr>
-<tr>
-<td>المعالج</td>
-<td>2 نواة على الأقل</td>
-<td>4 نواة أو أكثر</td>
-</tr>
-<tr>
-<td>الرام</td>
-<td>4 GB كحد أدنى</td>
-<td>8 GB أو أكثر</td>
-</tr>
-<tr>
-<td>التخزين</td>
-<td>50 GB متاح</td>
-<td>100 GB متاح (SSD مفضل)</td>
-</tr>
-<tr>
-<td>الشبكة</td>
-<td>اتصال LAN أو USB</td>
-<td>اتصال LAN أو USB</td>
-</tr>
-</tbody>
-</table>
-<h3 id="_5">أدوات النقل المطلوبة</h3>
-<table>
-<thead>
-<tr>
-<th>الأداة</th>
-<th>الغرض</th>
-<th>كيفية الحصول عليها</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>WinRAR أو 7-Zip</td>
-<td>فك الضغط</td>
-<td>7-zip.org</td>
-</tr>
-<tr>
-<td>USB Flash 16GB+</td>
-<td>النقل اللامكاني</td>
-<td>أي محل إلكترونيات</td>
-</tr>
-<tr>
-<td>أو Share على الشبكة</td>
-<td>النقل عبر LAN</td>
-<td>مدمج في Windows</td>
-</tr>
-<tr>
-<td>PowerShell 5.1+</td>
-<td>سكريبتات الإعداد</td>
-<td>مدمج في Windows</td>
-</tr>
-</tbody>
-</table>
-<h3 id="_6">فحص الجهاز القديم قبل النقل</h3>
-<pre class="codehilite"><code>1. افتح CMD كمسؤول ونفذ:
-systeminfo | findstr /B /C:&quot;OS Name&quot; /C:&quot;Total Physical Memory&quot; /C:&quot;Available Physical Memory&quot;
 
-2. تأكد من مساحة القرص المتاحة:
-wmic logicaldisk get size,freespace,caption
+<div class="container">
 
-3. تأكد من إصدار Python:
+    <!-- Table of Contents -->
+    <nav class="toc">
+        <h2>فهرس المحتويات</h2>
+        <ol>
+            <li><a href="#sec1">نظرة عامة</a></li>
+            <li><a href="#sec2">متطلبات النظام</a></li>
+            <li><a href="#sec3">خطوات التثبيت من الصفر</a></li>
+            <li><a href="#sec4">الترقية من إصدار سابق</a></li>
+            <li><a href="#sec5">النقل إلى خادم آخر</a></li>
+            <li><a href="#sec6">التثبيت عبر Docker</a></li>
+            <li><a href="#sec7">إعداد PostgreSQL للإنتاج</a></li>
+            <li><a href="#sec8">إعداد Nginx كوكيل عكسي</a></li>
+            <li><a href="#sec9">التوزيع عبر CI/CD</a></li>
+            <li><a href="#sec10">أدوات التطوير</a></li>
+            <li><a href="#sec11">استكشاف أخطاء التثبيت</a></li>
+        </ol>
+    </nav>
+
+    <!-- Section 1 -->
+    <section id="sec1">
+        <h2 class="section-title"><span class="num">1</span> نظرة عامة</h2>
+        <p>نظام المحاسبة المتكامل لإنتاج الخرسانة الجاهزة &mdash; نسخة الإصدار الأول.</p>
+        <table>
+            <thead>
+                <tr><th>المكون</th><th>الإصدار</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>إصدار البرنامج</td><td>1.0.0</td></tr>
+                <tr><td>إصدار Python</td><td>3.12+</td></tr>
+                <tr><td>إصدار Django</td><td>4.2 LTS</td></tr>
+                <tr><td>إصدار Django REST Framework</td><td>3.14+</td></tr>
+                <tr><td>قاعدة البيانات</td><td>PostgreSQL 15+ / SQLite 3.x</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="sec2">
+        <h2 class="section-title"><span class="num">2</span> متطلبات النظام</h2>
+        <table>
+            <thead>
+                <tr><th>المكون</th><th>الحد الأدنى</th><th>الموصى به</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>نظام التشغيل</td><td colspan="2">Windows Server 2019+ / Ubuntu 22.04+</td></tr>
+                <tr><td>المعالج (CPU)</td><td>2 Core</td><td>4 Core</td></tr>
+                <tr><td>الذاكرة (RAM)</td><td>4 GB</td><td>8 GB</td></tr>
+                <tr><td>مساحة التخزين</td><td>20 GB</td><td>50 GB (SSD)</td></tr>
+                <tr><td>قاعدة البيانات</td><td>SQLite 3.x</td><td>PostgreSQL 15+</td></tr>
+                <tr><td>نظام الكاش</td><td>&mdash;</td><td>Redis 7+</td></tr>
+            </tbody>
+        </table>
+
+        <div class="info-card warn">
+            <div class="label">&#9888; ملاحظة</div>
+            <p>يُنصح بشدة باستخدام PostgreSQL بدل SQLite في بيئة الإنتاج نظراً للأداء والموثوقية.</p>
+        </div>
+    </section>
+
+    <!-- Section 3 -->
+    <section id="sec3">
+        <h2 class="section-title"><span class="num">3</span> خطوات التثبيت من الصفر</h2>
+
+        <!-- 3.1 -->
+        <h3>3.1 تثبيت Python 3.12</h3>
+        <h4>على Windows:</h4>
+        <pre><code><span class="cmd-comment"># تنزيل Python 3.12 من الموقع الرسمي</span>
+https://www.python.org/downloads/
+
+<span class="cmd-comment"># التحقق من الإصدار</span>
 python --version
+<span class="cmd-comment"># المخرج: Python 3.12.x</span></code></pre>
 
-4. تأكد من حجم قاعدة البيانات:
-dir D:\accounting_system\db.sqlite3
-</code></pre>
+        <h4>على Ubuntu/Debian:</h4>
+        <pre><code><span class="cmd-comment"># تحديث قائمة الحزم</span>
+sudo apt update && sudo apt upgrade -y
 
-<h2 id="12">1.2 إنشاء النسخة الاحتياطية الكاملة</h2>
-<h3 id="_7">الملفات التي يجب تضمينها</h3>
-<table>
-<thead>
-<tr>
-<th>المكون</th>
-<th>المسار</th>
-<th>الحجم التقريبي</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>كود التطبيق</td>
-<td><code>D:\accounting_system\</code> (كل المجلدات عدا venv)</td>
-<td>800 MB</td>
-</tr>
-<tr>
-<td>قاعدة البيانات</td>
-<td><code>D:\accounting_system\db.sqlite3</code></td>
-<td>200 MB</td>
-</tr>
-<tr>
-<td>ملفات الإعدادات</td>
-<td><code>.env</code>, <code>requirements.txt</code></td>
-<td>1 MB</td>
-</tr>
-<tr>
-<td>المجلد الثابت</td>
-<td><code>static/</code>, <code>staticfiles/</code></td>
-<td>500 MB</td>
-</tr>
-<tr>
-<td>المجلد المرفوع</td>
-<td><code>media/</code></td>
-<td>500 MB</td>
-</tr>
-<tr>
-<td>القوالب</td>
-<td><code>templates/</code></td>
-<td>20 MB</td>
-</tr>
-<tr>
-<td>التوثيق</td>
-<td><code>docs/</code>, <code>README.md</code></td>
-<td>5 MB</td>
-</tr>
-</tbody>
-</table>
-<h3 id="_8">إجراء الإنشاء</h3>
-<p><strong>على الجهاز القديم:</strong></p>
-<pre class="codehilite"><code class="language-powershell"># فتح PowerShell كمسؤول والانتقال للمجلد
+<span class="cmd-comment"># تثبيت المتطلبات الأساسية</span>
+sudo apt install -y python3.12 python3.12-venv python3.12-dev python3-pip
+
+<span class="cmd-comment"># التحقق من الإصدار</span>
+python3.12 --version</code></pre>
+
+        <!-- 3.2 -->
+        <h3>3.2 إنشاء البيئة الافتراضية</h3>
+        <pre><code><span class="cmd-comment"># الانتقال إلى مجلد المشروع</span>
 cd D:\accounting_system
 
-# تشغيل سكريبت النسخ الاحتياطي
-powershell -ExecutionPolicy Bypass -File create_full_backup.ps1
-</code></pre>
-
-<p><strong>الناتج المتوقع:</strong></p>
-<pre class="codehilite"><code>D:\accounting_system_backups\accounting_system_FULL_[التاريخ].zip
-الحجم: حوالي 1 GB
-عدد الملفات: حوالي 966 ملف
-</code></pre>
-
-<h3 id="_9">الملفات المستبعدة من النسخة الاحتياطية</h3>
-<table>
-<thead>
-<tr>
-<th>الملف/المجلد</th>
-<th>السبب</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>venv/</code></td>
-<td>البيئة الافتراضية (يتم إنشاؤها من جديد)</td>
-</tr>
-<tr>
-<td><code>__pycache__/</code></td>
-<td>ملفات بايثون المؤقتة</td>
-</tr>
-<tr>
-<td><code>.git/</code></td>
-<td>سجل Git (يتم نقله بشكل منفصل إذا لزم)</td>
-</tr>
-<tr>
-<td><code>*.pyc</code></td>
-<td>ملفات الكود المُجمّع</td>
-</tr>
-<tr>
-<td><code>logs/</code></td>
-<td>سجلات التشغيل القديمة</td>
-</tr>
-<tr>
-<td><code>backups/</code></td>
-<td>نسخ احتياطية سابقة</td>
-</tr>
-<tr>
-<td><code>*.sqlite3-shm</code></td>
-<td>ملفات SQLite المؤقتة</td>
-</tr>
-<tr>
-<td><code>*.sqlite3-wal</code></td>
-<td>ملفات SQLite اليومية</td>
-</tr>
-</tbody>
-</table>
-<h2 id="13">1.3 فحص سلامة النسخة الاحتياطية</h2>
-<pre class="codehilite"><code>1. تحقق من وجود الملف:
-   dir D:\accounting_system_backups\accounting_system_FULL_*.zip
-
-2. تحقق من الحجم (يجب أن يكون أكبر من 800 MB):
-   forfiles /P D:\accounting_system_backups /M /C &quot;cmd /c if @fsize GTR 838860800 echo @fname OK&quot;
-
-3. اختبار فك الضغط بدون تثبيت:
-   using 7-Zip:
-   &quot;C:\Program Files\7-Zip\7z.exe&quot; t D:\accounting_system_backups\accounting_system_FULL_*.zip
-</code></pre>
-
-<h2 id="14">1.4 نقل الملفات إلى الجهاز الهدف</h2>
-<h3 id="lan">الخيار أ: عبر الشبكة (LAN)</h3>
-<p><strong>على الجهاز المصدر:</strong></p>
-<pre class="codehilite"><code>1. افتح الاستخدام المشترك:
-  右键 على المجلد D:\accounting_system → Properties → Sharing → Advanced Sharing
-   → Share this folder → Permissions → Everyone → Full Control
-
-2. احصل على IP الجهاز المصدر:
-   ipconfig
-   مثال: 192.168.1.50
-
-3. على الجهاز الهدف، افتح:
-   \\192.168.1.50\accounting_system_backups
-   وانسخ ملف ZIP إلى سطح المكتب
-</code></pre>
-
-<h3 id="usb">الخيار ب: عبر USB</h3>
-<pre class="codehilite"><code>1. انسخ ملف ZIP إلى USB:
-   copy D:\accounting_system_backups\accounting_system_FULL_*.zip E:\
-
-2. اخرج الـ USB بأمان:
-   Remove Hardware Safely → USB Flash Drive
-
-3. على الجهاز الهدف، الصق الـ USB وانسخ الملف إلى D:\
-</code></pre>
-
-<h3 id="mega-google-drive-etc">الخيار ج: عبر الإنترنت (mega, google drive, etc.)</h3>
-<pre class="codehilite"><code>1. ارفع الملف إلى الخدمة السحابية
-2. على الجهاز الهدف، حمّله
-3. تأكد من صلاحية الحمولة باستخدام: sha256sum
-</code></pre>
-
-<h2 id="15">1.5 فك الضغط وتوسيع المجلدات</h2>
-<p><strong>على الجهاز الهدف:</strong></p>
-<pre class="codehilite"><code class="language-powershell"># 1. إنشاء المجلد الهدف
-mkdir D:\accounting_system
-
-# 2. فك الضغط
-# باستخدام PowerShell المدمج:
-Expand-Archive -Path &quot;D:\accounting_system_FULL_*.zip&quot; -DestinationPath &quot;D:\accounting_system&quot; -Force
-
-# أو باستخدام 7-Zip:
-&quot;C:\Program Files\7-Zip\7z.exe&quot; x D:\accounting_system_FULL_*.zip -oD:\accounting_system -y
-</code></pre>
-
-<h2 id="16">1.6 فحص سلامة الملفات بعد النقل</h2>
-<pre class="codehilite"><code class="language-powershell"># 1. تحقق من وجود الملفات الرئيسية
-@(
-    &quot;D:\accounting_system\manage.py&quot;,
-    &quot;D:\accounting_system\requirements.txt&quot;,
-    &quot;D:\accounting_system\.env&quot;,
-    &quot;D:\accounting_system\db.sqlite3&quot;,
-    &quot;D:\accounting_system\accounting_system\settings.py&quot;
-) | ForEach-Object {
-    if (Test-Path $_) { Write-Host &quot;OK: $_&quot; -ForegroundColor Green }
-    else { Write-Host &quot;MISSING: $_&quot; -ForegroundColor Red }
-}
-
-# 2. تحقق من عدد الملفات
-(Get-ChildItem D:\accounting_system -Recurse -File).Count
-# الناتج: يجب أن يكون أكبر من 900 ملف
-
-# 3. تحقق من حجم قاعدة البيانات
-(Get-Item D:\accounting_system\db.sqlite3).Length / 1MB
-# الناتج: يجب أن يكون أكبر من 100 MB
-</code></pre>
-
-<hr />
-<h1 id="_10">الباب الثاني: التثبيت وإعادة التثبيت</h1>
-<h2 id="21">2.1 تثبيت البرامج الأساسية</h2>
-<h3 id="python-312">تثبيت Python 3.12</h3>
-<pre class="codehilite"><code class="language-powershell"># باستخدام winget
-winget install Python.Python.3.12.4 --accept-package-agreements --accept-source-agreements
-
-# التحقق من التثبيت
-python --version
-# الناتج: Python 3.12.4
-
-# التأكد من وجود pip
-pip --version
-# الناتج: pip 24.x.x
-</code></pre>
-
-<h3 id="postgresql-16-">تثبيت PostgreSQL 16 (اختياري - للإنتاج)</h3>
-<pre class="codehilite"><code class="language-powershell"># باستخدام winget
-winget install PostgreSQL.PostgreSQL.16 --accept-package-agreements
-
-# أو باستخدام Chocolatey
-choco install postgresql --version=16.2 -y
-</code></pre>
-
-<h3 id="redis-">تثبيت Redis (اختياري - للكاش)</h3>
-<pre class="codehilite"><code class="language-powershell">winget install Microsoft.Redis
-# أو
-choco install redis-64
-</code></pre>
-
-<h3 id="nginx">تثبيت Nginx (للإنتاج)</h3>
-<pre class="codehilite"><code class="language-powershell">winget install Nginx.Nginx
-# أو
-choco install nginx
-</code></pre>
-
-<h2 id="22">2.2 تثبيت التبعيات البرمجية</h2>
-<pre class="codehilite"><code class="language-powershell"># 1. الانتقال لمجلد التطبيق
-cd D:\accounting_system
-
-# 2. إنشاء البيئة الافتراضية
+<span class="cmd-comment"># إنشاء البيئة الافتراضية</span>
 python -m venv venv
 
-# 3. تفعيل البيئة الافتراضية
+<span class="cmd-comment"># تفعيل البيئة على Windows</span>
 venv\Scripts\activate
 
-# 4. ترقية pip
-pip install --upgrade pip setuptools wheel
+<span class="cmd-comment"># تفعيل البيئة على Linux</span>
+source venv/bin/activate
 
-# 5. تثبيت المكتبات
+<span class="cmd-comment"># التأكد من التفعيل (يجب أن يظهر مسار venv في الـ prompt)</span>
+where python  <span class="cmd-comment"># Windows</span>
+which python   <span class="cmd-comment"># Linux</span></code></pre>
+
+        <!-- 3.3 -->
+        <h3>3.3 تثبيت الاعتماديات</h3>
+        <pre><code><span class="cmd-comment"># ترقية pip إلى أحدث إصدار</span>
+python -m pip install --upgrade pip
+
+<span class="cmd-comment"># تثبيت الاعتماديات من ملف requirements</span>
 pip install -r requirements.txt
 
-# 6. تثبيت psycopg2 للاتصال بـ PostgreSQL (إذا لزم)
-pip install psycopg2-binary
-</code></pre>
+<span class="cmd-comment"># في حالة وجود ملف requirements-dev.txt للتطوير</span>
+pip install -r requirements-dev.txt</code></pre>
 
-<h2 id="23">2.3 إعداد قاعدة البيانات</h2>
-<h3 id="sqlite">للـ SQLite (الخيار الأبسط)</h3>
-<pre class="codehilite"><code>لا يحتاج إعداد إضافي - قاعدة البيانات موجودة في db.sqlite3
-</code></pre>
+        <div class="file-tree">
+<span class="dir">accounting_system/</span>
+  requirements.txt          <span class="file"># الاعتماديات الأساسية</span>
+  requirements-dev.txt      <span class="file"># اعتماديات التطوير (اختياري)</span>
+  pyproject.toml            <span class="file"># إعدادات المشروع</span>
+        </div>
 
-<h3 id="postgresql">للـ PostgreSQL (الإنتاج)</h3>
-<pre class="codehilite"><code class="language-powershell"># 1. إنشاء قاعدة البيانات
-psql -U postgres -c &quot;CREATE DATABASE accounting_db;&quot;
+        <!-- 3.4 -->
+        <h3>3.4 إعداد ملف .env</h3>
+        <p>أنشئ ملف <code>.env</code> في جذر المشروع بالبيانات التالية:</p>
+        <pre><code><span class="cmd-comment"># ==========================================</span>
+<span class="cmd-comment"># ملف البيئة - .env</span>
+<span class="cmd-comment"># ==========================================</span>
 
-# 2. إنشاء المستخدم
-psql -U postgres -c &quot;CREATE USER accounting_user WITH PASSWORD 'your_password';&quot;
+<span class="cmd-comment"># وضع التشغيل</span>
+DJANGO_SETTINGS_MODULE=config.settings.production
+DEBUG=False
+SECRET_KEY=<span class="cmd-string">your-super-secret-key-change-this</span>
 
-# 3. منح الصلاحيات
-psql -U postgres -c &quot;GRANT ALL PRIVILEGES ON DATABASE accounting_db TO accounting_user;&quot;
+<span class="cmd-comment"># قاعدة البيانات</span>
+DATABASE_URL=<span class="cmd-string">postgres://user:password@localhost:5432/accounting_db</span>
 
-# 4. تطبيق الهجرات
-python manage.py migrate --database=default
+<span class="cmd-comment"># أو للاختبار بـ SQLite</span>
+<span class="cmd-comment"># DATABASE_URL=sqlite:///db.sqlite3</span>
 
-# 5. إنشاء_superuser
+<span class="cmd-comment"># Redis (اختياري - للكاش والجلسات)</span>
+REDIS_URL=<span class="cmd-string">redis://127.0.0.1:6379/0</span>
+
+<span class="cmd-comment"># البريد الإلكتروني</span>
+EMAIL_HOST=<span class="cmd-string">smtp.gmail.com</span>
+EMAIL_PORT=587
+EMAIL_HOST_USER=<span class="cmd-string">your-email@gmail.com</span>
+EMAIL_HOST_PASSWORD=<span class="cmd-string">your-app-password</span>
+EMAIL_USE_TLS=True
+
+<span class="cmd-comment"># الأمان</span>
+ALLOWED_HOSTS=<span class="cmd-string">your-domain.com,localhost</span>
+CSRF_TRUSTED_ORIGINS=<span class="cmd-string">https://your-domain.com</span>
+
+<span class="cmd-comment"># اللغة والمنطقة</span>
+LANGUAGE_CODE=ar
+TIME_ZONE=Africa/Cairo
+USE_TZ=True</code></pre>
+
+        <div class="info-card danger">
+            <div class="label">&#9888; تحذير أمني</div>
+            <p>لا تُ敷ّح ملف <code>.env</code> أبداً في مستودع Git. تأكد من وجوده في <code>.gitignore</code>.</p>
+        </div>
+
+        <!-- 3.5 -->
+        <h3>3.5 تشغيل الترحيلات</h3>
+        <pre><code><span class="cmd-comment"># تطبيق الترحيلات على قاعدة البيانات</span>
+python manage.py migrate
+
+<span class="cmd-comment"># مراجعة الترحيلات المُطبقة</span>
+python manage.py showmigrations
+
+<span class="cmd-comment"># التحقق من عدم وجود ترحيلات معلقة</span>
+python manage.py migrate --check</code></pre>
+
+        <!-- 3.6 -->
+        <h3>3.6 إنشاء المستخدم المشرف</h3>
+        <pre><code><span class="cmd-comment"># إنشاء حساب مشرف</span>
 python manage.py createsuperuser
-</code></pre>
 
-<h2 id="24">2.4 تهيئة بيئة التطبيق</h2>
-<pre class="codehilite"><code class="language-powershell"># 1. نسخ ملف الإعدادات
-copy .env.example .env
+<span class="cmd-comment"># عند التشغيل سُئل عن:</span>
+<span class="cmd-comment">#   Username: admin</span>
+<span class="cmd-comment">#   Email: admin@company.com</span>
+<span class="cmd-comment">#   Password: ********</span></code></pre>
 
-# 2. تعديل الإعدادات
-notepad .env
+        <p>لإضافة مستخدمين إضافيين بالرمز البرمجي:</p>
+        <pre><code><span class="cmd-comment"># شل Django</span>
+python manage.py shell
 
-# الملفات الرئيسية للتعديل:
-# .env → DATABASE_URL, SECRET_KEY, ALLOWED_HOSTS
-# gunicorn.conf.py → bind, workers
-# nginx.conf → server_name, proxy_pass
-</code></pre>
+<span class="cmd-comment"># في واجهة الشل:</span>
+<span class="cmd-comment"># from django.contrib.auth import get_user_model</span>
+<span class="cmd-comment"># User = get_user_model()</span>
+<span class="cmd-comment"># User.objects.create_user('accountant', 'acc@company.com', 'password123')</span>
+<span class="cmd-comment"># exit()</span></code></pre>
 
-<h2 id="25">2.5 إعادة التثبيت من الصفر</h2>
-<pre class="codehilite"><code class="language-powershell"># 1. حذف المجلد القديم (احتياطي أولاً)
-Rename-Item D:\accounting_system D:\accounting_system_backup_$(Get-Date -Format 'yyyyMMdd')
+        <!-- 3.7 -->
+        <h3>3.7 تجميع الملفات الثابتة</h3>
+        <pre><code><span class="cmd-comment"># تجميع ملفات CSS و JavaScript و الصور الثابتة</span>
+python manage.py collectstatic --noinput
 
-# 2. إنشاء مجلد جديد
-mkdir D:\accounting_system
+<span class="cmd-comment"># التحقق من المجلد</span>
+dir staticfiles  <span class="cmd-comment"># Windows</span>
+ls staticfiles/  <span class="cmd-comment"># Linux</span></code></pre>
 
-# 3. فك الضغط
-Expand-Archive -Path &quot;D:\accounting_system_FULL_*.zip&quot; -DestinationPath &quot;D:\accounting_system&quot;
+        <!-- 3.8 -->
+        <h3>3.8 تشغيل السيرفر</h3>
+        <pre><code><span class="cmd-comment"># سيرفر التطوير (للتجربة فقط)</span>
+python manage.py runserver 0.0.0.0:8000
 
-# 4. التثبيت
-cd D:\accounting_system
-python -m venv venv
+<span class="cmd-comment"># سيرفر الإنتاج باستخدام Gunicorn (Linux فقط)</span>
+gunicorn config.wsgi:application \
+    --bind 0.0.0.0:8000 \
+    --workers 4 \
+    --threads 2 \
+    --timeout 120 \
+    --access-logfile - \
+    --error-logfile -
+
+<span class="cmd-comment"># سيرفر الإنتاج باستخدام Waitress (Windows)</span>
+waitress-serve --host=0.0.0.0 --port=8000 config.wsgi:application</code></pre>
+    </section>
+
+    <!-- Section 4 -->
+    <section id="sec4">
+        <h2 class="section-title"><span class="num">4</span> الترقية من إصدار سابق</h2>
+
+        <h3>4.1 النسخ الاحتياطي</h3>
+        <pre><code><span class="cmd-comment"># نسخ احتياطي لقاعدة البيانات</span>
+<span class="cmd-comment"># PostgreSQL:</span>
+pg_dump -U username -d accounting_db -f backup_$(date +%Y%m%d).sql
+
+<span class="cmd-comment"># SQLite:</span>
+copy db.sqlite3 db_backup_$(date +%Y%m%d).sqlite3
+
+<span class="cmd-comment"># نسخ احتياطي للمجلدات</span>
+xcopy media media_backup /E /I
+xcopy staticfiles staticfiles_backup /E /I</code></pre>
+
+        <div class="info-card warn">
+            <div class="label">&#9888; ضروري</div>
+            <p>تأكد دائماً من إنشاء نسخة احتياطية كاملة قبل أي عملية ترقية.</p>
+        </div>
+
+        <h3>4.2 تحديث الكود</h3>
+        <pre><code><span class="cmd-comment"># سحب أحدث التغييرات</span>
+git fetch origin
+git status
+
+<span class="cmd-comment"># الدمج</span>
+git merge origin/main
+
+<span class="cmd-comment"># أو سحب مباشر (إذا كنت تستخدم main)</span>
+git pull origin main</code></pre>
+
+        <h3>4.3 تشغيل الترحيلات</h3>
+        <pre><code><span class="cmd-comment"># تفعيل البيئة الافتراضية</span>
 venv\Scripts\activate
-pip install --upgrade pip
+
+<span class="cmd-comment"># تحديث الاعتماديات</span>
 pip install -r requirements.txt
-pip install psycopg2-binary
 
-# 5. الإعداد
-copy .env.example .env
-notepad .env
-python manage.py migrate
-python manage.py collectstatic --noinput
-python manage.py createsuperuser
-
-# 6. التشغيل
-python run_waitress.py
-</code></pre>
-
-<h2 id="26">2.6 استعادة قاعدة البيانات من النسخة الاحتياطية</h2>
-<pre class="codehilite"><code class="language-powershell"># للـ SQLite: الملف موجود في db.sqlite3 بعد فك الضغط
-
-# للـ PostgreSQL من ملف dump:
-pg_restore -U accounting_user -d accounting_db -v db_backup.dump
-
-# للـ PostgreSQL من ملف SQL:
-psql -U accounting_user -d accounting_db -f db_backup.sql
-</code></pre>
-
-<hr />
-<h1 id="_11">الباب الثالث: تغيير بيئة العمل</h1>
-<h2 id="31">3.1 بنية ملفات البيئة</h2>
-<h3 id="env">ملف <code>.env</code> الرئيسي</h3>
-<pre class="codehilite"><code>D:\accounting_system\.env
-</code></pre>
-
-<table>
-<thead>
-<tr>
-<th>المتغير</th>
-<th>وصفه</th>
-<th>مثال Development</th>
-<th>مثال Production</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>DEBUG</code></td>
-<td>وضع التطوير</td>
-<td><code>True</code></td>
-<td><code>False</code></td>
-</tr>
-<tr>
-<td><code>SECRET_KEY</code></td>
-<td>مفتاح التشفير</td>
-<td><code>[أي قيمة]</code></td>
-<td><code>[قيمة قوية عشوائية]</code></td>
-</tr>
-<tr>
-<td><code>ALLOWED_HOSTS</code></td>
-<td>النطاقات المسموحة</td>
-<td><code>localhost,127.0.0.1</code></td>
-<td><code>app.company.com,10.0.5.25</code></td>
-</tr>
-<tr>
-<td><code>DATABASE_URL</code></td>
-<td>رابط قاعدة البيانات</td>
-<td><code>sqlite:///db.sqlite3</code></td>
-<td><code>postgresql://user:pass@host:5432/db</code></td>
-</tr>
-<tr>
-<td><code>CSRF_TRUSTED_ORIGINS</code></td>
-<td>مصادر CSRF</td>
-<td><code>http://localhost:8000</code></td>
-<td><code>https://app.company.com</code></td>
-</tr>
-<tr>
-<td><code>EMAIL_HOST</code></td>
-<td>خادم البريد</td>
-<td><code>smtp.gmail.com</code></td>
-<td><code>smtp.company.com</code></td>
-</tr>
-<tr>
-<td><code>STATIC_ROOT</code></td>
-<td>ملفات ثابتة</td>
-<td><code>staticfiles/</code></td>
-<td><code>/var/www/static/</code></td>
-</tr>
-<tr>
-<td><code>MEDIA_ROOT</code></td>
-<td>ملفات مرفوعة</td>
-<td><code>media/</code></td>
-<td><code>/var/www/media/</code></td>
-</tr>
-<tr>
-<td><code>CACHES</code></td>
-<td>إعداد الكاش</td>
-<td><code>django.core.cache.backends.locmem</code></td>
-<td><code>django_redis.cache.RedisCache</code></td>
-</tr>
-<tr>
-<td><code>SESSION_ENGINE</code></td>
-<td>محرك الجلسات</td>
-<td><code>django.contrib.sessions.backends.db</code></td>
-<td><code>django.contrib.sessions.backends.cache</code></td>
-</tr>
-<tr>
-<td><code>LOGGING_LEVEL</code></td>
-<td>مستوى اللوجز</td>
-<td><code>DEBUG</code></td>
-<td><code>WARNING</code></td>
-</tr>
-<tr>
-<td><code>SECURE_SSL_REDIRECT</code></td>
-<td>إعادة التوجيه لـ HTTPS</td>
-<td><code>False</code></td>
-<td><code>True</code></td>
-</tr>
-<tr>
-<td><code>SECURE_HSTS_SECONDS</code></td>
-<td>HSTS</td>
-<td><code>0</code></td>
-<td><code>31536000</code></td>
-</tr>
-<tr>
-<td><code>CSRF_COOKIE_SECURE</code></td>
-<td>ecure CSRF cookie</td>
-<td><code>False</code></td>
-<td><code>True</code></td>
-</tr>
-<tr>
-<td><code>SESSION_COOKIE_SECURE</code></td>
-<td>Secure session cookie</td>
-<td><code>False</code></td>
-<td><code>True</code></td>
-</tr>
-</tbody>
-</table>
-<h2 id="32-development-production">3.2 التحويل من Development إلى Production</h2>
-<h3 id="_12">الإجراءات المطلوبة</h3>
-<pre class="codehilite"><code class="language-powershell"># 1. تعديل .env
-notepad .env
-
-# غيّر هذه القيم:
-# DEBUG=False
-# SECRET_KEY=[قيمة قوية جديدة]
-# ALLOWED_HOSTS=app.company.com
-# DATABASE_URL=postgresql://user:pass@host:5432/db
-# SECURE_SSL_REDIRECT=True
-# SECURE_HSTS_SECONDS=31536000
-# CSRF_COOKIE_SECURE=True
-# SESSION_COOKIE_SECURE=True
-# LOGGING_LEVEL=WARNING
-# CACHES=django_redis:redis://127.0.0.1:6379/1
-
-# 2. تطبيق الهجرات
+<span class="cmd-comment"># تشغيل الترحيلات الجديدة</span>
 python manage.py migrate
 
-# 3. تجميع الملفات الثابتة
-python manage.py collectstatic --noinput
+<span class="cmd-comment"># تجميع الملفات الثابتة</span>
+python manage.py collectstatic --noinput</code></pre>
 
-# 4. إنشاء Log Directory
-mkdir logs
+        <h3>4.4 اختبار ما بعد الترقية</h3>
+        <pre><code><span class="cmd-comment"># تشغيل الاختبارات</span>
+python manage.py test
 
-# 5. تشغيل الخدمة
-python run_waitress.py --host 0.0.0.0 --port 8000
-</code></pre>
+<span class="cmd-comment"># فحص سلامة النظام</span>
+python manage.py check --deploy
 
-<h3 id="nginx_1">إعداد Nginx للإنتاج</h3>
-<pre class="codehilite"><code class="language-nginx"># D:\nginx\conf\nginx.conf
+<span class="cmd-comment"># معاينة أي مشاكل محتملة</span>
+python manage.py showmigrations</code></pre>
 
-upstream django_app {
+        <ol>
+            <li>تحقق من عمل جميع الشاشات الرئيسية</li>
+            <li>تأكد من صحة التقارير المالية</li>
+            <li>اختبر إدخال وتعديل وحذف البيانات</li>
+            <li>راجع سجلات الخطأ في <code>logs/</code></li>
+        </ol>
+    </section>
+
+    <!-- Section 5 -->
+    <section id="sec5">
+        <h2 class="section-title"><span class="num">5</span> النقل إلى خادم آخر</h2>
+
+        <h3>5.1 تصدير قاعدة البيانات</h3>
+        <pre><code><span class="cmd-comment"># على الخادم القديم - تصدير PostgreSQL</span>
+pg_dump -U db_user -d accounting_db -F c -f accounting_dump.dump
+
+<span class="cmd-comment"># تصدير كملف SQL عادي</span>
+pg_dump -U db_user -d accounting_db -f accounting_dump.sql</code></pre>
+
+        <h3>5.2 ضغط الملفات</h3>
+        <pre><code><span class="cmd-comment"># ضغط المشروع كاملاً</span>
+tar -czvf accounting_system_backup.tar.gz \
+    --exclude='venv' \
+    --exclude='__pycache__' \
+    --exclude='*.pyc' \
+    --exclude='.git' \
+    accounting_system/</code></pre>
+
+        <h3>5.3 النقل عبر rsync/SCP</h3>
+        <pre><code><span class="cmd-comment"># عبر SCP</span>
+scp accounting_system_backup.tar.gz user@new-server:/home/user/
+
+<span class="cmd-comment"># عبر rsync (أفضل للملفات الكبيرة)</span>
+rsync -avzP accounting_system_backup.tar.gz user@new-server:/home/user/
+
+<span class="cmd-comment"># نقل قاعدة البيانات</span>
+scp accounting_dump.dump user@new-server:/home/user/</code></pre>
+
+        <h3>5.4 استيراد قاعدة البيانات</h3>
+        <pre><code><span class="cmd-comment"># على الخادم الجديد</span>
+sudo -u postgres psql -c "CREATE DATABASE accounting_db;"
+sudo -u postgres psql -c "CREATE USER db_user WITH PASSWORD 'secure_password';"
+sudo -u postgres psql -c "ALTER ROLE db_user SET client_encoding TO 'utf8';"
+sudo -u postgres psql -c "ALTER ROLE db_user SET default_transaction_isolation TO 'read committed';"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE accounting_db TO db_user;"
+
+<span class="cmd-comment"># استيراد البيانات</span>
+pg_restore -U db_user -d accounting_db accounting_dump.dump</code></pre>
+
+        <h3>5.5 اختبار التشغيل</h3>
+        <pre><code><span class="cmd-comment"># تفعيل البيئة</span>
+source venv/bin/activate
+
+<span class="cmd-comment"># تشغيل الترحيلات</span>
+python manage.py migrate
+
+<span class="cmd-comment"># فحص النظام</span>
+python manage.py check --deploy
+
+<span class="cmd-comment"># تشغيل السيرفر</span>
+python manage.py runserver 0.0.0.0:8000</code></pre>
+    </section>
+
+    <!-- Section 6 -->
+    <section id="sec6">
+        <h2 class="section-title"><span class="num">6</span> التثبيت عبر Docker</h2>
+
+        <h3>6.1 Dockerfile</h3>
+        <pre><code><span class="cmd-comment"># Dockerfile</span>
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+RUN python manage.py collectstatic --noinput
+
+EXPOSE 8000
+
+CMD ["gunicorn", "config.wsgi:application", \
+     "--bind", "0.0.0.0:8000", \
+     "--workers", "4", \
+     "--threads", "2"]</code></pre>
+
+        <h3>6.2 docker-compose.yml</h3>
+        <pre><code><span class="cmd-comment"># docker-compose.yml</span>
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: accounting_db
+      POSTGRES_USER: db_user
+      POSTGRES_PASSWORD: secure_password
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U db_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application
+             --bind 0.0.0.0:8000
+             --workers 4
+             --threads 2"
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:</code></pre>
+
+        <h3>6.3 ملف .env للـ Docker</h3>
+        <pre><code><span class="cmd-comment"># .env للبيئة</span>
+DEBUG=False
+SECRET_KEY=<span class="cmd-string">change-this-to-a-random-secret-key</span>
+DATABASE_URL=<span class="cmd-string">postgres://db_user:secure_password@db:5432/accounting_db</span>
+REDIS_URL=<span class="cmd-string">redis://redis:6379/0</span>
+ALLOWED_HOSTS=<span class="cmd-string">your-domain.com,localhost</span>
+LANGUAGE_CODE=ar
+TIME_ZONE=Africa/Cairo</code></pre>
+
+        <h3>6.4 بناء وتشغيل</h3>
+        <pre><code><span class="cmd-comment"># بناء الصور وتشغيل جميع الخدمات</span>
+docker compose up -d --build
+
+<span class="cmd-comment"># عرض السجلات</span>
+docker compose logs -f web
+
+<span class="cmd-comment"># إنشاء المستخدم المشرف داخل الحاوية</span>
+docker compose exec web python manage.py createsuperuser
+
+<span class="cmd-comment"># إيقاف جميع الخدمات</span>
+docker compose down
+
+<span class="cmd-comment"># إيقاف وحذف بيانات التخزين</span>
+docker compose down -v</code></pre>
+
+        <div class="info-card success">
+            <div class="label">&#10003; ملاحظة</div>
+            <p>Docker هي الطريقة الموصى بها للنشر في الإنتاج لضمان بيئة موحدة وقابلة للتكرار.</p>
+        </div>
+    </section>
+
+    <!-- Section 7 -->
+    <section id="sec7">
+        <h2 class="section-title"><span class="num">7</span> إعداد PostgreSQL للإنتاج</h2>
+
+        <h3>7.1 إنشاء المستخدم وقاعدة البيانات</h3>
+        <pre><code><span class="cmd-comment"># الدخول إلى PostgreSQL كمستخدم postgres</span>
+sudo -u postgres psql
+
+<span class="cmd-comment"># إنشاء المستخدم</span>
+CREATE USER db_user WITH PASSWORD '<span class="cmd-string">StrongPassword123!</span>';
+
+<span class="cmd-comment"># إنشاء قاعدة البيانات</span>
+CREATE DATABASE accounting_db OWNER db_user;
+
+<span class="cmd-comment"># تعيين الترميز</span>
+ALTER ROLE db_user SET client_encoding TO 'utf8';
+
+<span class="cmd-comment"># تعيين عزل المعاملات</span>
+ALTER ROLE db_user SET default_transaction_isolation TO 'read committed';
+
+<span class="cmd-comment"># تعيين المنطقة الزمنية</span>
+ALTER ROLE db_user SET timezone TO 'Africa/Cairo';
+
+<span class="cmd-comment"># منح الصلاحيات</span>
+GRANT ALL PRIVILEGES ON DATABASE accounting_db TO db_user;
+
+<span class="cmd-comment"># الخروج</span>
+\q</code></pre>
+
+        <h3>7.2 صلاحيات الأدوار</h3>
+        <pre><code><span class="cmd-comment"># إنشاء دور للقراءة فقط (للتقارير)</span>
+CREATE ROLE readonly_role;
+GRANT CONNECT ON DATABASE accounting_db TO readonly_role;
+GRANT USAGE ON SCHEMA public TO readonly_role;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO readonly_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO readonly_role;
+
+<span class="cmd-comment"># ربط مستخدم للدور</span>
+GRANT readonly_role TO report_user;</code></pre>
+
+        <h3>7.3 إعداد SSL</h3>
+        <pre><code><span class="cmd-comment"># تعديل postgresql.conf</span>
+<span class="cmd-comment"># على Ubuntu: /etc/postgresql/15/main/postgresql.conf</span>
+ssl = on
+ssl_cert_file = '/etc/ssl/certs/ssl-cert-snakeoil.pem'
+ssl_key_file = '/etc/ssl/private/ssl-cert-snakeoil.key'
+ssl_min_protocol_version = 'TLSv1.2'
+
+<span class="cmd-comment"># تعديل pg_hba.conf لإلزام SSL</span>
+<span class="cmd-comment"># على Ubuntu: /etc/postgresql/15/main/pg_hba.conf</span>
+hostssl accounting_db db_user 0.0.0.0/0 scram-sha-256
+
+<span class="cmd-comment"># إعادة تشغيل PostgreSQL</span>
+sudo systemctl restart postgresql</code></pre>
+
+        <h3>7.4 ضبط الأداء</h3>
+        <pre><code><span class="cmd-comment"># ضبط postgresql.conf للإنتاج</span>
+shared_buffers = '1GB'            <span class="cmd-comment"># 25% من RAM</span>
+effective_cache_size = '3GB'      <span class="cmd-comment"># 75% من RAM</span>
+work_mem = '16MB'
+maintenance_work_mem = '256MB'
+max_connections = 100
+wal_buffers = '16MB'
+checkpoint_completion_target = 0.9
+random_page_cost = 1.1            <span class="cmd-comment"># لـ SSD</span></code></pre>
+    </section>
+
+    <!-- Section 8 -->
+    <section id="sec8">
+        <h2 class="section-title"><span class="num">8</span> إعداد Nginx كوكيل عكسي</h2>
+
+        <h3>8.1 ملف الإعداد</h3>
+        <pre><code><span class="cmd-comment"># /etc/nginx/conf.d/accounting.conf</span>
+upstream accounting_app {
     server 127.0.0.1:8000;
 }
 
 server {
     listen 80;
-    server_name app.company.com;
-    client_max_body_size 50M;
+    server_name your-domain.com;
+    return 301 https://$server_name$request_uri;
+}
 
+server {
+    listen 443 ssl http2;
+    server_name your-domain.com;
+
+    <span class="cmd-comment"># إعدادات SSL</span>
+    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    <span class="cmd-comment"># تفعيل ضغط</span>
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript
+               text/xml application/xml text/javascript;
+
+    <span class="cmd-comment"># الملفات الثابتة</span>
     location /static/ {
-        alias D:/accounting_system/staticfiles/;
-        expires 1y;
-        add_header Cache-Control &quot;public, immutable&quot;;
-    }
-
-    location /media/ {
-        alias D:/accounting_system/media/;
+        alias /home/user/accounting_system/staticfiles/;
         expires 30d;
+        add_header Cache-Control "public, immutable";
     }
 
+    <span class="cmd-comment"># الملفات المرفوعة</span>
+    location /media/ {
+        alias /home/user/accounting_system/media/;
+        expires 7d;
+    }
+
+    <span class="cmd-comment"># التطبيق الرئيسي</span>
     location / {
-        proxy_pass http://django_app;
+        proxy_pass http://accounting_app;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+        client_max_body_size 20M;
     }
-}
-</code></pre>
 
-<h3 id="windows-nssm">إعداد كخدمة Windows ( NSSM)</h3>
-<pre class="codehilite"><code class="language-powershell"># تثبيت NSSM
-choco install nssm
-
-# تسجيل الخدمة
-nssm install AccountingSystem &quot;D:\accounting_system\venv\Scripts\python.exe&quot; &quot;run_waitress.py&quot;
-nssm set AccountingSystem AppDirectory &quot;D:\accounting_system&quot;
-nssm set AccountingSystem DisplayName &quot;Accounting System&quot;
-nssm set AccountingSystem Start SERVICE_AUTO_START
-nssm start AccountingSystem
-</code></pre>
-
-<h2 id="33-production-development">3.3 التحويل من Production إلى Development</h2>
-<pre class="codehilite"><code class="language-powershell"># 1. تعديل .env
-notepad .env
-
-# غيّر هذه القيم:
-# DEBUG=True
-# SECRET_KEY=[قيمة Development]
-# ALLOWED_HOSTS=localhost,127.0.0.1
-# DATABASE_URL=sqlite:///db.sqlite3
-# SECURE_SSL_REDIRECT=False
-# SECURE_HSTS_SECONDS=0
-# CSRF_COOKIE_SECURE=False
-# SESSION_COOKIE_SECURE=False
-# LOGGING_LEVEL=DEBUG
-# CACHES=django.core.cache.backends.locmem.LocMemCache
-
-# 2. توقف الخدمة
-nssm stop AccountingSystem
-
-# 3. التشغيل المحلي
-python run_waitress.py
-</code></pre>
-
-<h2 id="34">3.4 إدارة متغيرات البيئة الآمنة</h2>
-<h3 id="_13">الملفات التي يجب حمايتها</h3>
-<table>
-<thead>
-<tr>
-<th>الملف</th>
-<th>السبب</th>
-<th>الطريقة</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>.env</code></td>
-<td>يحتوي كلمات المرور</td>
-<td>لا ترفعه لـ Git</td>
-</tr>
-<tr>
-<td><code>db.sqlite3</code></td>
-<td>يحتوي بيانات حساسة</td>
-<td>لا ترفعه لـ Git</td>
-</tr>
-<tr>
-<td><code>media/</code></td>
-<td>ملفات مرفوعة</td>
-<td>لا ترفعه لـ Git</td>
-</tr>
-<tr>
-<td><code>*.pem</code>, <code>*.key</code></td>
-<td>مفاتيح التشفير</td>
-<td>لا ترفعه لـ Git</td>
-</tr>
-</tbody>
-</table>
-<h3 id="gitignore">ملف <code>.gitignore</code> المطلوب</h3>
-<pre class="codehilite"><code>.env
-db.sqlite3
-db.sqlite3-shm
-db.sqlite3-wal
-media/
-staticfiles/
-venv/
-__pycache__/
-*.pyc
-logs/
-*.log
-backups/
-</code></pre>
-
-<h2 id="35">3.5 النقاط الحرجة عند تغيير البيئة</h2>
-<table>
-<thead>
-<tr>
-<th>النقطة</th>
-<th>التوضيح</th>
-<th>الحل</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>كلمة المرور</strong></td>
-<td>تختلف بين البيئات</td>
-<td>استخدم <code>.env</code> منفصل لكل بيئة</td>
-</tr>
-<tr>
-<td><strong>قاعدة البيانات</strong></td>
-<td>SQLite لا تعمل مع كثرة المستخدمين</td>
-<td>استخدم PostgreSQL للإنتاج</td>
-</tr>
-<tr>
-<td><strong>HTTPS</strong></td>
-<td>مطلوب في الإنتاج</td>
-<td>استخدم Let's Encrypt أو شهادة مدفوعة</td>
-</tr>
-<tr>
-<td><strong>static files</strong></td>
-<td>يجب تجميعها يدوياً</td>
-<td><code>python manage.py collectstatic</code></td>
-</tr>
-<tr>
-<td><strong>DEBUG</strong></td>
-<td>يكشف الأخطاء للمستخدمين</td>
-<td>اجعله <code>False</code> في الإنتاج</td>
-</tr>
-<tr>
-<td><strong>ALLOWED_HOSTS</strong></td>
-<td>يمنع الهجمات</td>
-<td>حدد النطاقات فقط</td>
-</tr>
-<tr>
-<td><strong>النسخ الاحتياطي</strong></td>
-<td>يجب أن يكون تلقائياً</td>
-<td>استخدم Windows Task Scheduler</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h1 id="_14">الباب الرابع: عمليات المزامنة</h1>
-<h2 id="41-central-database">4.1 نموذج المزامنة المركزي (Central Database)</h2>
-<h3 id="_15">المبدأ</h3>
-<p>جميع الأجهزة تتصل بقاعدة بيانات واحدة على سيرفر مركزي.</p>
-<h3 id="_16">الم架构</h3>
-<pre class="codehilite"><code>┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│  الجهاز 1    │────▶│              │◀────│  الجهاز 2    │
-│  (القديم)    │     │  سيرفر DB    │     │  (الجديد)    │
-│              │◀────│  PostgreSQL   │────▶│              │
-└──────────────┘     └──────────────┘     └──────────────┘
-</code></pre>
-
-<h3 id="_17">إعداد قاعدة البيانات المركزية</h3>
-<pre class="codehilite"><code class="language-powershell"># على جهاز السيرفر:
-cd D:\accounting_system
-powershell -ExecutionPolicy Bypass -File setup_postgresql_server.ps1
-
-# الناتج:
-# IP: 192.168.1.100
-# Port: 5432
-# Database: accounting_db
-# User: accounting_user
-# Password: [محفوظ]
-</code></pre>
-
-<h3 id="env_1">تحديث <code>.env</code> على كل جهاز</h3>
-<pre class="codehilite"><code class="language-powershell"># على كل جهاز:
-cd D:\accounting_system
-powershell -ExecutionPolicy Bypass -File update_env_postgresql.ps1
-# غيّر:
-#   $DB_SERVER_IP = &quot;192.168.1.100&quot;
-#   $DB_PASSWORD = &quot;نفس_الباسوورد&quot;
-</code></pre>
-
-<h3 id="_18">نقل البيانات مرة واحدة</h3>
-<pre class="codehilite"><code class="language-powershell"># على الجهاز القديم فقط:
-powershell -ExecutionPolicy Bypass -File migrate_sqlite_to_postgresql.ps1
-</code></pre>
-
-<h2 id="42-master-slave">4.2 نموذج المزامنة المعمارية (Master-Slave)</h2>
-<h3 id="_19">المبدأ</h3>
-<p>جهاز واحد هو المصدر (Master) والأجهزة الأخرى نسخ (Slaves).</p>
-<h3 id="postgresql_1">إعداد PostgreSQL للنسخ</h3>
-<pre class="codehilite"><code class="language-sql">-- على الـ Master:
--- تعديل postgresql.conf
-wal_level = replica
-max_wal_senders = 3
-wal_keep_size = 1024
-
--- تعديل pg_hba.conf
-host replication slave_user 192.168.1.0/24 scram-sha-256
-
--- إنشاء مستخدم النسخ
-CREATE ROLE slave_user WITH REPLICATION LOGIN PASSWORD 'password';
-</code></pre>
-
-<h3 id="slave">إعداد الـ Slave</h3>
-<pre class="codehilite"><code class="language-powershell"># 1. توقف PostgreSQL على الـ Slave
-net stop postgresql-x64-16
-
-# 2. حذف البيانات القديمة
-Remove-Item -Recurse -Force &quot;C:\Program Files\PostgreSQL\16\data&quot;
-
-# 3. النسخ من الـ Master
-pg_basebackup -h 192.168.1.100 -U slave_user -D &quot;C:\Program Files\PostgreSQL\16\data&quot; -Fp -Xs -P -R
-
-# 4. تشغيل الـ Slave
-net start postgresql-x64-16
-</code></pre>
-
-<h2 id="43-bidirectional">4.3 نموذج المزامنة ثنائية الاتجاه (Bidirectional)</h2>
-<h3 id="django-postgresql">باستخدام Django + PostgreSQL</h3>
-<pre class="codehilite"><code class="language-python"># في settings.py - إعدادات المزامنة
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'accounting_db',
-        'USER': 'accounting_user',
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': '5432',
-        'OPTIONS': {
-            'connect_timeout': 10,
-            'options': '-c statement_timeout=30000'
-        }
+    <span class="cmd-comment"># حماية المجلدات</span>
+    location ~ /\. {
+        deny all;
     }
-}
+}</code></pre>
 
-# إعداد اللوجز للتتبع
-LOGGING = {
-    'version': 1,
-    'handlers': {
-        'sync_file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'logs/sync.log',
-        },
-    },
-    'loggers': {
-        'sync': {
-            'handlers': ['sync_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-    },
-}
-</code></pre>
+        <h3>8.2 شهادة SSL عبر Let's Encrypt</h3>
+        <pre><code><span class="cmd-comment"># تثبيت Certbot</span>
+sudo apt install -y certbot python3-certbot-nginx
 
-<h3 id="_20">سكريبت المزامنة اليومية</h3>
-<pre class="codehilite"><code class="language-powershell"># D:\accounting_system\daily_sync.ps1
+<span class="cmd-comment"># الحصول على الشهادة</span>
+sudo certbot --nginx -d your-domain.com -d www.your-domain.com
 
-$ErrorActionPreference = &quot;Stop&quot;
-$ProjectPath = &quot;D:\accounting_system&quot;
-Set-Location $ProjectPath
+<span class="cmd-comment"># تجديد تلقائي</span>
+sudo crontab -e
+<span class="cmd-comment"># أضف هذا السطر:</span>
+0 12 * * * /usr/bin/certbot renew --quiet</code></pre>
 
-Write-Host &quot;=== Daily Sync - $(Get-Date) ===&quot; -ForegroundColor Cyan
+        <h3>8.3 تشغيل Nginx</h3>
+        <pre><code><span class="cmd-comment"># اختبار الإعداد</span>
+sudo nginx -t
 
-# 1. فحص الاتصال بقاعدة البيانات
-$env:DATABASE_URL = (Get-Content .env | Where-Object { $_ -match &quot;^DATABASE_URL=&quot; } | ForEach-Object { $_ -replace &quot;DATABASE_URL=&quot;, &quot;&quot; })
-if ($env:DATABASE_URL -match &quot;postgresql://&quot;) {
-    Write-Host &quot;OK: PostgreSQL connection&quot; -ForegroundColor Green
-} else {
-    Write-Host &quot;WARNING: Using SQLite - no sync needed&quot; -ForegroundColor Yellow
-    exit 0
-}
+<span class="cmd-comment"># إعادة تشغيل Nginx</span>
+sudo systemctl restart nginx
+sudo systemctl enable nginx</code></pre>
+    </section>
 
-# 2. تطبيق الهجرات الجديدة (إن وجدت)
-. venv\Scripts\activate.ps1
-python manage.py migrate --noinput
+    <!-- Section 9 -->
+    <section id="sec9">
+        <h2 class="section-title"><span class="num">9</span> التوزيع عبر CI/CD</h2>
 
-# 3. تجميع الملفات الثابتة
-python manage.py collectstatic --noinput
+        <h3>9.1 GitHub Actions</h3>
+        <pre><code><span class="cmd-comment"># .github/workflows/deploy.yml</span>
+name: CI/CD Pipeline
 
-# 4. فحص سلامة البيانات
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run linting
+        run: ruff check .
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgres://test_user:test_pass@localhost:5432/test_db
+          SECRET_KEY: test-secret-key
+        run: python manage.py test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/user/accounting_system
+            git pull origin main
+            source venv/bin/activate
+            pip install -r requirements.txt
+            python manage.py migrate
+            python manage.py collectstatic --noinput
+            sudo systemctl restart gunicorn</code></pre>
+
+        <h3>9.2 المتغيرات السرية المطلوبة</h3>
+        <table>
+            <thead>
+                <tr><th>المتغير</th><th>الوصف</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>SERVER_HOST</code></td><td>عنوان الخادم</td></tr>
+                <tr><td><code>SERVER_USER</code></td><td>اسم مستخدم SSH</td></tr>
+                <tr><td><code>SSH_PRIVATE_KEY</code></td><td>مفتاح SSH الخاص</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Section 10 -->
+    <section id="sec10">
+        <h2 class="section-title"><span class="num">10</span> أدوات التطوير</h2>
+
+        <h3>10.1 Ruff Linting</h3>
+        <pre><code><span class="cmd-comment"># تثبيت Ruff</span>
+pip install ruff
+
+<span class="cmd-comment"># فحص الكود</span>
+ruff check .
+
+<span class="cmd-comment"># إصلاح تلقائي</span>
+ruff check --fix .
+
+<span class="cmd-comment"># إعدادات Ruff في pyproject.toml</span>
+<span class="cmd-comment"># [tool.ruff]</span>
+<span class="cmd-comment"># line-length = 120</span>
+<span class="cmd-comment"># target-version = "py312"</span>
+<span class="cmd-comment"># select = ["E", "F", "I", "N", "W", "UP"]</span></code></pre>
+
+        <h3>10.2 Pre-commit Hooks</h3>
+        <pre><code><span class="cmd-comment"># تثبيت pre-commit</span>
+pip install pre-commit
+
+<span class="cmd-comment"># إنشاء ملف .pre-commit-config.yaml</span>
+<span class="cmd-comment"># repos:</span>
+<span class="cmd-comment">#   - repo: https://github.com/astral-sh/ruff-pre-commit</span>
+<span class="cmd-comment">#     rev: v0.4.0</span>
+<span class="cmd-comment">#     hooks:</span>
+<span class="cmd-comment">#       - id: ruff</span>
+<span class="cmd-comment">#         args: [--fix]</span>
+<span class="cmd-comment">#       - id: ruff-format</span>
+
+<span class="cmd-comment"># تثبيت الخطافات</span>
+pre-commit install
+
+<span class="cmd-comment"># تشغيل يدوي</span>
+pre-commit run --all-files</code></pre>
+
+        <h3>10.3 pytest</h3>
+        <pre><code><span class="cmd-comment"># تثبيت pytest</span>
+pip install pytest pytest-django pytest-cov
+
+<span class="cmd-comment"># تشغيل الاختبارات</span>
+pytest
+
+<span class="cmd-comment"># تشغيل مع تغطية</span>
+pytest --cov=. --cov-report=html
+
+<span class="cmd-comment"># تشغيل اختبارات محددة</span>
+pytest apps/core/tests/ -v</code></pre>
+
+        <h3>10.4 Coverage</h3>
+        <pre><code><span class="cmd-comment"># توليد تقرير التغطية</span>
+coverage run manage.py test
+coverage report
+coverage html
+
+<span class="cmd-comment"># النتيجة المتوقعة: coverage.html في مجلد htmlcov/</span></code></pre>
+    </section>
+
+    <!-- Section 11 -->
+    <section id="sec11">
+        <h2 class="section-title"><span class="num">11</span> استكشاف أخطاء التثبيت</h2>
+
+        <h3>11.1 مشاكل الاعتماديات</h3>
+        <table>
+            <thead>
+                <tr><th>الخطأ</th><th>الحل</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ModuleNotFoundError</code></td>
+                    <td>تأكد من تفعيل البيئة الافتراضية وتثبيت <code>requirements.txt</code></td>
+                </tr>
+                <tr>
+                    <td><code>error: Microsoft Visual C++ required</code></td>
+                    <td>ثبّت Visual Studio Build Tools أو استخدم حزم wheels مسبقة البناء</td>
+                </tr>
+                <tr>
+                    <td><code>psycopg2 installation error</code></td>
+                    <td>ثبّت <code>libpq-dev</code> (Ubuntu) أو <code>postgresql-devel</code> (RHEL)</td>
+                </tr>
+                <tr>
+                    <td><code>pip version conflict</code></td>
+                    <td>شغّل <code>pip install --upgrade pip</code> ثم أعد تثبيت الاعتماديات</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>11.2 أخطاء قاعدة البيانات</h3>
+        <table>
+            <thead>
+                <tr><th>الخطأ</th><th>الحل</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>connection refused</code></td>
+                    <td>تأكد أن PostgreSQL يعمل: <code>sudo systemctl status postgresql</code></td>
+                </tr>
+                <tr>
+                    <td><code>database does not exist</code></td>
+                    <td>أنشئ قاعدة البيانات يدوياً</td>
+                </tr>
+                <tr>
+                    <td><code>permission denied</code></td>
+                    <td>تحقق من صلاحيات المستخدم على قاعدة البيانات</td>
+                </tr>
+                <tr>
+                    <td><code>relation already exists</code></td>
+                    <td>شغّل <code>python manage.py migrate --fake-initial</code> أو احذف الجداول المتعارضة</td>
+                </tr>
+                <tr>
+                    <td><code>no such column</code></td>
+                    <td>شغّل <code>python manage.py migrate</code> لتطبيق الترحيلات المعلقة</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>11.3 أخطاء الملفات الثابتة</h3>
+        <table>
+            <thead>
+                <tr><th>الخطأ</th><th>الحل</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>404 for static files</code></td>
+                    <td>شغّل <code>python manage.py collectstatic --noinput</code></td>
+                </tr>
+                <tr>
+                    <td><code>Permission denied on staticfiles</code></td>
+                    <td>غيّر صلاحيات المجلد: <code>chmod -R 755 staticfiles/</code></td>
+                </tr>
+                <tr>
+                    <td>ملفات ثابتة قديمة</td>
+                    <td>احذف <code>staticfiles/</code> وأعد التجميع</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-card">
+            <div class="label" style="color: var(--info);">نصيحة</div>
+            <p>عند مواجهة أي مشكلة، تحقق أولاً من سجلات الخطأ في <code>logs/django.log</code> أو <code>journalctl -u gunicorn</code> على Linux.</p>
+        </div>
+
+        <h3>11.4 أوامر استكشاف الأخطاء السريعة</h3>
+        <pre><code><span class="cmd-comment"># فحص إعدادات النظام</span>
+python manage.py check
+
+<span class="cmd-comment"># فحص إعدادات الإنتاج</span>
 python manage.py check --deploy
 
-# 5. إنشاء نسخة احتياطية
-$BackupDate = Get-Date -Format &quot;yyyyMMdd&quot;
-python manage.py dumpdata --natural-foreign --natural-primary -o &quot;backups/sync_backup_$BackupDate.json&quot;
+<span class="cmd-comment"># عرض جميع الإعدادات</span>
+python manage.py diffsettings
 
-# 6. حذف النسخ القديمة (أكثر من 30 يوم)
-Get-ChildItem &quot;backups/sync_backup_*.json&quot; | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) } | Remove-Item
+<span class="cmd-comment"># عرض الترحيلات</span>
+python manage.py showmigrations
 
-Write-Host &quot;=== Sync completed ===&quot; -ForegroundColor Green
-</code></pre>
+<span class="cmd-comment"># شل Django للاختبار</span>
+python manage.py shell
 
-<h2 id="44">4.4 إجراءات المزامنة اليومية</h2>
-<h3 id="_21">الجدول الزمني</h3>
-<table>
-<thead>
-<tr>
-<th>الوقت</th>
-<th>الإجراء</th>
-<th>المسؤول</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>06:00</td>
-<td>نسخ احتياطي تلقائي</td>
-<td>النظام</td>
-</tr>
-<tr>
-<td>08:00</td>
-<td>فحص سلامة الاتصال</td>
-<td>النظام</td>
-</tr>
-<tr>
-<td>12:00</td>
-<td>مزامنة البيانات</td>
-<td>النظام</td>
-</tr>
-<tr>
-<td>17:00</td>
-<td>فحص التغييرات</td>
-<td>النظام</td>
-</tr>
-<tr>
-<td>22:00</td>
-<td>نسخ احتياطي نهائي</td>
-<td>النظام</td>
-</tr>
-</tbody>
-</table>
-<h3 id="_22">إعداد المهام المجدولة</h3>
-<pre class="codehilite"><code class="language-powershell"># إنشاء مهمة يومية
-$Action = New-ScheduledTaskAction -Execute &quot;powershell.exe&quot; -Argument &quot;-ExecutionPolicy Bypass -File D:\accounting_system\daily_sync.ps1&quot;
-$Trigger = New-ScheduledTaskTrigger -Daily -At 6am
-$Settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -DontStopOnIdleEnd
-Register-ScheduledTask -TaskName &quot;AccountingSystemDailySync&quot; -Action $Action -Trigger $Trigger -Settings $Settings -User &quot;SYSTEM&quot;
-</code></pre>
+<span class="cmd-comment"># فحص قاعدة البيانات</span>
+python manage.py dbshell
 
-<h2 id="45">4.5 استكشاف أخطاء المزامنة وإصلاحها</h2>
-<table>
-<thead>
-<tr>
-<th>المشكلة</th>
-<th>السبب</th>
-<th>الحل</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>connection refused</code></td>
-<td>خادم DB متوقف</td>
-<td>شغّل خدمة PostgreSQL</td>
-</tr>
-<tr>
-<td><code>password authentication failed</code></td>
-<td>كلمة مرور خاطئة</td>
-<td>تأكد من <code>.env</code></td>
-</tr>
-<tr>
-<td><code>duplicate key violation</code></td>
-<td>بيانات مكررة</td>
-<td><code>DELETE FROM table WHERE id IN (...)</code></td>
-</tr>
-<tr>
-<td><code>foreign key violation</code></td>
-<td>ترتيب غير صحيح</td>
-<td>استخدم <code>--natural-foreign</code> في dumpdata</td>
-</tr>
-<tr>
-<td><code>timeout</code></td>
-<td>بطء الاتصال</td>
-<td>زد <code>connect_timeout</code> في <code>.env</code></td>
-</tr>
-<tr>
-<td><code>database locked</code></td>
-<td>SQLite مقفل</td>
-<td>أوقف التطبيق قبل النقل</td>
-</tr>
-<tr>
-<td><code>permission denied</code></td>
-<td>صلاحيات غير كافية</td>
-<td><code>GRANT ALL ON ALL TABLES</code></td>
-</tr>
-</tbody>
-</table>
-<h2 id="46">4.6 ضمان سلامة البيانات أثناء المزامنة</h2>
-<h3 id="_23">قائمة التحقق من سلامة البيانات</h3>
-<pre class="codehilite"><code>□ تحقق من عدد السجلات قبل وبعد المزامنة
-□ تحقق من المجموعات المحاسبية (مدين = دائن)
-□ تحقق من عدم وجود قيود معلقة
-□ تحقق من روابط الفواتير والمدفوعات
-□ تحقق من أرصدة الحسابات
-□ تحقق من بيانات المستخدمين والصلاحيات
-□ اختبار تسجيل الدخول على كل جهاز
-□ اختبار إنشاء فاتورة جديدة
-□ اختبار طباعة تقرير
-□ مراجعة سجلات الأخطاء
-</code></pre>
+<span class="cmd-comment"># عرض سجلات الخطأ (Linux)</span>
+sudo journalctl -u gunicorn -f
+tail -f logs/django.log</code></pre>
+    </section>
 
-<h3 id="_24">سكريبت فحص السلامة</h3>
-<pre class="codehilite"><code class="language-powershell"># D:\accounting_system\verify_sync.ps1
+</div>
 
-cd D:\accounting_system
-. venv\Scripts\activate.ps1
+<div class="footer">
+    <p><span>نظام المحاسبة المتكامل</span> &mdash; دليل النقل والترقية التقني v1.0.0</p>
+    <p>آخر تحديث: يوليو 2026</p>
+</div>
 
-Write-Host &quot;=== Sync Verification ===&quot; -ForegroundColor Cyan
-
-# 1. فحص عدد السجلات
-$tables = @(&quot;accounts_account&quot;, &quot;journal_entries&quot;, &quot;sales_invoice&quot;, &quot;purchase_invoice&quot;)
-foreach ($table in $tables) {
-    $count = python manage.py shell -c &quot;from django.db import connection; cursor = connection.cursor(); cursor.execute('SELECT COUNT(*) FROM $table'); print(cursor.fetchone()[0])&quot;
-    Write-Host &quot;  $table : $count records&quot; -ForegroundColor White
-}
-
-# 2. فحص التوازن المحاسبي
-python manage.py shell -c &quot;
-from django.db import connection
-cursor = connection.cursor()
-cursor.execute('SELECT SUM(debit), SUM(credit) FROM journalentryline')
-debit, credit = cursor.fetchone()
-print(f'Total Debit: {debit}, Total Credit: {credit}')
-print(f'Balanced: {abs(debit - credit) &lt; 0.01}')
-&quot;
-
-# 3. فحص الفواتير المعلقة
-python manage.py shell -c &quot;
-from django.db import connection
-cursor = connection.cursor()
-cursor.execute(\&quot;SELECT COUNT(*) FROM sales_invoice WHERE is_posted = 0\&quot;)
-print(f'Unposted invoices: {cursor.fetchone()[0]}')
-&quot;
-
-Write-Host &quot;=== Verification Complete ===&quot; -ForegroundColor Green
-</code></pre>
-
-<hr />
-<h1 id="_25">ملخص الأوامر السريعة</h1>
-<h2 id="_26">النقل الكامل (خطوة بخطوة)</h2>
-<pre class="codehilite"><code class="language-powershell"># على الجهاز القديم:
-cd D:\accounting_system
-powershell -ExecutionPolicy Bypass -File create_full_backup.ps1
-
-# نقل الملف إلى الجهاز الجديد (USB أو LAN)
-
-# على الجهاز الجديد:
-cd D:\accounting_system
-Expand-Archive -Path &quot;D:\accounting_system_FULL_*.zip&quot; -DestinationPath &quot;D:\accounting_system&quot;
-python -m venv venv
-venv\Scripts\activate
-pip install --upgrade pip
-pip install -r requirements.txt
-pip install psycopg2-binary
-copy .env.example .env
-notepad .env  # عدل الإعدادات
-python manage.py migrate
-python manage.py collectstatic --noinput
-python manage.py createsuperuser
-python run_waitress.py
-</code></pre>
-
-<h2 id="_27">تغيير بيئة العمل</h2>
-<pre class="codehilite"><code class="language-powershell"># Development → Production
-notepad .env  # غيّر DEBUG=False, ALLOWED_HOSTS, DATABASE_URL
-python manage.py migrate
-python manage.py collectstatic --noinput
-
-# Production → Development
-notepad .env  # غيّر DEBUG=True, ALLOWED_HOSTS=localhost
-</code></pre>
-
-<h2 id="_28">المزامنة</h2>
-<pre class="codehilite"><code class="language-powershell"># إعداد PostgreSQL المركزي
-powershell -ExecutionPolicy Bypass -File setup_postgresql_server.ps1
-
-# تحديث كل جهاز
-powershell -ExecutionPolicy Bypass -File update_env_postgresql.ps1
-
-# نقل البيانات (مرة واحدة)
-powershell -ExecutionPolicy Bypass -File migrate_sqlite_to_postgresql.ps1
-
-# فحص سلامة المزامنة
-powershell -ExecutionPolicy Bypass -File verify_sync.ps1
-</code></pre>
-
-<hr />
-<h1 id="_29">الباب الخامس: الميزات التقنية المتقدمة (الإصدار 2.2)</h1>
-<p>فيما يلي الميزات الجديدة التي أُضيفت في الإصدار 2.2 مع شرح تأثيرها التقني:</p>
-
-<h2 id="51-fifo">5.1 FIFO Costing — تكلفة المخزون بالوارد أولاً</h2>
-<p><strong>التأثير التقني:</strong> كل حركة مخزون تُسجّل كطبقة مستقلة. عند الخروج، تُخصم من أقدم طبقة أولاً.</p>
-<ul>
-<li><strong>النمط:</strong> طبقات مخزون (Inventory Layers)</li>
-<li><strong>الملفات:</strong> <code>inventory/models/fifo.py</code>, <code>inventory/services/fifo_engine.py</code></li>
-<li><strong>الاختبارات:</strong> اختبارات مخصصة لـ FIFO (تأكيد تسلسل التكلفة)</li>
-</ul>
-
-<h2 id="52-openapi">5.2 OpenAPI + Swagger + ReDoc</h2>
-<p><strong>التأثير التقني:</strong> توليد تلقائي لتوثيق API باستخدام drf-spectacular.</p>
-<ul>
-<li>مكتبة: <code>drf-spectacular</code> — تولد مخطط OpenAPI 3.0</li>
-<li>ثلاث واجهات: <code>/schema/</code> (JSON/YAML), <code>/docs/</code> (Swagger UI), <code>/redoc/</code> (ReDoc)</li>
-<li>يدعم authentication عبر Session + Token</li>
-</ul>
-
-<h2 id="53-htmx">5.3 HTMX + Alpine.js</h2>
-<p><strong>التأثير التقني:</strong> تحميل جزئي للصفحات وتفاعلات أمامية بدون jQuery.</p>
-<ul>
-<li><strong>HTMX:</strong> يرسل طلبات AJAX تلقائياً مع <code>hx-*</code> attributes في HTML</li>
-<li><strong>Alpine.js:</strong> ربط بيانات خفيف (إظهار/إخفاء، عدادات، نماذج)</li>
-<li><strong>Form Validation (JS):</strong> تحقق آني client-side في <code>static/js/form-validation.js</code></li>
-<li>يُعاد تفعيل HTMX بعد التحميل الديناميكي تلقائياً</li>
-</ul>
-
-<h2 id="54-pwa">5.4 PWA / Offline Support</h2>
-<p><strong>التأثير التقني:</strong> تطبيق يعمل دون اتصال عبر Service Worker و Cache API.</p>
-<ul>
-<li><strong>Service Worker:</strong> <code>static/sw.js</code> — استراتيجية Cache First للملفات الثابتة</li>
-<li><strong>Manifest:</strong> <code>static/manifest.json</code> — أيقونة + اسم لتثبيت التطبيق</li>
-<li><strong>Offline page:</strong> صفحة مخصصة عند فقدان الاتصال</li>
-</ul>
-
-<h2 id="55-redis">5.5 Redis Caching — @cache_page على 9 views</h2>
-<p><strong>التأثير التقني:</strong> تخزين مؤقت للتقارير الثقيلة باستخدام Redis 7 كـ cache backend.</p>
-<ul>
-<li>الـ views المخبّأة: Dashboard (5 د), تقارير المبيعات (4 تقارير × 10 د), تقارير المشتريات (3 تقارير × 10 د), API endpoints (5 د), التسوية البنكية (10 د)</li>
-<li>الإجمالي: <strong>9 views</strong> مع <code>@cache_page</code></li>
-<li>Redis يعمل ضمن Docker Compose مع health check</li>
-</ul>
-
-<h2 id="56-nplus1">5.6 N+1 Query Optimization</h2>
-<p><strong>التأثير التقني:</strong> القضاء على مشكلة N+1 في استعلامات قاعدة البيانات.</p>
-<ul>
-<li><code>select_related</code>: JOIN مسبق لـ ForeignKey في ViewSets</li>
-<li><code>prefetch_related</code>: دفعة منفصلة لـ ManyToMany</li>
-<li><code>annotate</code>: تجميع الحسابات في SQL بدلاً من Python</li>
-<li><code>Prefetch</code>: تحكم دقيق بالتصفية المسبقة</li>
-</ul>
-
-<h2 id="57-middleware">5.7 أمان متعدد الطبقات — CSP + Idle Timeout + Rate Limiting</h2>
-<p><strong>التأثير التقني:</strong> ثلاث طبقات أمان جديدة مدمجة كـ middleware في Django.</p>
-<ul>
-<li><strong>CSP Middleware:</strong> يمنع XSS — يحدد <code>Content-Security-Policy</code> header مع allowed sources</li>
-<li><strong>Idle Session Timeout:</strong> <code>IDLE_TIMEOUT_MINUTES=30</code> — يقطع الجلسة بعد 30 دقيقة خمول</li>
-<li><strong>Rate Limiting:</strong> <code>100 req/min</code> للـ API — يمنع هجمات القوة العمياء</li>
-<li>الإعدادات في <code>.env</code>: <code>CSP_ENABLED</code>, <code>RATE_LIMIT_ENABLED</code>, <code>IDLE_TIMEOUT_MINUTES</code></li>
-</ul>
-
-<h2 id="58-devops">5.8 أدوات DevOps — Coverage + Pre-commit + pytest.ini + pyproject.toml</h2>
-<p><strong>التأثير التقني:</strong> أدوات جودة الكود والاختبارات لضمان الاستقرار.</p>
-<ul>
-<li><strong>Coverage.py:</strong> إعدادات <code>[tool.coverage.run]</code> في <code>pyproject.toml</code> مع <code>fail_under=40</code> و <code>coverage html</code> للتقرير</li>
-<li><strong>Pre-commit:</strong> <code>.pre-commit-config.yaml</code> — Ruff + formatting + فحص تلقائي قبل كل commit</li>
-<li><strong>pytest.ini موحّد:</strong> <code>testpaths</code> يغطي جميع التطبيقات الـ 22 مع <code>DJANGO_SETTINGS_MODULE</code></li>
-<li><strong>pyproject.toml:</strong> تكوين مركزي لـ Ruff + pytest + coverage + type hints</li>
-<li><strong>Factory Boy:</strong> مصانع اختبار قابلة لإعادة الاستخدام + <strong>158 اختباراً PASS</strong></li>
-</ul>
-
-<h2 id="59-docker">5.9 Docker Compose + Health Checks</h2>
-<p><strong>التأثير التقني:</strong> نشر متكامل عبر Docker مع مراقبة صحة الحاويات.</p>
-<ul>
-<li>3 حاويات: <code>db</code> (PostgreSQL 16), <code>redis</code> (Redis 7), <code>web</code> (Gunicorn)</li>
-<li>Health checks لكل حاوية — إعادة تشغيل تلقائي عند الفشل</li>
-<li>Volumes للبيانات: <code>postgres_data</code>, <code>redis_data</code></li>
-<li>4 أنماط تشغيل: Dev / Production / Service / Docker</li>
-</ul>
-
-<h2 id="510-celery">5.10 Celery / Eager Mode</h2>
-<p><strong>التأثير التقني:</strong> Task queue للمهام الخلفية مع دعم الوضع المباشر للتطوير.</p>
-<ul>
-<li>إعدادات Celery في <code>accounting_system/celery.py</code></li>
-<li><code>DJANGO_CELERY_EAGER=true</code> — تنفيذ المهام مباشرة بدون وسيط</li>
-<li>مناسب للمهام: إرسال تقارير مجدولة، معالجة دفعات، نسخ احتياطي</li>
-</ul>
-
-<h2 id="511-env">5.11 متغيرات البيئة الكاملة (.env.example)</h2>
-<p>قائمة بكل متغيرات البيئة المدعومة:</p>
-<table>
-<thead><tr><th>المتغير</th><th>الافتراضي</th><th>الوصف</th></tr></thead>
-<tbody>
-<tr><td><code>DJANGO_DEBUG</code></td><td>false</td><td>وضع التطوير/الإنتاج</td></tr>
-<tr><td><code>DJANGO_SECRET_KEY</code></td><td>—</td><td>مفتاح التشفير (يُولّد تلقائياً)</td></tr>
-<tr><td><code>DJANGO_DB_ENGINE</code></td><td>sqlite</td><td>sqlite أو postgres</td></tr>
-<tr><td><code>DJANGO_DB_NAME</code></td><td>accounting</td><td>اسم قاعدة البيانات</td></tr>
-<tr><td><code>DJANGO_DB_USER</code></td><td>accounting</td><td>مستخدم DB</td></tr>
-<tr><td><code>DJANGO_DB_PASSWORD</code></td><td>—</td><td>كلمة مرور DB</td></tr>
-<tr><td><code>DJANGO_DB_HOST</code></td><td>127.0.0.1</td><td>مضيف DB</td></tr>
-<tr><td><code>DJANGO_DB_PORT</code></td><td>5432</td><td>منفذ DB</td></tr>
-<tr><td><code>BIND_PORT</code></td><td>8001</td><td>منفذ الاستماع</td></tr>
-<tr><td><code>HOST_IP</code></td><td>192.168.1.31</td><td>IP المحلي</td></tr>
-<tr><td><code>EXTERNAL_IP</code></td><td>—</td><td>IP الخارجي</td></tr>
-<tr><td><code>GUNICORN_WORKERS</code></td><td>3</td><td>عدد workers</td></tr>
-<tr><td><code>DJANGO_CELERY_EAGER</code></td><td>false</td><td>وضع Celery المباشر</td></tr>
-<tr><td><code>DJANGO_REDIS_URL</code></td><td>redis://127.0.0.1:6379/1</td><td>اتصال Redis</td></tr>
-<tr><td><code>REDIS_CACHE_TIMEOUT</code></td><td>300</td><td>مدة التخزين المؤقت (ثوان)</td></tr>
-<tr><td><code>CSP_ENABLED</code></td><td>True</td><td>تفعيل CSP</td></tr>
-<tr><td><code>RATE_LIMIT_ENABLED</code></td><td>True</td><td>تفعيل Rate Limit</td></tr>
-<tr><td><code>IDLE_TIMEOUT_MINUTES</code></td><td>30</td><td>قطع الجلسة بعد خمول</td></tr>
-</tbody>
-</table>
-
-<h2 id="512-summary">5.12 ملخص الإصدار 2.2</h2>
-<table>
-<thead><tr><th>الميزة</th><th>التأثير التقني</th></tr></thead>
-<tbody>
-<tr><td>FIFO Costing</td><td>طبقات مخزون + محرك FIFO</td></tr>
-<tr><td>OpenAPI / Swagger / ReDoc</td><td>drf-spectacular — توثيق تلقائي للـ API</td></tr>
-<tr><td>HTMX + Alpine.js</td><td>تحميل جزئي + تفاعلات خفيفة + Form Validation</td></tr>
-<tr><td>PWA / Offline</td><td>Service Worker + Cache API + manifest.json</td></tr>
-<tr><td>Redis Caching</td><td>@cache_page على 9 views + Redis 7</td></tr>
-<tr><td>N+1 Query Optimization</td><td>select_related + prefetch_related + annotate</td></tr>
-<tr><td>CSP + Idle Timeout + Rate Limiting</td><td>3 middleware أمان</td></tr>
-<tr><td>Coverage.py + Pre-commit</td><td>جودة كود + تغطية اختبارات</td></tr>
-<tr><td>pytest.ini موحّد + 158 اختباراً</td><td>22 تطبيقاً — Factory Boy — PASS</td></tr>
-<tr><td>Docker Compose + Health Checks</td><td>3 حاويات — PostgreSQL + Redis + Gunicorn</td></tr>
-<tr><td>Celery / Eager Mode</td><td>Task queue — CELERY_TASK_ALWAYS_EAGER</td></tr>
-<tr><td>.env.example كامل</td><td>17 متغير بيئة موثّق</td></tr>
-</tbody>
-</table>
-
-<hr />
-<p><strong>انتهى الدليل</strong></p>
-<p><strong>تاريخ الإعداد:</strong> 15 يوليو 2026
-<strong>الجهة المسؤولة:</strong> قسم تقنية المعلومات
-<strong>ملاحظة:</strong> يُنصح بمراجعة هذا الدليل قبل كل عملية ترحيل أو تغيير بيئة</p>
 </body>
 </html>

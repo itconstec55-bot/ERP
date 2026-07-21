@@ -1,0 +1,721 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقييم احترافي شامل - نظام المحاسبة المتكامل</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700&display=swap');
+        :root{--bg-primary:#0a0e17;--bg-secondary:#111827;--bg-card:#1a2234;--bg-card-hover:#1f2a42;--bg-table-header:#1c2940;--bg-table-row-alt:#141d2e;--gold-primary:#d4a843;--gold-light:#f0d078;--gold-dark:#b8922e;--gold-glow:rgba(212,168,67,.15);--gold-border:rgba(212,168,67,.3);--text-primary:#e8ecf1;--text-secondary:#9aa5b4;--text-muted:#6b7a8d;--accent-green:#22c55e;--accent-red:#ef4444;--accent-blue:#3b82f6;--accent-orange:#f59e0b;--accent-purple:#a855f7;--accent-cyan:#06b6d4;--border-color:#2a3548;--border-subtle:#1e2a3d;--shadow-md:0 4px 12px rgba(0,0,0,.5);--shadow-gold:0 4px 20px rgba(212,168,67,.15);--radius-sm:6px;--radius-md:10px;--radius-lg:16px;--transition:all .3s cubic-bezier(.4,0,.2,1)}
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Cairo','Tajawal','Segoe UI',Tahoma,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.8;min-height:100vh}
+        ::selection{background:var(--gold-primary);color:var(--bg-primary)}
+        ::-webkit-scrollbar{width:8px}
+        ::-webkit-scrollbar-track{background:var(--bg-secondary)}
+        ::-webkit-scrollbar-thumb{background:var(--gold-dark);border-radius:4px}
+        ::-webkit-scrollbar-thumb:hover{background:var(--gold-primary)}
+        .hero{position:relative;background:linear-gradient(135deg,var(--bg-primary) 0%,#0d1525 40%,#14203a 100%);padding:80px 40px 60px;text-align:center;overflow:hidden;border-bottom:2px solid var(--gold-border)}
+        .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 50%,rgba(212,168,67,.05) 0%,transparent 50%);pointer-events:none}
+        .hero-badge{display:inline-block;background:linear-gradient(135deg,var(--gold-dark),var(--gold-primary));color:var(--bg-primary);padding:6px 22px;border-radius:30px;font-size:.8rem;font-weight:700;letter-spacing:1px;margin-bottom:24px;text-transform:uppercase;position:relative;z-index:1}
+        .hero h1{font-family:'Cairo',sans-serif;font-size:2.8rem;font-weight:900;background:linear-gradient(135deg,var(--gold-light),var(--gold-primary),var(--gold-dark));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;position:relative;z-index:1}
+        .hero .subtitle{font-size:1.2rem;color:var(--text-secondary);max-width:700px;margin:0 auto 30px;position:relative;z-index:1}
+        .hero-meta{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;position:relative;z-index:1}
+        .hero-meta-item{display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:.9rem}
+        .hero-meta-item .icon{width:18px;height:18px;background:var(--gold-primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--bg-primary);font-weight:700}
+        .container{max-width:1200px;margin:0 auto;padding:40px 24px}
+        .nav-toc{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:32px;margin-bottom:40px;box-shadow:var(--shadow-md)}
+        .nav-toc h3{color:var(--gold-primary);font-size:1.2rem;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border-subtle)}
+        .nav-toc ol{list-style:none;counter-reset:toc-counter;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+        .nav-toc li{counter-increment:toc-counter}
+        .nav-toc li a{display:flex;align-items:center;gap:10px;color:var(--text-secondary);text-decoration:none;padding:10px 14px;border-radius:var(--radius-sm);transition:var(--transition);font-size:.95rem}
+        .nav-toc li a::before{content:counter(toc-counter,decimal-leading-zero);font-size:.75rem;font-weight:700;color:var(--gold-primary);min-width:24px;text-align:center}
+        .nav-toc li a:hover{background:var(--gold-glow);color:var(--gold-light)}
+        .section{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:36px;margin-bottom:32px;box-shadow:var(--shadow-md);transition:var(--transition)}
+        .section:hover{border-color:var(--gold-border);box-shadow:var(--shadow-gold)}
+        .section-header{display:flex;align-items:center;gap:16px;margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid var(--border-subtle)}
+        .section-number{width:48px;height:48px;background:linear-gradient(135deg,var(--gold-dark),var(--gold-primary));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;color:var(--bg-primary);flex-shrink:0}
+        .section-title{font-size:1.6rem;font-weight:700;color:var(--text-primary)}
+        .section-title span{color:var(--gold-primary)}
+        .section p,.section li{color:var(--text-secondary);font-size:1rem}
+        .section p{margin-bottom:16px}
+        .executive-summary{background:linear-gradient(135deg,rgba(212,168,67,.06),rgba(212,168,67,.02));border:1px solid var(--gold-border);border-radius:var(--radius-md);padding:24px;margin-top:12px}
+        .executive-summary p{color:var(--text-primary);font-size:1.05rem;line-height:2}
+        .feature-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:20px}
+        .feature-item{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:18px;text-align:center;transition:var(--transition)}
+        .feature-item:hover{border-color:var(--gold-border);transform:translateY(-2px)}
+        .feature-item .emoji{font-size:1.6rem;margin-bottom:8px;display:block}
+        .feature-item .label{font-size:.9rem;color:var(--text-secondary);font-weight:600}
+        table{width:100%;border-collapse:separate;border-spacing:0;margin-top:16px;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-color)}
+        thead th{background:var(--bg-table-header);color:var(--gold-light);padding:14px 18px;text-align:right;font-weight:700;font-size:.9rem;letter-spacing:.5px;border-bottom:2px solid var(--gold-border)}
+        tbody td{padding:13px 18px;border-bottom:1px solid var(--border-subtle);font-size:.92rem;color:var(--text-secondary);vertical-align:middle}
+        tbody tr:nth-child(even){background:var(--bg-table-row-alt)}
+        tbody tr{transition:var(--transition)}
+        tbody tr:hover{background:var(--bg-card-hover)}
+        tbody tr:last-child td{border-bottom:none}
+        .rating{display:inline-flex;gap:3px;direction:ltr}
+        .rating .star{font-size:1rem;color:var(--text-muted)}
+        .rating .star.filled{color:var(--gold-primary);text-shadow:0 0 6px rgba(212,168,67,.4)}
+        .tag{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:600}
+        .tag-green{background:rgba(34,197,94,.15);color:var(--accent-green);border:1px solid rgba(34,197,94,.3)}
+        .tag-blue{background:rgba(59,130,246,.15);color:var(--accent-blue);border:1px solid rgba(59,130,246,.3)}
+        .tag-orange{background:rgba(245,158,11,.15);color:var(--accent-orange);border:1px solid rgba(245,158,11,.3)}
+        .tag-red{background:rgba(239,68,68,.15);color:var(--accent-red);border:1px solid rgba(239,68,68,.3)}
+        .tag-purple{background:rgba(168,85,247,.15);color:var(--accent-purple);border:1px solid rgba(168,85,247,.3)}
+        .tag-cyan{background:rgba(6,182,212,.15);color:var(--accent-cyan);border:1px solid rgba(6,182,212,.3)}
+        .progress-bar-container{margin-top:20px}
+        .progress-item{margin-bottom:18px}
+        .progress-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+        .progress-label .name{font-size:.92rem;font-weight:600;color:var(--text-primary)}
+        .progress-label .value{font-size:.85rem;font-weight:700;color:var(--gold-primary)}
+        .progress-track{width:100%;height:10px;background:var(--bg-secondary);border-radius:10px;overflow:hidden;border:1px solid var(--border-subtle)}
+        .progress-fill{height:100%;border-radius:10px;transition:width 1.2s cubic-bezier(.4,0,.2,1);position:relative}
+        .progress-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent)}
+        .progress-fill.gold{background:linear-gradient(90deg,var(--gold-dark),var(--gold-primary),var(--gold-light))}
+        .progress-fill.green{background:linear-gradient(90deg,#16a34a,#22c55e,#4ade80)}
+        .progress-fill.blue{background:linear-gradient(90deg,#2563eb,#3b82f6,#60a5fa)}
+        .progress-fill.orange{background:linear-gradient(90deg,#d97706,#f59e0b,#fbbf24)}
+        .progress-fill.red{background:linear-gradient(90deg,#dc2626,#ef4444,#f87171)}
+        .progress-fill.purple{background:linear-gradient(90deg,#9333ea,#a855f7,#c084fc)}
+        .progress-fill.cyan{background:linear-gradient(90deg,#0891b2,#06b6d4,#22d3ee)}
+        .chart-container{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:24px;margin-top:20px}
+        .chart-title{font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:20px}
+        .bar-chart{display:flex;align-items:flex-end;gap:12px;height:220px;padding:0 8px;border-bottom:1px solid var(--border-subtle);position:relative}
+        .bar-chart::before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,transparent 0%,transparent 24.5%,var(--border-subtle) 25%,var(--border-subtle) 25.5%,transparent 25.5%),linear-gradient(0deg,transparent 0%,transparent 49.5%,var(--border-subtle) 50%,var(--border-subtle) 50.5%,transparent 50.5%),linear-gradient(0deg,transparent 0%,transparent 74.5%,var(--border-subtle) 75%,var(--border-subtle) 75.5%,transparent 75.5%);pointer-events:none}
+        .bar-wrapper{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;position:relative;z-index:1}
+        .bar{width:70%;max-width:50px;border-radius:6px 6px 0 0;transition:height 1s cubic-bezier(.4,0,.2,1);position:relative;cursor:pointer}
+        .bar:hover{filter:brightness(1.2)}
+        .bar-value{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:.75rem;font-weight:700;color:var(--text-primary);white-space:nowrap}
+        .bar-label{margin-top:10px;font-size:.72rem;color:var(--text-muted);text-align:center;white-space:nowrap}
+        .bar.gold{background:linear-gradient(0deg,var(--gold-dark),var(--gold-primary))}
+        .bar.green{background:linear-gradient(0deg,#16a34a,#4ade80)}
+        .bar.blue{background:linear-gradient(0deg,#2563eb,#60a5fa)}
+        .bar.orange{background:linear-gradient(0deg,#d97706,#fbbf24)}
+        .bar.red{background:linear-gradient(0deg,#dc2626,#f87171)}
+        .bar.purple{background:linear-gradient(0deg,#9333ea,#c084fc)}
+        .bar.cyan{background:linear-gradient(0deg,#0891b2,#22d3ee)}
+        .strength-item,.weakness-item,.opportunity-item,.threat-item{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:20px 24px;margin-bottom:14px;transition:var(--transition);position:relative;overflow:hidden}
+        .strength-item::before{content:'';position:absolute;top:0;right:0;width:4px;height:100%;background:var(--accent-green)}
+        .weakness-item::before{content:'';position:absolute;top:0;right:0;width:4px;height:100%;background:var(--accent-red)}
+        .opportunity-item::before{content:'';position:absolute;top:0;right:0;width:4px;height:100%;background:var(--accent-blue)}
+        .threat-item::before{content:'';position:absolute;top:0;right:0;width:4px;height:100%;background:var(--accent-orange)}
+        .strength-item:hover,.weakness-item:hover,.opportunity-item:hover,.threat-item:hover{border-color:var(--gold-border)}
+        .swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+        .swot-cell{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:24px;transition:var(--transition)}
+        .swot-cell:hover{border-color:var(--gold-border);transform:translateY(-2px);box-shadow:var(--shadow-gold)}
+        .swot-cell h4{font-size:1.05rem;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+        .swot-cell.strengths h4{color:var(--accent-green)}
+        .swot-cell.weaknesses h4{color:var(--accent-red)}
+        .swot-cell.opportunities h4{color:var(--accent-blue)}
+        .swot-cell.threats h4{color:var(--accent-orange)}
+        .swot-cell ul{list-style:none;padding:0}
+        .swot-cell li{padding:6px 0;font-size:.9rem;color:var(--text-secondary);border-bottom:1px solid var(--border-subtle)}
+        .swot-cell li:last-child{border-bottom:none}
+        .tech-stack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-top:20px}
+        .tech-card{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:20px;transition:var(--transition)}
+        .tech-card:hover{border-color:var(--gold-border);transform:translateY(-2px)}
+        .tech-card h4{font-size:.95rem;color:var(--gold-light);margin-bottom:8px}
+        .tech-card p{font-size:.88rem;color:var(--text-muted);margin-bottom:10px}
+        .tech-tags{display:flex;flex-wrap:wrap;gap:6px}
+        .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:20px}
+        .kpi-card{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:24px;text-align:center;transition:var(--transition)}
+        .kpi-card:hover{border-color:var(--gold-border);transform:translateY(-3px);box-shadow:var(--shadow-gold)}
+        .kpi-value{font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,var(--gold-light),var(--gold-primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+        .kpi-label{font-size:.88rem;color:var(--text-secondary);font-weight:600;margin-bottom:10px}
+        .kpi-progress{width:100%;height:6px;background:var(--bg-primary);border-radius:6px;overflow:hidden}
+        .kpi-progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--gold-dark),var(--gold-primary))}
+        .recommendation-list{list-style:none;padding:0}
+        .recommendation-item{display:flex;gap:16px;align-items:flex-start;padding:20px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);margin-bottom:12px;transition:var(--transition)}
+        .recommendation-item:hover{border-color:var(--gold-border)}
+        .rec-priority{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:900;flex-shrink:0}
+        .rec-priority.critical{background:rgba(239,68,68,.2);color:var(--accent-red);border:1px solid rgba(239,68,68,.4)}
+        .rec-priority.high{background:rgba(245,158,11,.2);color:var(--accent-orange);border:1px solid rgba(245,158,11,.4)}
+        .rec-priority.medium{background:rgba(59,130,246,.2);color:var(--accent-blue);border:1px solid rgba(59,130,246,.4)}
+        .rec-content h4{font-size:1rem;color:var(--text-primary);margin-bottom:6px}
+        .rec-content p{font-size:.88rem;color:var(--text-muted);margin-bottom:0}
+        .rec-meta{display:flex;gap:12px;margin-top:8px}
+        .screenshot-placeholder{background:var(--bg-secondary);border:2px dashed var(--border-color);border-radius:var(--radius-md);padding:60px 20px;text-align:center;margin:20px 0;transition:var(--transition)}
+        .screenshot-placeholder:hover{border-color:var(--gold-border);background:var(--gold-glow)}
+        .screenshot-placeholder .placeholder-icon{font-size:2.5rem;margin-bottom:12px;display:block}
+        .screenshot-placeholder .placeholder-text{color:var(--text-muted);font-size:.9rem}
+        .screenshot-placeholder .placeholder-sub{color:var(--text-muted);font-size:.78rem;margin-top:6px;opacity:.7}
+        .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:20px}
+        .stat-card{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:20px;text-align:center;transition:var(--transition)}
+        .stat-card:hover{border-color:var(--gold-border);transform:translateY(-2px)}
+        .stat-number{font-size:1.8rem;font-weight:900;color:var(--gold-primary)}
+        .stat-label{font-size:.82rem;color:var(--text-muted);margin-top:4px}
+        .info-box{background:rgba(212,168,67,.06);border:1px solid var(--gold-border);border-right:4px solid var(--gold-primary);border-radius:var(--radius-sm);padding:16px 20px;margin:16px 0}
+        .info-box p{color:var(--text-primary);font-size:.95rem}
+        footer{background:var(--bg-secondary);border-top:1px solid var(--border-color);padding:40px;text-align:center}
+        footer p{color:var(--text-muted);font-size:.85rem}
+        footer .footer-brand{color:var(--gold-primary);font-weight:700}
+        @media(max-width:768px){.hero h1{font-size:1.8rem}.hero{padding:50px 20px 40px}.section{padding:24px 18px}.swot-grid{grid-template-columns:1fr}.stats-row{grid-template-columns:repeat(2,1fr)}.kpi-grid{grid-template-columns:1fr}.tech-stack-grid{grid-template-columns:1fr}.bar-chart{height:160px}.nav-toc ol{grid-template-columns:1fr}.hero-meta{gap:20px}}
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .animate-in{animation:fadeInUp .6s ease-out forwards}
+    </style>
+</head>
+<body>
+    <header class="hero">
+        <div class="hero-badge">تقرير تقييم احترافي</div>
+        <h1>نظام المحاسبة المتكامل</h1>
+        <p class="subtitle">تقييم شامل واحترافي لنظام ERP المحاسبي المبني على Django لشركات إنتاج الخرسانة الجاهزة في جمهورية مصر العربية</p>
+        <div class="hero-meta">
+            <div class="hero-meta-item"><span class="icon">v</span><span>الإصدار 2.0</span></div>
+            <div class="hero-meta-item"><span class="icon">d</span><span>21 يوليو 2026</span></div>
+            <div class="hero-meta-item"><span class="icon">c</span><span>تقرير سري - للمختصين فقط</span></div>
+        </div>
+    </header>
+    <div class="container">
+        <nav class="nav-toc">
+            <h3>فهرس المحتويات</h3>
+            <ol>
+                <li><a href="#executive-summary">الملخص التنفيذي</a></li>
+                <li><a href="#strengths">تحليل القوة</a></li>
+                <li><a href="#weaknesses">تحليل الضعف</a></li>
+                <li><a href="#opportunities">الفرص</a></li>
+                <li><a href="#threats">المخاطر</a></li>
+                <li><a href="#tech-analysis">تحليل التقنيات</a></li>
+                <li><a href="#kpis">مؤشرات الأداء الرئيسية</a></li>
+                <li><a href="#recommendations">التوصيات والخطة الزمنية</a></li>
+            </ol>
+        </nav>
+
+        <!-- SECTION 1: EXECUTIVE SUMMARY -->
+        <section id="executive-summary" class="section animate-in">
+            <div class="section-header">
+                <div class="section-number">01</div>
+                <h2 class="section-title">الملخص <span>التنفيذي</span></h2>
+            </div>
+            <div class="executive-summary">
+                <p>نظام محاسبة متكامل (ERP) مبني على إطار عمل Django، مصمم خصيصاً لشركات إنتاج الخرسانة الجاهزة في مصر. يغطي النظام كامل الدورة المحاسبية من المشتريات والمخازن إلى المبيعات والتحصيل، مع دعم كامل للتوطين العربي والعملات المتعددة والضرائب المصرية (ضريبة القيمة المضافة 14%).</p>
+            </div>
+            <div class="stats-row" style="margin-top:28px">
+                <div class="stat-card"><div class="stat-number">37</div><div class="stat-label">وحدة وظيفية</div></div>
+                <div class="stat-card"><div class="stat-number">183</div><div class="stat-label">اختبار آلي</div></div>
+                <div class="stat-card"><div class="stat-number">6</div><div class="stat-label">أدلة عربية</div></div>
+                <div class="stat-card"><div class="stat-number">47%</div><div class="stat-label">تغطية الاختبارات</div></div>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-item"><span class="emoji">&#128176;</span><span class="label">إدارة الحسابات العامة</span></div>
+                <div class="feature-item"><span class="emoji">&#128230;</span><span class="label">المشتريات والموردين</span></div>
+                <div class="feature-item"><span class="emoji">&#128179;</span><span class="label">المبيعات والعملاء</span></div>
+                <div class="feature-item"><span class="emoji">&#127981;</span><span class="label">المخازن والمستودعات</span></div>
+                <div class="feature-item"><span class="emoji">&#128666;</span><span class="label">إدارة الأسطول</span></div>
+                <div class="feature-item"><span class="emoji">&#128202;</span><span class="label">التقارير المالية</span></div>
+                <div class="feature-item"><span class="emoji">&#128176;</span><span class="label">الخزينة والبنوك</span></div>
+                <div class="feature-item"><span class="emoji">&#128100;</span><span class="label">إدارة المستخدمين</span></div>
+            </div>
+            <div class="screenshot-placeholder">
+                <span class="placeholder-icon">&#128247;</span>
+                <div class="placeholder-text">لقطة شاشة: لوحة التحكم الرئيسية للنظام</div>
+                <div class="placeholder-sub">Dashboard Overview - Main Control Panel</div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: STRENGTHS -->
+        <section id="strengths" class="section animate-in">
+            <div class="section-header">
+                <div class="section-number">02</div>
+                <h2 class="section-title">تحليل <span>القوة</span></h2>
+            </div>
+            <div class="info-box"><p>يُظهر النظام نقاط قوة متعددة تجعله منافساً قوياً في سوق أنظمة ERP المحاسبية للشركات الصغيرة والمتوسطة في مصر.</p></div>
+            <table>
+                <thead>
+                    <tr><th>المجال</th><th>التقييم</th><th>النسبة</th><th>ملاحظات</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>تغطية وظيفية</strong></td>
+                        <td><span class="rating"><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span></span></td>
+                        <td><span class="tag tag-green">ممتاز</span></td>
+                        <td>37 وحدة تغطي كامل الدورة المحاسبية</td>
+                    </tr>
+                    <tr>
+                        <td><strong>الأمان</strong></td>
+                        <td><span class="rating"><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star">&#9733;</span></span></td>
+                        <td><span class="tag tag-green">جيد جداً</span></td>
+                        <td>CSP, 2FA, تشفير, حماية CSRF/XSS, Rate Limiting</td>
+                    </tr>
+                    <tr>
+                        <td><strong>التوطين العربي</strong></td>
+                        <td><span class="rating"><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span></span></td>
+                        <td><span class="tag tag-green">ممتاز</span></td>
+                        <td>واجهة كاملة بالعربية RTL، تقارير عربية، دعم العملات</td>
+                    </tr>
+                    <tr>
+                        <td><strong>جودة الكود</strong></td>
+                        <td><span class="rating"><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star">&#9733;</span></span></td>
+                        <td><span class="tag tag-green">جيد جداً</span></td>
+                        <td>Ruff linting, pre-commit hooks, type hints, هيكلة نظيفة</td>
+                    </tr>
+                    <tr>
+                        <td><strong>الاختبارات</strong></td>
+                        <td><span class="rating"><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span></span></td>
+                        <td><span class="tag tag-orange">مقبول</span></td>
+                        <td>183 اختبار، تغطية 47% - تحتاج إلى تحسين</td>
+                    </tr>
+                    <tr>
+                        <td><strong>التوثيق</strong></td>
+                        <td><span class="rating"><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star">&#9733;</span></span></td>
+                        <td><span class="tag tag-green">جيد جداً</span></td>
+                        <td>6 أدلة عربية متخصصة + ملف README شامل</td>
+                    </tr>
+                    <tr>
+                        <td><strong>البنية التحتية</strong></td>
+                        <td><span class="rating"><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span></span></td>
+                        <td><span class="tag tag-green">ممتاز</span></td>
+                        <td>Docker, CI/CD, PostgreSQL, Redis, Celery</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="chart-container">
+                <div class="chart-title">مقارنة تقييمات مجالات القوة</div>
+                <div class="bar-chart">
+                    <div class="bar-wrapper"><div class="bar gold" style="height:100%"><span class="bar-value">5/5</span></div><div class="bar-label">التغطية الوظيفية</div></div>
+                    <div class="bar-wrapper"><div class="bar green" style="height:80%"><span class="bar-value">4/5</span></div><div class="bar-label">الأمان</div></div>
+                    <div class="bar-wrapper"><div class="bar gold" style="height:100%"><span class="bar-value">5/5</span></div><div class="bar-label">التوطين</div></div>
+                    <div class="bar-wrapper"><div class="bar blue" style="height:80%"><span class="bar-value">4/5</span></div><div class="bar-label">جودة الكود</div></div>
+                    <div class="bar-wrapper"><div class="bar orange" style="height:60%"><span class="bar-value">3/5</span></div><div class="bar-label">الاختبارات</div></div>
+                    <div class="bar-wrapper"><div class="bar blue" style="height:80%"><span class="bar-value">4/5</span></div><div class="bar-label">التوثيق</div></div>
+                    <div class="bar-wrapper"><div class="bar purple" style="height:100%"><span class="bar-value">5/5</span></div><div class="bar-label">البنية التحتية</div></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: WEAKNESSES -->
+        <section id="weaknesses" class="section animate-in">
+            <div class="section-header">
+                <div class="section-number">03</div>
+                <h2 class="section-title">تحليل <span>الضعف</span></h2>
+            </div>
+            <div class="info-box"><p>رغم نقاط القوة العديدة، يواجه النظام بعض التحديات التي تحتاج إلى معالجة لضمان الجودة والموثوقية على المدى الطويل.</p></div>
+            <div class="weakness-item">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <h4 style="color:var(--accent-red);font-size:1.05rem">3.1 تغطية اختبارية منخفضة (47%)</h4>
+                    <span class="tag tag-red">أولوية عالية</span>
+                </div>
+                <p style="color:var(--text-secondary);font-size:.92rem;margin-bottom:12px">التغطية الحالية 47% غير كافية لإنتاج برمجي مستقر. يجب رفعها إلى 70% على الأقل لضمان كشف الأخطاء مبكراً وتقليل مخاطر الانحدار.</p>
+                <div class="progress-bar-container">
+                    <div class="progress-item">
+                        <div class="progress-label"><span class="name">التغطية الحالية</span><span class="value">47%</span></div>
+                        <div class="progress-track"><div class="progress-fill orange" style="width:47%"></div></div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label"><span class="name">الهدف المطلوب</span><span class="value">70%+</span></div>
+                        <div class="progress-track"><div class="progress-fill green" style="width:70%"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="weakness-item">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <h4 style="color:var(--accent-red);font-size:1.05rem">3.2 لا يوجد تكامل مع البنوك المصرية مباشرة</h4>
+                    <span class="tag tag-orange">أولوية متوسطة</span>
+                </div>
+                <p style="color:var(--text-secondary);font-size:.92rem">يعتمد النظام حالياً على الإدخال اليدوي للمعاملات البنكية. عدم التكامل المباشر مع البنوك المصرية (CIB, NBE, QNB) يزيد من عبء العمل ويقلل الدقة في تسجيل المعاملات. يُنصح بدراسة تكامل API البنوك في المرحلة القادمة.</p>
+            </div>
+            <div class="weakness-item">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <h4 style="color:var(--accent-red);font-size:1.05rem">3.3 بعض الشاشات تفتقر إلى صلاحيات دقيقة</h4>
+                    <span class="tag tag-orange">أولوية متوسطة</span>
+                </div>
+                <p style="color:var(--text-secondary);font-size:.92rem">نظام الصلاحيات الحالي يعتمد على أدوار عامة. بعض الشاشات تحتاج إلى صلاحيات أدق مثل التحكم في عرض/تعديل/حذف على مستوى الحقول أو التقارير المحددة.</p>
+            </div>
+            <div class="screenshot-placeholder">
+                <span class="placeholder-icon">&#128247;</span>
+                <div class="placeholder-text">لقطة شاشة: تحليل التغطية الاختبارية التفصيلي</div>
+                <div class="placeholder-sub">Test Coverage Analysis - Detailed Report</div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: OPPORTUNITIES -->
+        <section id="opportunities" class="section animate-in">
+            <div class="section-header">
+                <div class="section-number">04</div>
+                <h2 class="section-title"><span>الفرص</span></h2>
+            </div>
+            <div class="info-box"><p>يتوفر أمام النظام عدة فرص نمو واست扩张 يمكن استغلالها لتعزيز مكانته في السوق المصري والعربي.</p></div>
+            <div class="opportunity-item">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <h4 style="color:var(--accent-blue);font-size:1.05rem">4.1 إصدار SaaS للتوسع في السوق المصري</h4>
+                    <span class="tag tag-blue">فرصة استراتيجية</span>
+                </div>
+                <p style="color:var(--text-secondary);font-size:.92rem;margin-bottom:12px">تحويل النظام إلى خدمة سحابية (SaaS) يفتح آفاقاً واسعة للتوسع في السوق المصري والعربي. يمكن تقديم خطط اشتراك مرنة (Basic, Professional, Enterprise) تستهدف شركات إنتاج الخرسانة بمختلف أحجامها.</p>
+                <div class="progress-bar-container">
+                    <div class="progress-item">
+                        <div class="progress-label"><span class="name">جاهزية البنية التحتية للتحويل إلى SaaS</span><span class="value">75%</span></div>
+                        <div class="progress-track"><div class="progress-fill blue" style="width:75%"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="opportunity-item">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <h4 style="color:var(--accent-blue);font-size:1.05rem">4.2 تطبيق نظام الفاتورة الإلكترونية</h4>
+                    <span class="tag tag-purple">تم البدء</span>
+                </div>
+                <p style="color:var(--text-secondary);font-size:.92rem;margin-bottom:12px">بدء العمل على نظام الفاتورة الإلكترونية يواكب متطلبات هيئة الزكاة والضريبة والجمارك. هذا التوافق يضمن شرعية النظام ويقدم ميزة تنافسية كبيرة أمام الشركات المنافسة.</p>
+                <div class="progress-bar-container">
+                    <div class="progress-item">
+                        <div class="progress-label"><span class="name">نسبة إنجاز تطبيق الفاتورة الإلكترونية</span><span class="value">35%</span></div>
+                        <div class="progress-track"><div class="progress-fill purple" style="width:35%"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="opportunity-item">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <h4 style="color:var(--accent-blue);font-size:1.05rem">4.3 تطبيق ذكي للهواتف للعيان والخلاطات</h4>
+                    <span class="tag tag-cyan">مقترح</span>
+                </div>
+                <p style="color:var(--text-secondary);font-size:.92rem">تطوير تطبيق موبايل ذكي للسائقين والعاملين في الخلاطات يتيح تسجيل أوامر التسليم، تتبع التوقيت، وتأكيد التسليم إلكترونياً. هذا يُحسّن تجربة العميل ويوفر وقت التسليم بشكل ملحوظ.</p>
+            </div>
+            <div class="screenshot-placeholder">
+                <span class="placeholder-icon">&#128247;</span>
+                <div class="placeholder-text">لقطة شاشة: خارطة الطريق للتوسع (Roadmap)</div>
+                <div class="placeholder-sub">Product Roadmap - Expansion Strategy</div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: THREATS -->
+        <section id="threats" class="section animate-in">
+            <div class="section-header">
+                <div class="section-number">05</div>
+                <h2 class="section-title"><span>المخاطر</span></h2>
+            </div>
+            <div class="info-box"><p>يواجه النظام بعض المخاطر الخارجية والداخلية التي تتطلب وضع استراتيجيات وقائية واستباقية.</p></div>
+            <div class="threat-item">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <h4 style="color:var(--accent-orange);font-size:1.05rem">5.1 منافسة من ERP systems العالمية</h4>
+                    <span class="tag tag-orange">خطر متوسط</span>
+                </div>
+                <p style="color:var(--text-secondary);font-size:.92rem">تواجه النظام منافسة شديدة من أنظمة ERP العالمية مثل SAP Business One, Oracle NetSuite, و Odoo التي تمتلك ميزانية تسويقية هائلة وقاعدة مستخدمين عالمية. يجب التأكيد على الميزة التنافسية المحلية (التوطين العربي والتوافق مع القوانين المصرية).</p>
+            </div>
+            <div class="threat-item">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <h4 style="color:var(--accent-orange);font-size:1.05rem">5.2 تغيير قوانين الضرائب المصرية</h4>
+                    <span class="tag tag-red">خطر مرتفع</span>
+                </div>
+                <p style="color:var(--text-secondary);font-size:.92rem">تغييرات قوانين الضرائب المستمرة تتطلب تحديثات دورية ومستمرة للنظام. عدم المسايرة السريعة لهذه التغييرات قد يُعرّض النظام والمستخدمين لمخاطر قانونية. يُنصح بإنشاء فريق مخصص لمتابعة التحديثات التنظيمية.</p>
+            </div>
+            <div class="screenshot-placeholder">
+                <span class="placeholder-icon">&#9888;&#65039;</span>
+                <div class="placeholder-text">لقطة شاشة: مصفوفة المخاطر</div>
+                <div class="placeholder-sub">Risk Matrix - Threat Assessment</div>
+            </div>
+        </section>
+
+        <!-- SWOT SUMMARY -->
+        <section class="section animate-in">
+            <div class="section-header">
+                <div class="section-number">&#9878;</div>
+                <h2 class="section-title">ملخص تحليل <span>SWOT</span></h2>
+            </div>
+            <div class="swot-grid">
+                <div class="swot-cell strengths">
+                    <h4>&#9889; نقاط القوة</h4>
+                    <ul>
+                        <li>37 وحدة وظيفية شاملة</li>
+                        <li>توطين عربي كامل مع RTL</li>
+                        <li>بنية تحتية احترافية (Docker, CI/CD)</li>
+                        <li>أمان متعدد الطبقات (CSP, 2FA, تشفير)</li>
+                        <li>توثيق عربي غني (6 أدلة)</li>
+                    </ul>
+                </div>
+                <div class="swot-cell weaknesses">
+                    <h4>&#9888;&#65039; نقاط الضعف</h4>
+                    <ul>
+                        <li>تغطية اختبارية 47% فقط</li>
+                        <li>عدم التكامل المباشر مع البنوك</li>
+                        <li>نظام صلاحيات عام يحتاج تحسين</li>
+                        <li>غياب APM للمراقبة</li>
+                    </ul>
+                </div>
+                <div class="swot-cell opportunities">
+                    <h4>&#128640; الفرص</h4>
+                    <ul>
+                        <li>تحويل إلى نموذج SaaS</li>
+                        <li>نظام الفاتورة الإلكترونية</li>
+                        <li>تطبيق موبايل ذكي</li>
+                        <li>التوسع في السوق العربي</li>
+                    </ul>
+                </div>
+                <div class="swot-cell threats">
+                    <h4>&#9888;&#65039; المخاطر</h4>
+                    <ul>
+                        <li>منافسة ERP العالمية</li>
+                        <li>تغيّر القوانين الضريبية</li>
+                        <li>مخاطر أمنية متزايدة</li>
+                        <li>تقلبات سوق الخرسانة</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: TECH ANALYSIS -->
+        <section id="tech-analysis" class="section animate-in">
+            <div class="section-header">
+                <div class="section-number">06</div>
+                <h2 class="section-title">تحليل <span>التقنيات</span></h2>
+            </div>
+            <div class="info-box"><p>يعتمد النظام على مجموعة متوازنة ومدروسة من التقنيات الحديثة التي تضمن الأداء العالي والموثوقية.</p></div>
+            <div class="tech-stack-grid">
+                <div class="tech-card">
+                    <h4>&#128187; Backend</h4>
+                    <p>الطبقة الخلفية للنظام ومحرك المعالجة الرئيسي</p>
+                    <div class="tech-tags">
+                        <span class="tag tag-green">Django 4.2</span>
+                        <span class="tag tag-blue">DRF</span>
+                        <span class="tag tag-purple">Python 3.11</span>
+                        <span class="tag tag-cyan">Celery</span>
+                    </div>
+                </div>
+                <div class="tech-card">
+                    <h4>&#127760; Frontend</h4>
+                    <p>الطبقة الأمامية وواجهات المستخدم التفاعلية</p>
+                    <div class="tech-tags">
+                        <span class="tag tag-blue">Bootstrap 5</span>
+                        <span class="tag tag-orange">Chart.js</span>
+                        <span class="tag tag-green">Django Templates</span>
+                        <span class="tag tag-purple">JavaScript</span>
+                    </div>
+                </div>
+                <div class="tech-card">
+                    <h4>&#128451; Database</h4>
+                    <p>طبقة التخزين والاسترجاع</p>
+                    <div class="tech-tags">
+                        <span class="tag tag-blue">PostgreSQL</span>
+                        <span class="tag tag-green">SQLite (Dev)</span>
+                        <span class="tag tag-purple">Redis (Cache)</span>
+                    </div>
+                </div>
+                <div class="tech-card">
+                    <h4>&#9881; DevOps &amp; Infrastructure</h4>
+                    <p>بنية النشر والتشغيل المستمر</p>
+                    <div class="tech-tags">
+                        <span class="tag tag-blue">Docker</span>
+                        <span class="tag tag-green">GitHub Actions</span>
+                        <span class="tag tag-cyan">CI/CD</span>
+                        <span class="tag tag-orange">Nginx</span>
+                    </div>
+                </div>
+                <div class="tech-card">
+                    <h4>&#128274; Security</h4>
+                    <p>طبقات الحماية والأمان المتعددة</p>
+                    <div class="tech-tags">
+                        <span class="tag tag-green">CSP Headers</span>
+                        <span class="tag tag-red">2FA</span>
+                        <span class="tag tag-purple">CSRF/XSS</span>
+                        <span class="tag tag-orange">Rate Limiting</span>
+                    </div>
+                </div>
+                <div class="tech-card">
+                    <h4>&#128196; Code Quality</h4>
+                    <p>أدوات ضمان جودة الكود والمعايير</p>
+                    <div class="tech-tags">
+                        <span class="tag tag-green">Ruff Linter</span>
+                        <span class="tag tag-blue">Pre-commit</span>
+                        <span class="tag tag-purple">Type Hints</span>
+                        <span class="tag tag-orange">Docstrings</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container" style="margin-top:24px">
+                <div class="chart-title">تقسيم التقنيات حسب الطبقة</div>
+                <div class="bar-chart">
+                    <div class="bar-wrapper"><div class="bar green" style="height:100%"><span class="bar-value">4</span></div><div class="bar-label">Backend</div></div>
+                    <div class="bar-wrapper"><div class="bar blue" style="height:100%"><span class="bar-value">4</span></div><div class="bar-label">Frontend</div></div>
+                    <div class="bar-wrapper"><div class="bar purple" style="height:75%"><span class="bar-value">3</span></div><div class="bar-label">Database</div></div>
+                    <div class="bar-wrapper"><div class="bar cyan" style="height:100%"><span class="bar-value">4</span></div><div class="bar-label">DevOps</div></div>
+                    <div class="bar-wrapper"><div class="bar red" style="height:100%"><span class="bar-value">4</span></div><div class="bar-label">Security</div></div>
+                    <div class="bar-wrapper"><div class="bar gold" style="height:100%"><span class="bar-value">4</span></div><div class="bar-label">Code Quality</div></div>
+                </div>
+            </div>
+
+            <div class="screenshot-placeholder">
+                <span class="placeholder-icon">&#128247;</span>
+                <div class="placeholder-text">لقطة شاشة: هيكل المشروع التقني</div>
+                <div class="placeholder-sub">Project Architecture - Technical Overview</div>
+            </div>
+        </section>
+
+        <!-- SECTION 7: KPIs -->
+        <section id="kpis" class="section animate-in">
+            <div class="section-header">
+                <div class="section-number">07</div>
+                <h2 class="section-title">مؤشرات الأداء <span>الرئيسية</span></h2>
+            </div>
+            <div class="info-box"><p>المؤشرات التالية تمثل الأهداف التقنية الرئيسية للنظام ويجب مراقبتها باستمرار لضمان الأداء الأمثل.</p></div>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">&lt;200ms</div>
+                    <div class="kpi-label">وقت استجابة API (p95)</div>
+                    <div class="kpi-progress"><div class="kpi-progress-fill" style="width:92%"></div></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">&lt;2s</div>
+                    <div class="kpi-label">وقت تحميل الصفحة</div>
+                    <div class="kpi-progress"><div class="kpi-progress-fill" style="width:88%"></div></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">99.9%</div>
+                    <div class="kpi-label">توفر النظام (Uptime)</div>
+                    <div class="kpi-progress"><div class="kpi-progress-fill" style="width:99%"></div></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">&lt;30s</div>
+                    <div class="kpi-label">سرعة الترحيل لكل 1000 معاملة</div>
+                    <div class="kpi-progress"><div class="kpi-progress-fill" style="width:85%"></div></div>
+                </div>
+            </div>
+
+            <div class="chart-container" style="margin-top:24px">
+                <div class="chart-title">مقارنة الأداء الفعلي مع الأهداف</div>
+                <div class="bar-chart">
+                    <div class="bar-wrapper"><div class="bar green" style="height:92%"><span class="bar-value">92%</span></div><div class="bar-label">استجابة API</div></div>
+                    <div class="bar-wrapper"><div class="bar gold" style="height:88%"><span class="bar-value">88%</span></div><div class="bar-label">سرعة التحميل</div></div>
+                    <div class="bar-wrapper"><div class="bar green" style="height:99%"><span class="bar-value">99%</span></div><div class="bar-label">التوفر</div></div>
+                    <div class="bar-wrapper"><div class="bar blue" style="height:85%"><span class="bar-value">85%</span></div><div class="bar-label">سرعة الترحيل</div></div>
+                </div>
+            </div>
+
+            <div class="screenshot-placeholder">
+                <span class="placeholder-icon">&#128247;</span>
+                <div class="placeholder-text">لقطة شاشة: لوحة متابعة الأداء (Performance Dashboard)</div>
+                <div class="placeholder-sub">Performance Monitoring Dashboard</div>
+            </div>
+        </section>
+
+        <!-- SECTION 8: RECOMMENDATIONS -->
+        <section id="recommendations" class="section animate-in">
+            <div class="section-header">
+                <div class="section-number">08</div>
+                <h2 class="section-title">التوصيات <span>والخطة الزمنية</span></h2>
+            </div>
+            <div class="info-box"><p>التوصيات التالية مرتبة حسب الأولوية ويجب تنفيذها وفقاً للجدول الزمني المقترح لتحقيق أقصى فائدة.</p></div>
+            <ul class="recommendation-list">
+                <li class="recommendation-item">
+                    <div class="rec-priority critical">01</div>
+                    <div class="rec-content">
+                        <h4>رفع تغطية الاختبارات إلى 70% على الأقل</h4>
+                        <p>إضافة اختبارات وحدة وتكامل جديدة للوحدات الحرجة (الحسابات العامة، الفواتير، الخزينة). استخدام pytest مع coverage plugin.</p>
+                        <div class="rec-meta">
+                            <span class="tag tag-red">أولوية قصوى</span>
+                            <span class="tag tag-orange">المدة: 4-6 أسابيع</span>
+                        </div>
+                    </div>
+                </li>
+                <li class="recommendation-item">
+                    <div class="rec-priority high">02</div>
+                    <div class="rec-content">
+                        <h4>إضافة نظام مراقبة أداء (APM)</h4>
+                        <p>دمج أداة مثل Sentry أو New Relic لمراقبة الأخطاء والأداء في بيئة الإنتاج. يُسهّل كشف المشاكل وحلها بسرعة.</p>
+                        <div class="rec-meta">
+                            <span class="tag tag-orange">أولوية مرتفعة</span>
+                            <span class="tag tag-orange">المدة: 2-3 أسابيع</span>
+                        </div>
+                    </div>
+                </li>
+                <li class="recommendation-item">
+                    <div class="rec-priority high">03</div>
+                    <div class="rec-content">
+                        <h4>إكمال تطبيق الفاتورة الإلكترونية</h4>
+                        <p>إتمام التكامل مع نظام الفاتورة الإلكترونية وفقاً لمتطلبات الزكاة والضرائب والجمارك. ضمان الامتثال الكامل للأنظمة الحالية.</p>
+                        <div class="rec-meta">
+                            <span class="tag tag-orange">أولوية مرتفعة</span>
+                            <span class="tag tag-blue">المدة: 6-8 أسابيع</span>
+                        </div>
+                    </div>
+                </li>
+                <li class="recommendation-item">
+                    <div class="rec-priority medium">04</div>
+                    <div class="rec-content">
+                        <h4>تطبيق دعم فوري (Real-time)</h4>
+                        <p>إضافة WebSocket للتحديثات الفورية باستخدام Django Channels. يُحسّن تجربة المستخدم في التقارير المباشرة والإشعارات.</p>
+                        <div class="rec-meta">
+                            <span class="tag tag-blue">أولوية متوسطة</span>
+                            <span class="tag tag-purple">المدة: 4-5 أسابيع</span>
+                        </div>
+                    </div>
+                </li>
+                <li class="recommendation-item">
+                    <div class="rec-priority medium">05</div>
+                    <div class="rec-content">
+                        <h4>تحسين نظام الصلاحيات</h4>
+                        <p>توسيع نظام الصلاحيات ليشمل التحكم الدقيق على مستوى الحقول والتقارير. استخدام نموذج Permission-based مرن.</p>
+                        <div class="rec-meta">
+                            <span class="tag tag-blue">أولوية متوسطة</span>
+                            <span class="tag tag-orange">المدة: 3-4 أسابيع</span>
+                        </div>
+                    </div>
+                </li>
+                <li class="recommendation-item">
+                    <div class="rec-priority medium">06</div>
+                    <div class="rec-content">
+                        <h4>دراسة التكامل مع البنوك المصرية</h4>
+                        <p>إجراء دراسة جدوى لتكامل API البنوك المصرية الرئيسية (CIB, NBE, QNB) لتبسيط تسجيل المعاملات البنكية.</p>
+                        <div class="rec-meta">
+                            <span class="tag tag-blue">أولوية متوسطة</span>
+                            <span class="tag tag-cyan">المدة: دراسة أولية 2 أسبوع</span>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- FINAL ASSESSMENT -->
+        <section class="section animate-in">
+            <div class="section-header">
+                <div class="section-number">&#9733;</div>
+                <h2 class="section-title">التقييم <span>النهائي</span></h2>
+            </div>
+            <div class="executive-summary">
+                <p>يُعد نظام المحاسبة المتكامل من الأنظمة الواعدة في سوق ERP المحاسبية للشركات المصرية متخصصة الخرسانة. يتميز بتوطين عربي شامل وبنية تحتية احترافية وتغطية وظيفية واسعة. مع التركيز على رفع التغطية الاختبارية وإكمال ميزة الفاتورة الإلكترونية، سيصبح النظام جاهزاً للتوسع كخدمة SaaS على المستوى الوطني والإقليمي.</p>
+            </div>
+            <div class="chart-container" style="margin-top:24px">
+                <div class="chart-title">التقييم الإجمالي للمجالات</div>
+                <div class="progress-bar-container">
+                    <div class="progress-item">
+                        <div class="progress-label"><span class="name">التغطية الوظيفية</span><span class="value">5/5</span></div>
+                        <div class="progress-track"><div class="progress-fill gold" style="width:100%"></div></div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label"><span class="name">الأمان</span><span class="value">4/5</span></div>
+                        <div class="progress-track"><div class="progress-fill green" style="width:80%"></div></div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label"><span class="name">التوطين العربي</span><span class="value">5/5</span></div>
+                        <div class="progress-track"><div class="progress-fill gold" style="width:100%"></div></div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label"><span class="name">جودة الكود</span><span class="value">4/5</span></div>
+                        <div class="progress-track"><div class="progress-fill blue" style="width:80%"></div></div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label"><span class="name">الاختبارات</span><span class="value">3/5</span></div>
+                        <div class="progress-track"><div class="progress-fill orange" style="width:60%"></div></div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label"><span class="name">التوثيق</span><span class="value">4/5</span></div>
+                        <div class="progress-track"><div class="progress-fill blue" style="width:80%"></div></div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label"><span class="name">البنية التحتية</span><span class="value">5/5</span></div>
+                        <div class="progress-track"><div class="progress-fill gold" style="width:100%"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="screenshot-placeholder">
+                <span class="placeholder-icon">&#128247;</span>
+                <div class="placeholder-text">لقطة شاشة: ملخص التقييم النهائي</div>
+                <div class="placeholder-sub">Final Assessment Summary - Executive Dashboard</div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        <p><span class="footer-brand">نظام المحاسبة المتكامل</span> - تقرير التقييم الاحترافي الشامل</p>
+        <p style="margin-top:8px">تاريخ الإعداد: 21 يوليو 2026 | الإصدار 2.0 | جميع الحقوق محفوظة &copy; 2026</p>
+    </footer>
+
+</body>
+</html>

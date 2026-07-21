@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شرح نظام المحاسبة المتكامل</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #1c2333;
+            --bg-card: #1a1f2e;
+            --gold-primary: #d4a843;
+            --gold-light: #f0d078;
+            --gold-dark: #b8922e;
+            --gold-muted: #a08530;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border-color: #30363d;
+            --border-gold: #d4a84333;
+            --code-bg: #0d1117;
+            --success: #3fb950;
+            --info: #58a6ff;
+            --warning: #d29922;
+            --danger: #f85149;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, 'Noto Sans Arabic', 'Noto Kufi Arabic', Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.8;
+            direction: rtl;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border-bottom: 2px solid var(--gold-primary);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .header h1 {
+            color: var(--gold-primary);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .header .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: var(--gold-dark);
+            color: var(--bg-primary);
+            padding: 0.2rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .toc {
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .toc h2 {
+            color: var(--gold-primary);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .toc ol {
+            padding-right: 1.5rem;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin-bottom: 0.4rem;
+        }
+
+        .toc a {
+            color: var(--info);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .toc a:hover {
+            color: var(--gold-light);
+            text-decoration: underline;
+        }
+
+        section {
+            margin-bottom: 2.5rem;
+        }
+
+        h2.section-title {
+            color: var(--gold-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--gold-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2.section-title .num {
+            background: var(--gold-dark);
+            color: var(--bg-primary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        h3 {
+            color: var(--gold-light);
+            font-size: 1.15rem;
+            margin: 1.2rem 0 0.6rem;
+        }
+
+        h4 {
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin: 1rem 0 0.4rem;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .info-card.warn {
+            border-right-color: var(--warning);
+        }
+
+        .info-card.danger {
+            border-right-color: var(--danger);
+        }
+
+        .info-card.success {
+            border-right-color: var(--success);
+        }
+
+        .info-card .label {
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .info-card.warn .label { color: var(--warning); }
+        .info-card.danger .label { color: var(--danger); }
+        .info-card.success .label { color: var(--success); }
+
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem 1.2rem;
+            overflow-x: auto;
+            margin: 0.8rem 0;
+            direction: ltr;
+            text-align: left;
+        }
+
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.88rem;
+            color: var(--gold-light);
+        }
+
+        pre code {
+            color: var(--text-primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            color: var(--gold-primary);
+            padding: 0.7rem 1rem;
+            text-align: right;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        tr:hover td {
+            background: var(--bg-secondary);
+        }
+
+        ul, ol {
+            padding-right: 1.5rem;
+            padding-left: 0;
+            margin: 0.5rem 0;
+        }
+
+        li {
+            margin-bottom: 0.3rem;
+            color: var(--text-secondary);
+        }
+
+        .flow-diagram {
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+            margin: 1rem 0;
+            direction: rtl;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.6rem;
+            direction: rtl;
+        }
+
+        .flow-step .step-box {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--gold-muted);
+            border-radius: 6px;
+            padding: 0.4rem 0.8rem;
+            color: var(--gold-light);
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .flow-step .arrow {
+            color: var(--gold-primary);
+            font-size: 1.2rem;
+            margin: 0 0.5rem;
+        }
+
+        .account-tree {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem 1.5rem;
+            font-family: 'Cascadia Code', monospace;
+            font-size: 0.85rem;
+            direction: ltr;
+            text-align: left;
+            color: var(--text-secondary);
+            margin: 0.8rem 0;
+            line-height: 1.6;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-green {
+            background: rgba(63, 185, 80, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(63, 185, 80, 0.3);
+        }
+
+        .badge-blue {
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--info);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+        }
+
+        .badge-gold {
+            background: rgba(212, 168, 67, 0.15);
+            color: var(--gold-primary);
+            border: 1px solid rgba(212, 168, 67, 0.3);
+        }
+
+        .badge-red {
+            background: rgba(248, 81, 73, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(248, 81, 73, 0.3);
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .module-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .module-card:hover {
+            border-color: var(--gold-muted);
+        }
+
+        .module-card .icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .module-card .name {
+            color: var(--gold-light);
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .module-card .desc {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .footer span {
+            color: var(--gold-primary);
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header h1 { font-size: 1.3rem; }
+            .module-grid { grid-template-columns: 1fr 1fr; }
+            .flow-step { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>شرح نظام المحاسبة المتكامل</h1>
+    <div class="subtitle">نظام ERP محاسبي &mdash; إنتاج الخرسانة الجاهزة</div>
+    <span class="version-badge">v1.0.0</span>
+</div>
+
+<div class="container">
+
+    <!-- Table of Contents -->
+    <nav class="toc">
+        <h2>فهرس المحتويات</h2>
+        <ol>
+            <li><a href="#sec1">مقدمة عن النظام</a></li>
+            <li><a href="#sec2">الفلسفة المحاسبية</a></li>
+            <li><a href="#sec3">الدورة المحاسبية كاملة</a></li>
+            <li><a href="#sec4">شجرة الحسابات (Chart of Accounts)</a></li>
+            <li><a href="#sec5">التقارير المالية</a></li>
+            <li><a href="#sec6">الضرائب في النظام</a></li>
+            <li><a href="#sec7">تعدد العملات</a></li>
+            <li><a href="#sec8">الصلاحيات والتحكم في الوصول</a></li>
+            <li><a href="#sec9">النسخ الاحتياطي</a></li>
+            <li><a href="#sec10">الأمان</a></li>
+        </ol>
+    </nav>
+
+    <!-- Section 1 -->
+    <section id="sec1">
+        <h2 class="section-title"><span class="num">1</span> مقدمة عن النظام</h2>
+        <p>نظام ERP محاسبي متكامل مصمم خصيصاً لشركات إنتاج الخرسانة الجاهزة في مصر. يوفر النظام إدارة شاملة للمبيعات، المشتريات، الإنتاج، المحاسبة، والموارد البشرية في منصة واحدة.</p>
+
+        <div class="module-grid">
+            <div class="module-card">
+                <div class="icon">&#128200;</div>
+                <div class="name">المبيعات</div>
+                <div class="desc">عروض أسعار، أوامر بيع، فواتير</div>
+            </div>
+            <div class="module-card">
+                <div class="icon">&#128722;</div>
+                <div class="name">المشتريات</div>
+                <div class="desc">طلبات شراء، أوامر شراء، فواتير</div>
+            </div>
+            <div class="module-card">
+                <div class="icon">&#9879;</div>
+                <div class="name">الإنتاج</div>
+                <div class="desc">أوامر إنتاج، خلط، جدولة</div>
+            </div>
+            <div class="module-card">
+                <div class="icon">&#128176;</div>
+                <div class="name">المحاسبة</div>
+                <div class="desc">قيود يومية، تقارير مالية</div>
+            </div>
+            <div class="module-card">
+                <div class="icon">&#128197;</div>
+                <div class="name">الخزينة</div>
+                <div class="desc">بنوك، صندوق، تدفقات نقدية</div>
+            </div>
+            <div class="module-card">
+                <div class="icon">&#128101;</div>
+                <div class="name">الموارد البشرية</div>
+                <div class="desc">موظفين، رواتب، حضور</div>
+            </div>
+            <div class="module-card">
+                <div class="icon">&#128179;</div>
+                <div class="name">الأصول الثابتة</div>
+                <div class="desc">إهلاك، صيانة، جرد</div>
+            </div>
+            <div class="module-card">
+                <div class="icon">&#128202;</div>
+                <div class="name">التقارير</div>
+                <div class="desc">قوائم مالية، تحليل أداء</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="sec2">
+        <h2 class="section-title"><span class="num">2</span> الفلسفة المحاسبية</h2>
+
+        <h3>نظام القيد المزدوج (Double Entry)</h3>
+        <p>يعتمد النظام على مبدأ القيد المزدوج حيث كل معاملة تؤثر على حسابين على الأقل بقيمتين متساويتين. هذا يضمن دقة البيانات واتساق القوائم المالية.</p>
+        <pre><code><span class="cmd-comment"># مثال: شراء مواد خام بمبلغ 100,000 ج.م</span>
+<span class="cmd-comment"># القيد المزدوج:</span>
+<span class="cmd-comment">#   مدين:  حساب مواد خام (أصول)          100,000</span>
+<span class="cmd-comment">#   دائن:  حساب مورد (خصوم)              100,000</span></code></pre>
+
+        <h3>أساس الاستحقاق (Accrual Basis)</h3>
+        <p>تُسجّل الإيرادات عند استحقاقها والمصروفات عند نشوئها بغض النظر عن توقيت استلام أو دفع النقد.</p>
+        <table>
+            <thead>
+                <tr><th>المحور</th><th>النظام النقدي</th><th>نظام الاستحقاق</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>تسجيل الإيراد</td><td>عند استلام النقد</td><td>عند إصدار الفاتورة</td></tr>
+                <tr><td>تسجيل المصروف</td><td>عند دفع النقد</td><td>عند استلام الفاتورة</td></tr>
+                <tr><td>الحسابات المستحقة</td><td>لا تُستخدم</td><td>مدين/دائن مستحق</td></tr>
+                <tr><td>الدقة المالية</td><td>أقل</td><td>أعلى</td></tr>
+            </tbody>
+        </table>
+
+        <h3>التوافق مع المعايير المحاسبية المصرية</h3>
+        <ul>
+            <li>التوافق مع معايير الإبلاغ المالي الدولية (IFRS) المُعتمد في مصر</li>
+            <li>التوافق مع معايير المحاسبة المصرية (Egyptian GAAP)</li>
+            <li>متابعة التحديثات الصادرة من هيئة سوق المال المصرية</li>
+            <li>التوافق مع أنظمة هيئة الزكاة والضريبة والجمارك</li>
+        </ul>
+
+        <h3>التوافق مع قوانين الضرائب المصرية</h3>
+        <ul>
+            <li>ضريبة القيمة المضافة (VAT) بنسبة 14%</li>
+            <li>ضريبة الدخل (ال_profit tax) بنسبة 22.5%</li>
+            <li>ضريبة الدمغة على المستندات والعقود</li>
+            <li>النظام الفرعي للفواتير الإلكترونية (E-Invoicing)</li>
+        </ul>
+
+        <div class="info-card success">
+            <div class="label">&#10003; ملاحظة</div>
+            <p>النظام مصمم ليكون متوافقاً مع جميع المتطلبات التنظيمية للمصالحة الضريبية المصرية (ETA) عند الإصدار 2026.</p>
+        </div>
+    </section>
+
+    <!-- Section 3 -->
+    <section id="sec3">
+        <h2 class="section-title"><span class="num">3</span> الدورة المحاسبية كاملة</h2>
+
+        <!-- 3.1 -->
+        <h3>3.1 دورة المبيعات</h3>
+        <p>تبدأ من استلام طلب العميل وانتهاءً بالقبض والمconciliation.</p>
+
+        <div class="flow-diagram">
+            <div class="flow-step">
+                <span class="step-box">عميل</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">عرض سعر</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">أمر بيع</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">أمر إنتاج</span>
+            </div>
+            <div class="flow-step">
+                <span class="step-box">فاتورة بيع</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">مقبوضات</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">قيد محاسبي</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">تقرير</span>
+            </div>
+        </div>
+
+        <h4>المراحل التفصيلية:</h4>
+        <table>
+            <thead>
+                <tr><th>المقطع</th><th>المستند</th><th>الحساب المتأثر</th><th>التلقائي</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>عرض سعر</td><td>لا قيد &mdash; معلوماتية فقط</td><td><span class="badge badge-blue">معلومة</span></td></tr>
+                <tr><td>2</td><td>أمر بيع</td><td>حساب مبيعات مستحقة + إيراد مبيعات</td><td><span class="badge badge-green">تلقائي</span></td></tr>
+                <tr><td>3</td><td>أمر إنتاج</td><td>تحويل أوامر الإنتاج</td><td><span class="badge badge-green">تلقائي</span></td></tr>
+                <tr><td>4</td><td>فاتورة بيع</td><td>مدين: حساب عميل / دائن: إيراد + ضريبة</td><td><span class="badge badge-green">تلقائي</span></td></tr>
+                <tr><td>5</td><td>سند قبض</td><td>مدين: صندوق/بنك / دائن: حساب عميل</td><td><span class="badge badge-green">تلقائي</span></td></tr>
+            </tbody>
+        </table>
+
+        <!-- 3.2 -->
+        <h3>3.2 دورة المشتريات</h3>
+        <p>تبدأ من تحديد الاحتياج وانتهاءً بالدفع.</p>
+
+        <div class="flow-diagram">
+            <div class="flow-step">
+                <span class="step-box">مورد</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">طلب شراء</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">أمر شراء</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">استلام بضاعة</span>
+            </div>
+            <div class="flow-step">
+                <span class="step-box">فاتورة مشتريات</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">مدفوعات</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">قيد محاسبي</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">تقرير</span>
+            </div>
+        </div>
+
+        <h4>المراحل التفصيلية:</h4>
+        <table>
+            <thead>
+                <tr><th>المقطع</th><th>المستند</th><th>الحساب المتأثر</th><th>التلقائي</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>طلب شراء</td><td>لا قيد &mdash; موافقة إدارية</td><td><span class="badge badge-blue">معلومة</span></td></tr>
+                <tr><td>2</td><td>أمر شراء</td><td>حساب مشتريات مستحقة + التزام</td><td><span class="badge badge-green">تلقائي</span></td></tr>
+                <tr><td>3</td><td>سند استلام بضاعة</td><td>مدين: مخزون / دائن: مشتريات مستحقة</td><td><span class="badge badge-green">تلقائي</span></td></tr>
+                <tr><td>4</td><td>فاتورة مشتريات</td><td>مدين: مورد / دائن: بنك/صندوق</td><td><span class="badge badge-green">تلقائي</span></td></tr>
+                <tr><td>5</td><td>سند صرف</td><td>مدين: مورد / دائن: صندوق/بنك</td><td><span class="badge badge-green">تلقائي</span></td></tr>
+            </tbody>
+        </table>
+
+        <!-- 3.3 -->
+        <h3>3.3 دورة إنتاج الخرسانة</h3>
+        <p>الدورة الفريدة لنظام إنتاج الخرسانة الجاهزة.</p>
+
+        <div class="flow-diagram">
+            <div class="flow-step">
+                <span class="step-box">طلب عميل</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">تصميم الخلطة (Mix Design)</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">أمر إنتاج</span>
+            </div>
+            <div class="flow-step">
+                <span class="step-box">خلط batching</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">شحن mixers</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">عيانة QA/QC</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">فاتورة</span>
+            </div>
+        </div>
+
+        <h4>مراحل الإنتاج التفصيلية:</h4>
+        <ol>
+            <li><strong>استلام طلب العميل:</strong> تحديد نوع الخرسانة، الكمية، موعد التسليم، وموقع التسليم</li>
+            <li><strong>تصميم الخلطة (Mix Design):</strong> تحديد نسب المواد الخام (أسمنت، رمل، حصى، ماء، إضافات) بناءً على المعامل المطلوب (fcu)</li>
+            <li><strong>أمر الإنتاج:</strong> إصدار أمر إنتاج بناءً على طلب العميل وتصميم الخلطة</li>
+            <li><strong>مرحلة الخلط (Batching):</strong> وزن المواد الخام وخلطها في المحطة (Batching Plant) وفقاً لتصميم الخلطة</li>
+            <li><strong>阶段 الشحن (Mixers):</strong> نقل الخلطة في خلايا اله Cyclone وتحديد وقت الشحن والتسليم المتوقع</li>
+            <li><strong>العيانة والجودة (QA/QC):</strong> أخذ عينات واختبار الانضغاط بعد 7 و 28 يوماً لضمان الجودة</li>
+            <li><strong>إصدار الفاتورة:</strong> فاتورة بيع بناءً على الكمية المُسلّمة فعلياً والحد الأدنى للتحميل</li>
+        </ol>
+
+        <div class="info-card">
+            <div class="label" style="color: var(--info);">ملاحظة تقنية</div>
+            <p>يحتوي النظام على نموذج حساب التكلفة لكل متر مكعب من الخرسانة بناءً على تكاليف المواد الخام والطاقة العمالة المباشرة والمصروفات غير المباشرة.</p>
+        </div>
+
+        <!-- 3.4 -->
+        <h3>3.4 الدورة المحاسبية</h3>
+        <div class="flow-diagram">
+            <div class="flow-step">
+                <span class="step-box">قيود يومية</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">ترحيل</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">ميزان مراجعة</span>
+            </div>
+            <div class="flow-step">
+                <span class="step-box">قيود تسوية</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">ميزان مراجعة نهائي</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">قائمة دخل</span>
+                <span class="arrow">&larr;</span>
+                <span class="step-box">ميزانية</span>
+            </div>
+        </div>
+
+        <h4>مراحل الدورة المحاسبية الشهرية:</h4>
+        <table>
+            <thead>
+                <tr><th>المقطع</th><th>العملية</th><th>الوصف</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>تسجيل القيود اليومية</td><td>تسجيل جميع المعاملات في دفتر اليومية العام</td></tr>
+                <tr><td>2</td><td>الترحيل</td><td>نقل القيود من دفتر اليومية إلى دفاتر الأستاذ</td></tr>
+                <tr><td>3</td><td>ميزان المراجعة</td><td>إعداد جدول يوضح أرصدة جميع الحسابات للتحقق من التوازن</td></tr>
+                <tr><td>4</td><td>القيود التصحيحية والتسوية</td><td>تسجيل قيود الإهلاك، الاستهلاكات، الإيرادات المستحقة، المصروفات المستحقة</td></tr>
+                <tr><td>5</td><td>ميزان المراجعة النهائي</td><td>إعادة إعداد الميزان بعد القيود التصحيحية</td></tr>
+                <tr><td>6</td><td>إعداد القوائم المالية</td><td>قائمة الدخل، الميزانية العمومية، قائمة التدفقات النقدية</td></tr>
+                <tr><td>7</td><td>الإقفال</td><td>إقفال الحسابات المؤقتة ونقل الأرباح إلى حقوق الملكية</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Section 4 -->
+    <section id="sec4">
+        <h2 class="section-title"><span class="num">4</span> شجرة الحسابات (Chart of Accounts)</h2>
+        <p>يتألف النظام من ستة أقسام رئيسية في شجرة الحسابات، كل قسم له رمز فريد وتصنيف متعدد المستويات.</p>
+
+        <div class="account-tree">
+<strong style="color: #58a6ff;">1000 - الأصول (Assets)</strong>
+  1100 - الأصول المتداولة
+    1110 - النقدية في الصندوق
+    1120 - الحسابات البنكية
+    1130 - الذمم المدينة (حسابات العملاء)
+    1140 - المخزون (مواد خام + خرسانة جاهزة)
+    1150 - مصروفات مقدمة
+  1200 - الأصول الثابتة
+    1210 - الأراضي
+    1220 - مباني
+    1230 - معدات وآلات
+    1240 - سيارات وشاحنات
+    1250 - إهلاك مcumulative
+
+<strong style="color: #58a6ff;">2000 - الخصوم (Liabilities)</strong>
+  2100 - الخصوم المتداولة
+    2110 - الذمم الدائنة (حسابات الموردين)
+    2120 - ضريبة القيمة المضافة المستحقة
+    2130 - رواتب مستحقة
+    2140 - مصروفات مستحقة
+    2150 - أقساط قروض مستحقة
+  2200 - الخصوم طويلة الأجل
+    2210 - قروض بنكية
+    2220 - التزامات تأجير
+
+<strong style="color: #58a6ff;">3000 - حقوق الملكية (Equity)</strong>
+  3100 - رأس المال
+  3200 - الاحتياطيات
+  3300 - أرباح محتجزة
+  3400 - إيرادات عام (مؤقتة - للإقفال)
+
+<strong style="color: #58a6ff;">4000 - الإيرادات (Revenue)</strong>
+  4100 - إيراد مبيعات الخرسانة
+  4200 - إيراد خدمات
+  4300 - خصم مكتسب
+  4400 - إيرادات أخرى
+
+<strong style="color: #58a6ff;">5000 - المصروفات (Expenses)</strong>
+  5100 - تكلفة المبيعات
+    5110 - تكلفة المواد الخام
+    5120 - تكلفة العمالة المباشرة
+    5130 - مصروفات التصنيع
+  5200 - مصروفات تشغيلية
+    5210 - رواتب وإدارة
+    5220 - إيجارات
+    5230 - مرافق
+    5240 - تأمين
+    5250 - صيانة
+  5300 - مصروفات مالية
+    5310 - فوائد قروض
+    5320 - خصم ممنوح
+
+<strong style="color: #58a6ff;">6000 - حسابات مقابلة (Contra Accounts)</strong>
+  6100 - مخزون مُخمّن (لحساب التكلفة)
+  6200 - خصم ممنوح على المبيعات
+  6300 - إهلاك الأصول الثابتة
+        </div>
+
+        <h3>آليات توليد القيود التلقائية</h3>
+        <p>يقوم النظام بتوليد القيود المحاسبية تلقائياً عند إنشاء أي مستند. أمثلة:</p>
+
+        <h4>عند إصدار فاتورة بيع خرسانة:</h4>
+        <pre><code><span class="cmd-comment"># فاتورة بيع خرسانة C25 لموقع مقاول بمبلغ 500,000 ج.م + VAT 14%</span>
+<span class="cmd-comment"># القيود التلقائية:</span>
+
+<span class="cmd-comment"># القيد الأساسي:</span>
+مدين:  1130 - الذمم المدينة (عميل: مقاولون أ)    570,000
+دائن:  4100 - إيراد مبيعات الخرسانة               500,000
+دائن:  2120 - ضريبة القيمة المضافة المستحقة       70,000
+
+<span class="cmd-comment"># تكلفة المبيعات (عند الإنتاج):</span>
+مدين:  5100 - تكلفة المبيعات                       350,000
+دائن:  1140 - مخزون خرسانة جاهزة                  350,000</code></pre>
+
+        <h4>عند سند صرف نقدي:</h4>
+        <pre><code><span class="cmd-comment"># سند صرف لمورد مواد خام بمبلغ 150,000 ج.م</span>
+<span class="cmd-comment"># القيود التلقائية:</span>
+
+مدين:  2110 - الذمم الدائنة (مورد: رمل وحصى أ)    150,000
+دائن:  1120 - الحسابات البنكية                     150,000</code></pre>
+    </section>
+
+    <!-- Section 5 -->
+    <section id="sec5">
+        <h2 class="section-title"><span class="num">5</span> التقارير المالية</h2>
+
+        <h3>5.1 قائمة الدخل (Income Statement)</h3>
+        <p>تُظهر الإيرادات والمصروفات والأرباح خلال فترة زمنية محددة (شهر/ربع سنوي/سنوي).</p>
+        <table>
+            <thead>
+                <tr><th>البند</th><th>الحساب</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>إيرادات</strong></td><td></td></tr>
+                <tr><td>&nbsp;&nbsp;إيراد مبيعات الخرسانة</td><td>4100</td></tr>
+                <tr><td>&nbsp;&nbsp;إيراد خدمات</td><td>4200</td></tr>
+                <tr><td>&nbsp;&nbsp;إجمالي الإيرادات</td><td>المجموع</td></tr>
+                <tr><td><strong>تكلفة المبيعات</strong></td><td></td></tr>
+                <tr><td>&nbsp;&nbsp;مواد خام</td><td>5110</td></tr>
+                <tr><td>&nbsp;&nbsp;عمالة مباشرة</td><td>5120</td></tr>
+                <tr><td>&nbsp;&nbsp;مصروفات تصنيع</td><td>5130</td></tr>
+                <tr><td>&nbsp;&nbsp;إجمالي تكلفة المبيعات</td><td>المجموع</td></tr>
+                <tr><td><strong>إيرادossaية Gross Profit</strong></td><td>الإيرادات - التكلفة</td></tr>
+                <tr><td><strong>مصروفات تشغيلية</strong></td><td>5200</td></tr>
+                <tr><td><strong>صافي الربح قبل الضرائب</strong></td><td></td></tr>
+                <tr><td><strong>الضرائب المستحقة</strong></td><td></td></tr>
+                <tr><td><strong>صافي الربح</strong></td><td></td></tr>
+            </tbody>
+        </table>
+
+        <h3>5.2 الميزانية العمومية (Balance Sheet)</h3>
+        <p>تُظهر المركز المالي للشركة في لحظة زمنية محددة (نهاية الفترة).</p>
+        <pre><code><span class="cmd-comment"># المعادلة المحاسبية:</span>
+الأصول = الخصوم + حقوق الملكية
+
+<span class="cmd-comment"># التفصيل:</span>
+الأصول المتداولة + الأصول الثابتة = الخصوم المتداولة + الخصوم طويلة الأجل + رأس المال + الاحتياطيات + الأرباح المحتجزة</code></pre>
+
+        <h3>5.3 قائمة التدفقات النقدية (Cash Flow Statement)</h3>
+        <table>
+            <thead>
+                <tr><th>القسم</th><th>المصادر</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>التدفقات من الأنشطة التشغيلية</td><td>تحصيل من العملاء، دفع للموردين، رواتب</td></tr>
+                <tr><td>التدفقات من الأنشطة الاستثمارية</td><td>شراء أصول، بيع أصول، استثمارات</td></tr>
+                <tr><td>التدفقات من الأنشطة التمويلية</td><td>قروض، سداد أقساط، توزيعات أرباح</td></tr>
+            </tbody>
+        </table>
+
+        <h3>5.4 ميزان المراجعة (Trial Balance)</h3>
+        <p>جدول يسرد جميع حسابات الدفتر الأستاذ وأرصدتها لمراقبة دقة التسجيل المحاسبي.</p>
+
+        <h3>5.5 كشف حساب عميل/مورد</h3>
+        <p>تقرير تفصيلي يعرض جميع المعاملات (مدين/دائن) مع عميل أو مورد معين خلال فترة زمنية محددة.</p>
+
+        <h3>5.6 تحليل الأعمار (AR/AP Aging)</h3>
+        <table>
+            <thead>
+                <tr><th>الفئة</th><strong>الوصف</strong><th>التلوين</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>المستحق حالاً</td><td>0 - 30 يوم</td><td><span class="badge badge-green">أخضر</span></td></tr>
+                <tr><td>متأخر قليلاً</td><td>31 - 60 يوم</td><td><span class="badge badge-blue">أزرق</span></td></tr>
+                <tr><td>متأخر</td><td>61 - 90 يوم</td><td><span class="badge badge-gold">ذهبي</span></td></tr>
+                <tr><td>متأخر جداً</td><td>أكثر من 90 يوم</td><td><span class="badge badge-red">أحمر</span></td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Section 6 -->
+    <section id="sec6">
+        <h2 class="section-title"><span class="num">6</span> الضرائب في النظام</h2>
+
+        <h3>6.1 ضريبة القيمة المضافة (VAT) - 14%</h3>
+        <p>يلتزم النظام بحساب ضريبة القيمة المضافة بنسبة 14% على جميع المعاملات الخاضعة للضريبة.</p>
+
+        <h4>حساب VAT على فاتورة بيع:</h4>
+        <pre><code><span class="cmd-comment"># مثال: فاتورة بيع خرسانة</span>
+القيمة الإجمالية (شاملة الضريبة) = 570,000 ج.م
+نسبة الضريبة = 14%
+
+<span class="cmd-comment"># الحساب:</span>
+القيمة قبل الضريبة = 570,000 / 1.14 = 500,000 ج.م
+مبلغ الضريبة = 500,000 × 0.14 = 70,000 ج.م
+
+<span class="cmd-comment"># القيود المحاسبية:</span>
+مدين: الذمم المدينة                     570,000
+دائن: إيراد مبيعات الخرسانة              500,000
+دائن: ضريبة القيمة المضافة المستحقة      70,000</code></pre>
+
+        <h3>6.2 ضريبة الخصم (Withholding Tax)</h3>
+        <p>يقوم النظام باحتساب ضريبة الخصم عند الدفع للموردين وفقاً للنسب المحددة قانونياً.</p>
+        <table>
+            <thead>
+                <tr><th>النوع</th><th>النسبة</th><th>الحد الأدنى</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>خدمات بناءً على العقود</td><td>1%</td><td>لا يوجد</td></tr>
+                <tr><td>إيجار المباني</td><td>10%</td><td>لا يوجد</td></tr>
+                <tr><td>إيجار الأراضي</td><td>5%</td><td>لا يوجد</td></tr>
+                <tr><td>الفنية والاستشارية</td><td>20%</td><td>لا يوجد</td></tr>
+                <tr><td>الدعاية والإعلان</td><td>5%</td><td>لا يوجد</td></tr>
+            </tbody>
+        </table>
+
+        <div class="info-card warn">
+            <div class="label">&#9888; ملاحظة</div>
+            <p>يقوم النظام تلقائياً بإنشاء سند الصرف مع احتساب ضريبة الخصم المناسبة وتسجيل القيد المحاسبي للمبلغ الصافي وقيمة الضريبة المحتسبة.</p>
+        </div>
+
+        <h3>6.3 الفاتورة الإلكترونية (E-Invoicing)</h3>
+        <p>يدعم النظام التكامل مع منصة الفواتير الإلكترونية لهيئة الزكاة والضريبة والجمارك (ETA).</p>
+        <ul>
+            <li>إنشاء فاتورة بصيغة JSON/XML متوافقة مع متطلبات ETA</li>
+            <li>إرسال الفاتورة مباشرة عبر API الخاص بـ ETA</li>
+            <li>حفظ UUID (المعرف الفريد) لكل فاتورة</li>
+            <li>تتبع حالة الفاتورة (مقبولة/مرفوضة)</li>
+            <li>دعم الطرح الرئيسي (Main Sale Invoice)</li>
+            <li>دعم الفواتير التعديلية (Credit/Debit Notes)</li>
+        </ul>
+
+        <pre><code><span class="cmd-comment"># هيكل الفاتورة الإلكترونية المطلوب</span>
+{
+  "issuer": {
+    "name": "شركة الخرسانة الجاهزة",
+    "taxId": "123-456-789",
+    "registrationNo": "..."
+  },
+  "invoiceNumber": "INV-2026-001234",
+  "invoiceDate": "2026-07-21",
+  "dueDate": "2026-08-20",
+  "items": [
+    {
+      "description": "خرسانة C25",
+      "quantity": 100,
+      "unitPrice": 5000,
+      "totalBeforeTax": 500000,
+      "vatAmount": 70000,
+      "totalWithVat": 570000
+    }
+  ],
+  "totalBeforeTax": 500000,
+  "totalVat": 70000,
+  "grandTotal": 570000
+}</code></pre>
+    </section>
+
+    <!-- Section 7 -->
+    <section id="sec7">
+        <h2 class="section-title"><span class="num">7</span> تعدد العملات</h2>
+        <p>يدعم النظام العمل بعدة عملات مع تحويل تلقائي.</p>
+
+        <table>
+            <thead>
+                <tr><th>العملة</th><th>الرمز</th><th>الرمز ISO</th><th>الحالة</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>جنيه مصري</td><td>ج.م</td><td>EGP</td><td><span class="badge badge-green">أساسية</span></td></tr>
+                <tr><td>دولار أمريكي</td><td>$</td><td>USD</td><td><span class="badge badge-blue">مدعومة</span></td></tr>
+                <tr><td>يورو</td><td>&euro;</td><td>EUR</td><td><span class="badge badge-blue">مدعومة</span></td></tr>
+                <tr><td>ريال سعودي</td><td>ر.س</td><td>SAR</td><td><span class="badge badge-blue">مدعومة</span></td></tr>
+            </tbody>
+        </table>
+
+        <h3>آلية العمل بالعملات:</h3>
+        <ul>
+            <li><strong>العملة الأساسية:</strong> جميع التقارير المالية تُعرض بالجنيه المصري (EGP)</li>
+            <li><strong>سعر الصرف:</strong> يمكن تحديث أسعار الصرف يدوياً أو تلقائياً من API خارجي</li>
+            <li><strong>القيود المحاسبية:</strong> تُسجّل جميع المعاملات بالعملة الأساسية مع تسجيل العملة الأصلية</li>
+            <li><strong>أرباح/خسائر فرق الصرف:</strong> يحسب النظام تلقائياً الفروقات عند تحويل العملات</li>
+        </ul>
+
+        <pre><code><span class="cmd-comment"># مثال: فاتورة بيع بالدولار</span>
+<span class="cmd-comment"># سعر الصرف: 1 USD = 50.00 EGP</span>
+<span class="cmd-comment"># المبلغ بالدولار: $10,000</span>
+
+<span class="cmd-comment"># القيد المحاسبي:</span>
+مدين: الذمم المدينة (بالدولار)    $10,000
+دائن: إيراد مبيعات بالدولار       $10,000
+
+<span class="cmd-comment"># بالجنيه المصري:</span>
+مدين: الذمم المدينة (بالجنيه)     500,000 ج.م
+دائن: إيراد مبيعات بالجنيه        500,000 ج.م</code></pre>
+    </section>
+
+    <!-- Section 8 -->
+    <section id="sec8">
+        <h2 class="section-title"><span class="num">8</span> الصلاحيات والتحكم في الوصول</h2>
+
+        <h3>8.1 RBAC (Role Based Access Control)</h3>
+        <p>يعتمد النظام على نموذج التحكم في الوصول القائم على الأدوار لضمان أمان البيانات.</p>
+
+        <table>
+            <thead>
+                <tr><th>الدور</th><th>الصلاحيات الرئيسية</th><th>الوصول للشاشات</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>مدير عام</strong></td>
+                    <td>كامل الصلاحيات + التقارير الاستراتيجية</td>
+                    <td>جميع الشاشات</td>
+                </tr>
+                <tr>
+                    <td><strong>محاسب رئيسي</strong></td>
+                    <td>إدارة القيود، التقارير المالية، الإقفال</td>
+                    <td>المحاسبة، التقارير</td>
+                </tr>
+                <tr>
+                    <td><strong>محاسب</strong></td>
+                    <td>录入 القيود اليومية، عرض التقارير</td>
+                    <td>المحاسبة (عرض/录入)</td>
+                </tr>
+                <tr>
+                    <td><strong>مدير المبيعات</strong></td>
+                    <td>إدارة العملاء، أوامر البيع، الفواتير</td>
+                    <td>المبيعات، العملاء</td>
+                </tr>
+                <tr>
+                    <td><strong>مندوب مبيعات</strong></td>
+                    <td>إنشاء عروض أسعار، أوامر بيع محدودة</td>
+                    <td>المبيعات (录入 فقط)</td>
+                </tr>
+                <tr>
+                    <td><strong>مدير المشتريات</strong></td>
+                    <td>إدارة الموردين، أوامر الشراء</td>
+                    <td>المشتريات، الموردين</td>
+                </tr>
+                <tr>
+                    <td><strong>مدير الإنتاج</strong></td>
+                    <td>أوامر إنتاج، جدولة التصنيع</td>
+                    <td>الإنتاج</td>
+                </tr>
+                <tr>
+                    <td><strong>مراقب جودة</strong></td>
+                    <td>تسجيل نتائج العيانات، تقارير الجودة</td>
+                    <td>الجودة</td>
+                </tr>
+                <tr>
+                    <td><strong>أمين صندوق</strong></td>
+                    <td>سندات القبض والصرف فقط</td>
+                    <td>الخزينة</td>
+                </tr>
+                <tr>
+                    <td><strong>مستخدم للقراءة فقط</strong></td>
+                    <td>عرض التقارير والبيانات فقط</td>
+                    <td>جميع الشاشات (قراءة فقط)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>8.2 صلاحيات على مستوى الشاشة</h3>
+        <table>
+            <thead>
+                <tr><th>الصلاحية</th><th>الوصف</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>عرض (View)</td><td>إمكانية عرض السجلات والبيانات</td></tr>
+                <tr><td>إضافة (Create)</td><td>إنشاء سجلات جديدة</td></tr>
+                <tr><td>تعديل (Edit)</td><td>تعديل السجلات الموجودة</td></tr>
+                <tr><td>حذف (Delete)</td><td>حذف السجلات</td></tr>
+                <tr><td>طباعة (Print)</td><td>طباعة المستندات والتقارير</td></tr>
+                <tr><td>تصدير (Export)</td><td>تصدير البيانات إلى Excel/PDF</td></tr>
+                <tr><td>ترحيل (Post)</td><td>ترحيل القيود المحاسبية</td></tr>
+                <tr><td>إقفال (Close)</td><td>إقفال الفترات المحاسبية</td></tr>
+            </tbody>
+        </table>
+
+        <h3>8.3 صلاحيات على مستوى السجل</h3>
+        <p>يمكن تقييد الصلاحيات على مستوى السجل الواحد لضمان خصوصية البيانات.</p>
+        <ul>
+            <li><strong>صلاحيات قسم:</strong> كل مستخدم يرى فقط سجلات قسمه (مبيعات، مشتريات، إنتاج...)</li>
+            <li><strong>صلاحيات منطقة:</strong> المندوبون يرون فقط عملاء منطقتهم الجغرافية</li>
+            <li><strong>صلاحيات مشروع:</strong> لكل مشروع مدير وفريق مخصص فقط يرون بياناته</li>
+            <li><strong>صلاحيات مبلغ:</strong> الفواتير التي تتجاوز مبلغاً معيناً تتطلب موافقة مدير</li>
+        </ul>
+    </section>
+
+    <!-- Section 9 -->
+    <section id="sec9">
+        <h2 class="section-title"><span class="num">9</span> النسخ الاحتياطي</h2>
+        <p>يوفر النظام آليات متعددة للنسخ الاحتياطي لضمان عدم فقدان البيانات.</p>
+
+        <h3>أنواع النسخ الاحتياطي</h3>
+        <table>
+            <thead>
+                <tr><th>النوع</th><th>التكرار</th><th>التوطين</th><th>المدة المحفوظة</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>ساعي (Incremental)</td><td>كل ساعة</td><td>محلي</td><td>7 أيام</td></tr>
+                <tr><td>يومي كامل</td><td>يومياً الساعة 2:00 ص</td><td>محلي + سحابي</td><td>30 يوم</td></tr>
+                <tr><td>أسبوعي</td><td>كل أحد</td><td>سحابي</td><td>3 أشهر</td></tr>
+                <tr><td>شهري</td><td>أول كل شهر</td><td>سحابي + نسخة خارج الموقع</td><td>12 شهر</td></tr>
+            </tbody>
+        </table>
+
+        <h3>آليات النسخ الاحتياطي</h3>
+        <pre><code><span class="cmd-comment"># نسخ احتياطي يدوي عبر أمر Django</span>
+python manage.py backup
+
+<span class="cmd-comment"># نسخ احتياطي لقاعدة البيانات فقط</span>
+python manage.py backup --database-only
+
+<span class="cmd-comment"># نسخ احتياطي مع ضغط</span>
+python manage.py backup --compress
+
+<span class="cmd-comment"># استعادة من نسخة احتياطية</span>
+python manage.py restore backup_2026_07_21.dump</code></pre>
+
+        <h3>جدولة النسخ الاحتياطي التلقائي</h3>
+        <pre><code><span class="cmd-comment"># على Linux: إضافة جدول زمني (crontab)</span>
+<span class="cmd-comment"># نسخ احتياطي يومي الساعة 2:00 ص</span>
+0 2 * * * cd /home/user/accounting_system && venv/bin/python manage.py backup --compress --cloud-upload >> logs/backup.log 2>&1
+
+<span class="cmd-comment"># نسخ احتياطي كل ساعة</span>
+0 * * * * cd /home/user/accounting_system && venv/bin/python manage.py backup --database-only >> logs/backup.log 2>&1</code></pre>
+
+        <div class="info-card warn">
+            <div class="label">&#9888; قواعد النسخ الاحتياطي</div>
+            <ul>
+                <li>يجب أن يكون النسخ الاحتياطي في ثلاثة مواقع (محلي + سحابي + خارج الموقع)</li>
+                <li>يجب اختبار الاستعادة شهرياً للتأكد من سلامة النسخ</li>
+                <li>يجب تشفير جميع النسخ الاحتياطية</li>
+                <li>يجب مراجعة سجلات النسخ الاحتياطي يومياً</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Section 10 -->
+    <section id="sec10">
+        <h2 class="section-title"><span class="num">10</span> الأمان</h2>
+
+        <h3>10.1 CSP (Content Security Policy)</h3>
+        <p>سياسة محتوى الأمان لمنع هجمات XSS وحقن المحتوى.</p>
+        <pre><code><span class="cmd-comment"># إعدادات CSP في Django</span>
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+CSP_IMG_SRC = ("'self'", "data:", "https:")
+CSP_FONT_SRC = ("'self'",)
+CSP_CONNECT_SRC = ("'self'",)
+CSP_FRAME_ANCESTORS = ("'none'",)
+CSP_BASE_URI = ("'self'",)
+CSP_FORM_ACTION = ("'self'",)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_XSS_PROTECTION = "1; mode=block"</code></pre>
+
+        <h3>10.2 المصادقة الثنائية (2FA)</h3>
+        <p>يدعم النظام المصادقة الثنائية لحماية الحسابات الحساسة.</p>
+        <table>
+            <thead>
+                <tr><th>الطريقة</th><th>الوصف</th><th>الحالة</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>تطبيقات TOTP</td><td>Google Authenticator, Authy, Microsoft Authenticator</td><td><span class="badge badge-green">مدعوم</span></td></tr>
+                <tr><td>الرسائل النصية (SMS)</td><td>إرسال رمز التحقق عبر SMS</td><td><span class="badge badge-blue">مخطط</span></td></tr>
+                <tr><td>البريد الإلكتروني</td><td>إرسال رمز التحقق عبر البريد</td><td><span class="badge badge-blue">مخطط</span></td></tr>
+                <tr><td>مفاتيح الأمان (FIDO2)</td><td>YubiKey, Windows Hello</td><td><span class="badge badge-gold">قريب</span></td></tr>
+            </tbody>
+        </table>
+
+        <h3>10.3 Rate Limiting</h3>
+        <p>تحديد معدل الطلبات لمنع هجمات Brute-force و DDoS.</p>
+        <table>
+            <thead>
+                <tr><th>العملية</th><th>الحد الأقصى</th><th>الفترة</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>تسجيل الدخول</td><td>5 محاولات</td><td>15 دقيقة</td></tr>
+                <tr><td>إعادة تعيين كلمة المرور</td><td>3 محاولات</td><td>1 ساعة</td></tr>
+                <tr><td>API عام</td><td>100 طلب</td><td>دقيقة واحدة</td></tr>
+                <tr><td>إنشاء مستند</td><td>30 طلب</td><td>دقيقة واحدة</td></tr>
+                <tr><td>تحميل تقرير</td><td>10 طلبات</td><td>5 دقائق</td></tr>
+            </tbody>
+        </table>
+
+        <h3>10.4 إدارة الجلسات (Session Management)</h3>
+        <pre><code><span class="cmd-comment"># إعدادات الجلسات في Django</span>
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+SESSION_COOKIE_AGE = 3600            <span class="cmd-comment"># ساعة واحدة</span>
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_SECURE = True         <span class="cmd-comment"># HTTPS فقط</span>
+SESSION_COOKIE_HTTPONLY = True        <span class="cmd-comment"># لا يمكن الوصول عبر JavaScript</span>
+SESSION_COOKIE_SAMESITE = "Lax"      <span class="cmd-comment"># حماية من CSRF</span>
+
+<span class="cmd-comment"># مراقبة الجلسات</span>
+SESSION_COOKIE_NAME = "sessionid"
+SESSION_COOKIE_DOMAIN = ".company.com"
+
+<span class="cmd-comment"># تقييد عدد الجلسات النشطة لكل مستخدم</span>
+MAX_SESSIONS_PER_USER = 3</code></pre>
+
+        <h3>10.5 إعدادات أمان إضافية</h3>
+        <pre><code><span class="cmd-comment"># إعدادات الأمان الإضافية</span>
+SECURE_SSL_REDIRECT = True           <span class="cmd-comment"># تحويل HTTP إلى HTTPS</span>
+SECURE_HSTS_SECONDS = 31536000       <span class="cmd-comment"># HSTS لمدة سنة</span>
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+CSRF_COOKIE_SECURE = True            <span class="cmd-comment"># CSRF cookie عبر HTTPS فقط</span>
+X_FRAME_OPTIONS = "DENY"             <span class="cmd-comment"># منع إدراج الصفحة في iframe</span>
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")</code></pre>
+
+        <div class="info-card danger">
+            <div class="label">&#9888; تذكير أمني</div>
+            <ul>
+                <li>يجب تغيير SECRET_KEY بانتظام (كل 90 يوماً)</li>
+                <li>يجب مراجعة السجلات الأمنية أسبوعياً</li>
+                <li>يجب إجراء اختبار اختراق كل 6 أشهر</li>
+                <li>يجب تدريب جميع المستخدمين على أفضل الممارسات الأمنية</li>
+            </ul>
+        </div>
+
+        <h3>10.6 ملخص معايير الأمان</h3>
+        <table>
+            <thead>
+                <tr><th>المعيار</th><th>الحالة</th><th>ملاحظات</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>تشفير الاتصالات (HTTPS/TLS)</td><td><span class="badge badge-green">مُفعّل</span></td><td>TLS 1.2+</td></tr>
+                <tr><td>تشفير قاعدة البيانات</td><td><span class="badge badge-green">مُفعّل</span></td><td>SSL for PostgreSQL</td></tr>
+                <tr><td>تشفير الملفات الثابتة</td><td><span class="badge badge-green">مُفعّل</span></td><td>AES-256</td></tr>
+                <tr><td>المصادقة الثنائية</td><td><span class="badge badge-green">مُفعّل</span></td><td>TOTP</td></tr>
+                <tr><td>سجلات الأمان</td><td><span class="badge badge-green">مُفعّل</span></td><td>logs/security.log</td></tr>
+                <tr><td>فحص الثغرات</td><td><span class="badge badge-green">مُفعّل</span></td><td>OWASP ZAP + Safety</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+</div>
+
+<div class="footer">
+    <p><span>نظام المحاسبة المتكامل</span> &mdash; شرح النظام الشامل v1.0.0</p>
+    <p>آخر تحديث: يوليو 2026</p>
+</div>
+
+</body>
+</html>
