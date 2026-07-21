@@ -10,7 +10,7 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 if not SECRET_KEY:
-    if DEBUG or 'test' in sys.argv:
+    if DEBUG or 'test' in sys.argv or 'pytest' in sys.modules:
         # مفتاح مؤقت للتطوير/الاختبار فقط — يُولَّد عشوائياً كل تشغيل
         # (لا يُستخدم أبداً في الإنتاج حيث يجب ضبط DJANGO_SECRET_KEY)
         SECRET_KEY = get_random_secret_key()
@@ -351,11 +351,10 @@ SESSION_COOKIE_AGE = 86400 * 7  # 7 days
 SESSION_SAVE_EVERY_REQUEST = False
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_HTTPONLY = True  # منع الوصول للكوكيز عبر JavaScript (حماية XSS)
-CSRF_COOKIE_HTTPONLY = True  # منع الوصول لـ CSRF cookie عبر JavaScript
+CSRF_COOKIE_HTTPONLY = False  # يسمح لـ JavaScript بقراءة CSRF cookie لإعداد رأس X-CSRFToken في طلبات AJAX
 
 # Security Settings (for production)
 if not DEBUG:
-    SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
     SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1', 'yes')

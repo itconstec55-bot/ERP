@@ -1,14 +1,10 @@
 import logging
-import os
-import sys
 
-from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
 
-sys.path.insert(0, os.path.join(settings.BASE_DIR, 'deployment'))
-from monitoring import get_all_metrics, get_metrics_history, get_service_status, save_metrics_history
+from deployment.monitoring import get_all_metrics, get_metrics_history, get_service_status, save_metrics_history
 
 logger = logging.getLogger('accounting')
 

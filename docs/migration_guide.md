@@ -257,20 +257,20 @@ upstream app_backend {
 server {
     listen 80;
     server_name app.yourdomain.com;  # ← سيتم تغييره في القسم الرابع
-
+    
     client_max_body_size 50M;
-
+    
     location /static/ {
         alias /opt/app/static/;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
-
+    
     location /media/ {
         alias /var/app/uploads/;
         expires 30d;
     }
-
+    
     location / {
         proxy_pass http://app_backend;
         proxy_set_header Host $host;
@@ -494,8 +494,8 @@ journalctl -u app -f --since "1 hour ago" | grep -E "(ERROR|CRITICAL|WARNING)"
 
 # 2. مراقبة أداء قاعدة البيانات
 sudo -u postgres psql -d appdb -c "
-SELECT query, calls, mean_exec_time, rows
-FROM pg_stat_statements
+SELECT query, calls, mean_exec_time, rows 
+FROM pg_stat_statements 
 ORDER BY mean_exec_time DESC LIMIT 10;"
 
 # 3. مراقبة استخدام الموارد

@@ -32,7 +32,7 @@ relative_files = true
 
 [tool.coverage.report]
 exclude_lines = ["pragma: no cover", "def __repr__", "raise AssertionError", "raise NotImplementedError", "if __name__ == .__main__.:", "class.*\\bMeta\\b", "@abc.abstractmethod"]
-fail_under = 46
+fail_under = 60
 
 [tool.pyright]
 include = ["accounting_system", "api", "common", "accounts", "purchases", "sales", "treasury", "assets", "hr", "warehouses", "company", "notifications", "backups", "sync", "audit", "reports", "documents", "access_control", "concrete_production", "contractors"]
