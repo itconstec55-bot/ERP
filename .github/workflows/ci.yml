@@ -48,11 +48,11 @@ jobs:
 
       - name: Lint with ruff (project standard)
         run: |
-          ruff check . || echo "::warning::Ruff lint issues found (non-blocking)"
+          ruff check .
 
       - name: Check formatting with ruff
         run: |
-          ruff format --check . || echo "::warning::Ruff formatting issues found"
+          ruff format --check .
 
       - name: Run Django system checks
         env:
@@ -71,7 +71,12 @@ jobs:
           DJANGO_DEBUG: "0"
           CI: "true"
         run: |
-          pytest --ds=accounting_system.settings --cov=. --cov-report=xml || echo "::warning::No tests configured or tests failed"
+          pytest --ds=accounting_system.settings --cov=. --cov-report=xml
+
+      - name: Security scan (bandit)
+        run: |
+          pip install bandit
+          bandit -r accounting_system/ -c pyproject.toml -ll || echo "::warning::Bandit security scan found issues. Review manually."
 
   build:
     name: Build & Collect Static

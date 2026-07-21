@@ -41,8 +41,8 @@ def _read_network_conf():
 
 
 _net_cfg = _read_network_conf()
-_internal_ip = _net_cfg.get('INTERNAL_IP', '192.168.1.31')
-_external_ip = _net_cfg.get('EXTERNAL_IP', '196.218.24.45')
+_internal_ip = _net_cfg.get('INTERNAL_IP', '')
+_external_ip = _net_cfg.get('EXTERNAL_IP', '')
 _default_bind = f'{_internal_ip},{_external_ip}'
 
 _bind_hosts = [h.strip() for h in os.environ.get('DJANGO_BIND_HOSTS', _default_bind).split(',') if h.strip()]
@@ -149,8 +149,8 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Sync Settings
-MACHINE_ID = 'MACHINE-DEFAULT'
+# Sync Settings (override via env var for each machine)
+MACHINE_ID = os.environ.get('MACHINE_ID', 'MACHINE-DEFAULT')
 MACHINE_NAME = 'الجهاز الرئيسي'
 MACHINE_TYPE = 'standalone'  # host, client, standalone
 
@@ -325,12 +325,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
-# Accounting Settings
-COMPANY_NAME = 'شركة تواريدات للتجارة'
-COMPANY_ADDRESS = 'القاهرة، مصر'
-COMPANY_PHONE = '01000000000'
-COMPANY_TAX_NUMBER = '123456789'
-VAT_RATE = 14  # 14% VAT in Egypt
+# Accounting Settings (override via env vars for each deployment)
+COMPANY_NAME = os.environ.get('COMPANY_NAME', 'شركة تواريدات للتجارة')
+COMPANY_ADDRESS = os.environ.get('COMPANY_ADDRESS', 'القاهرة، مصر')
+COMPANY_PHONE = os.environ.get('COMPANY_PHONE', '01000000000')
+COMPANY_TAX_NUMBER = os.environ.get('COMPANY_TAX_NUMBER', '123456789')
+VAT_RATE = int(os.environ.get('VAT_RATE', '14'))  # 14% VAT in Egypt
 
 # Fiscal Year
 FISCAL_YEAR_START = '01-01'
@@ -381,7 +381,7 @@ ALLOWED_EMAIL_DOMAIN = os.environ.get('DJANGO_ALLOWED_EMAIL_DOMAIN', None)
 # ---------------------------------------------------------------------------
 # 2FA Settings (المصادقة الثنائية)
 # ---------------------------------------------------------------------------
-TOTP_ISSUER_NAME = 'نظام المحاسبة'
+TOTP_ISSUER_NAME = os.environ.get('TOTP_ISSUER_NAME', 'نظام المحاسبة')
 REQUIRE_2FA = os.environ.get('DJANGO_REQUIRE_2FA', 'False').lower() in ('true', '1', 'yes')
 
 # ---------------------------------------------------------------------------
@@ -395,7 +395,7 @@ WHATSAPP_APP_ID = os.environ.get('WHATSAPP_APP_ID')
 WHATSAPP_APP_SECRET = os.environ.get('WHATSAPP_APP_SECRET')
 WHATSAPP_PHONE_ID = os.environ.get('WHATSAPP_PHONE_ID')
 WHATSAPP_API_TOKEN = os.environ.get('WHATSAPP_API_TOKEN')
-WHATSAPP_API_BASE_URL = 'https://graph.facebook.com/v18.0'
+WHATSAPP_API_BASE_URL = os.environ.get('WHATSAPP_API_BASE_URL', 'https://graph.facebook.com/v18.0')
 WHATSAPP_WEBHOOK_VERIFY_TOKEN = os.environ.get('WHATSAPP_WEBHOOK_VERIFY_TOKEN')
 
 WHATSAPP_RATE_LIMITS = {

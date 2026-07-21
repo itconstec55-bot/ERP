@@ -168,7 +168,7 @@ def receipt_allocate(request, pk):
             continue
         try:
             amount = Decimal(amounts[i])
-        except Exception:
+        except (ValueError, TypeError):
             continue
         if amount <= 0:
             continue

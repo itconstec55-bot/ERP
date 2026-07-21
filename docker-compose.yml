@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: accounting
       POSTGRES_USER: accounting
-      POSTGRES_PASSWORD: ${DJANGO_DB_PASSWORD:-changeme}
+      POSTGRES_PASSWORD: ${DJANGO_DB_PASSWORD:?DJANGO_DB_PASSWORD is required. Set it in .env or environment.}
     volumes:
       - pgdata:/var/lib/postgresql/data
     # منفذ مفتوح على localhost فقط (لإدارة/نقل البيانات من الجهاز نفسه، مش على الشبكة)
@@ -45,9 +45,9 @@ services:
       DJANGO_DB_PORT: "5432"
       DJANGO_DB_NAME: accounting
       DJANGO_DB_USER: accounting
-      DJANGO_DB_PASSWORD: ${DJANGO_DB_PASSWORD:-changeme}
+      DJANGO_DB_PASSWORD: ${DJANGO_DB_PASSWORD:?DJANGO_DB_PASSWORD is required.}
       DJANGO_CELERY_BROKER: redis://redis:6379/0
-      DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,${HOST_IP:-192.168.1.31},${EXTERNAL_IP:-196.218.24.45}"
+      DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,${HOST_IP},${EXTERNAL_IP}"
       GUNICORN_WORKERS: "${GUNICORN_WORKERS:-2}"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8012/accounts/login/"]
@@ -64,8 +64,8 @@ volumes:
   media:
 
 # ---------------------------------------------------------------------------
-# خيار SQLite خفيف (جهاز واحد، بلا Postgres):
-#   عُدّل قسم web كالتالي واحذف خدمتي db/redis إن لم تُحتج:
+# SQLite lightweight option (single machine, no Postgres):
+#   Modify the web service as below and remove db/redis if not needed:
 #   web:
 #     build: .
 #     env_file: [.env]

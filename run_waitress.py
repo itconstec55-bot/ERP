@@ -25,6 +25,6 @@ from waitress import serve
 from accounting_system.wsgi import application
 
 port = int(os.environ.get('BIND_PORT', '8001'))
-host = os.environ.get('DJANGO_BIND_HOST', '0.0.0.0')
+host = os.environ.get('DJANGO_BIND_HOST', '0.0.0.0')  # noqa: S104
 print(f'==> Production server (waitress) on http://{host}:{port}  [DEBUG={os.environ.get("DJANGO_DEBUG")}]')
 serve(application, host=host, port=port, threads=8)

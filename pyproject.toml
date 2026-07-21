@@ -10,15 +10,15 @@ exclude = ["venv", "migrations", "dist", "staticfiles", "media", "logs", "__pyca
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "N", "UP", "S", "B", "SIM"]
-ignore = ["E501", "S101", "SIM117", "B028", "E741", "S106", "SIM105", "S110", "F403", "F405", "N818", "B008", "N802", "N803", "N806", "SIM102", "SIM108", "B904", "B007", "S603", "UP007", "E402", "N999", "F401", "S311", "F841", "SIM103", "S310", "S607", "SIM115", "S112", "N817", "S104", "N801"]
+ignore = ["E501", "S101", "SIM117", "B028", "E741", "SIM105", "S110", "F403", "F405", "N818", "B008", "N802", "N803", "N806", "SIM102", "SIM108", "B904", "B007", "S603", "UP007", "E402", "N999", "F401", "F841", "SIM103", "S310", "S311", "S607", "SIM115", "N817", "N801"]
 
 [tool.ruff.lint.isort]
 split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-"test_*.py" = ["S101"]
-"tests.py" = ["S101"]
+"test_*.py" = ["S101", "S106"]
+"tests.py" = ["S101", "S106"]
 
 [tool.ruff.format]
 quote-style = "single"
@@ -32,10 +32,20 @@ relative_files = true
 
 [tool.coverage.report]
 exclude_lines = ["pragma: no cover", "def __repr__", "raise AssertionError", "raise NotImplementedError", "if __name__ == .__main__.:", "class.*\\bMeta\\b", "@abc.abstractmethod"]
-fail_under = 40
+fail_under = 60
+
+[tool.pyright]
+include = ["accounting_system", "api", "common", "accounts", "purchases", "sales", "treasury", "assets", "hr", "warehouses", "company", "notifications", "backups", "sync", "audit", "reports", "documents", "access_control", "concrete_production", "contractors"]
+exclude = ["venv", "migrations", "dist", "staticfiles", "media", "logs", "__pycache__", ".github", "tests"]
+typeCheckingMode = "basic"
+reportMissingTypeStubs = false
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "accounting_system.settings"
 python_files = ["tests.py", "test_*.py"]
 testpaths = ["tests", "accounts", "purchases", "sales", "api", "common", "hr", "assets", "stock_adjustments", "sync", "sales_returns", "purchase_returns", "backups", "bank_reconciliation", "credit_notes", "treasury", "recurring", "reports", "access_control", "contractors", "documents", "warehouses"]
 markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
+
+[tool.bandit]
+exclude_dirs = ["venv", "migrations", "tests", "staticfiles", "media", "logs", "__pycache__", ".github"]
+skips = ["B101", "B311", "B303"]
