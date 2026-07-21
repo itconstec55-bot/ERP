@@ -154,7 +154,7 @@ class FinancialDecimal:
     def __eq__(self, other: object) -> bool:
         if isinstance(other, FinancialDecimal):
             return self._value == other._value
-        return self._value == to_decimal(other) if isinstance(other, (int, float, str, Decimal)) else False
+        return self._value == to_decimal(other) if isinstance(other, int | float | str | Decimal) else False
 
     def __hash__(self) -> int:
         return hash(self._value)
@@ -202,7 +202,7 @@ def safe_arithmetic(func):
             result = func(*args, **kwargs)
             if isinstance(result, Decimal):
                 return quantize_10(result)
-            elif isinstance(result, (list, tuple)):
+            elif isinstance(result, list | tuple):
                 return type(result)(quantize_10(v) if isinstance(v, Decimal) else v for v in result)
             elif isinstance(result, dict):
                 return {k: quantize_10(v) if isinstance(v, Decimal) else v for k, v in result.items()}

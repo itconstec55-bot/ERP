@@ -37,7 +37,7 @@
         font-size: 1.25rem;
     }
     .settings-body { padding: 24px; }
-    
+
     .table-responsive { overflow-x: auto; }
     .settings-table { width: 100%; border-collapse: collapse; }
     .settings-table th {
@@ -55,16 +55,16 @@
     }
     .settings-table tbody tr:hover { background: #f8f9fa; }
     .settings-table tbody tr.editing-row { background: #e8f0fe; }
-    
+
     .editable-cell { position: relative; }
     .cell-view { display: block; }
     .cell-edit { display: none; }
     .editing-row .cell-view { display: none; }
     .editing-row .cell-edit { display: block; }
-    
+
     .form-control-sm { padding: 6px 10px; font-size: 0.875rem; }
     .form-check-input { width: 1.1em; height: 1.1em; }
-    
+
     .action-buttons { display: flex; gap: 6px; white-space: nowrap; }
     .btn-action {
         padding: 6px 10px; font-size: 0.8rem;
@@ -72,25 +72,25 @@
         border-radius: 6px; transition: all 0.2s;
     }
     .btn-action i { margin-right: 4px; }
-    
+
     .btn-add-row {
         background: #e8f0fe; color: var(--primary-color);
         border: 1px solid #c5d7fd;
     }
     .btn-add-row:hover { background: #d2e3fc; }
-    
+
     .empty-state { text-align: center; padding: 40px 20px; color: #6c757d; }
     .empty-state i { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
-    
+
     .badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; }
     .badge-active { background: #d4edda; color: #155724; }
     .badge-inactive { background: #f8d7da; color: #721c24; }
-    
+
     .spinner-sm { width: 14px; height: 14px; border-width: 2px; }
-    
+
     .toast-container { position: fixed; top: 20px; left: 20px; z-index: 9999; }
     .toast { min-width: 280px; }
-    
+
     @media (max-width: 768px) {
         .settings-header { flex-direction: column; align-items: flex-start; }
         .action-buttons { flex-direction: column; }
@@ -492,13 +492,13 @@
 <script>
 (function() {
     'use strict';
-    
+
     // Configuration
     const API_BASE = '/company/admin/settings/';
     const csrftoken = document.querySelector('meta[name="csrf-token"]')?.content || '';
     let currentEditingRow = null;
     let originalRowData = null;
-    
+
     // Toast notification
     function showToast(message, type = 'success') {
         const container = document.getElementById('toastContainer');
@@ -516,7 +516,7 @@
         bsToast.show();
         toast.addEventListener('hidden.bs.toast', () => toast.remove());
     }
-    
+
     // Get row data
     function getRowData(row) {
         const data = {};
@@ -530,7 +530,7 @@
         });
         return data;
     }
-    
+
     // Set row to view mode with data
     function setRowViewMode(row, data) {
         row.classList.remove('editing-row');
@@ -540,7 +540,7 @@
             if (name && data[name] !== undefined) {
                 if (view.querySelector('.form-check-input')) {
                     // Boolean badge
-                    view.innerHTML = data[name] 
+                    view.innerHTML = data[name]
                         ? '<span class="badge-status badge-active"><i class="fas fa-check-circle me-1"></i>نشط</span>'
                         : '<span class="badge-status badge-inactive"><i class="fas fa-times-circle me-1"></i>غير نشط</span>';
                 } else if (view.querySelector('select')) {
@@ -554,7 +554,7 @@
             }
         });
     }
-    
+
     // Toggle edit mode
     window.toggleEdit = function(btn) {
         const row = btn.closest('tr');
@@ -568,12 +568,12 @@
         row.querySelector('.btn-delete').classList.add('d-none');
         row.querySelector('.btn-save').classList.remove('d-none');
         row.querySelector('.btn-cancel').classList.remove('d-none');
-        
+
         // Focus first input
         const firstInput = row.querySelector('.cell-edit input, .cell-edit select, .cell-edit textarea');
         if (firstInput) firstInput.focus();
     };
-    
+
     // Cancel edit
     window.cancelEdit = function(btn) {
         const row = btn.closest('tr');
@@ -582,7 +582,7 @@
         row.querySelector('.btn-delete').classList.remove('d-none');
         row.querySelector('.btn-save').classList.add('d-none');
         row.querySelector('.btn-cancel').classList.add('d-none');
-        
+
         // Restore original values
         if (originalRowData) {
             const inputs = row.querySelectorAll('.cell-edit input, .cell-edit select, .cell-edit textarea');
@@ -597,24 +597,24 @@
         currentEditingRow = null;
         originalRowData = null;
     };
-    
+
     // Save row
     window.saveRow = async function(btn) {
         const row = btn.closest('tr');
         const id = row.dataset.id;
         const type = row.dataset.type;
-        
+
         const data = getRowData(row);
-        
+
         // Validate required fields
         if (!data.code?.trim() || !data.name?.trim()) {
             showToast('الكود والاسم حقول مطلوبة', 'danger');
             return;
         }
-        
+
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-sm me-1"></span> جاري الحفظ...';
-        
+
         try {
             const slug = apiEndpoints[type] || (type + 's');
             let url, method;
@@ -627,7 +627,7 @@
                 url = API_BASE + slug + '/' + id + '/update/';
                 method = 'POST';
             }
-            
+
             const response = await fetch(url, {
                 method: method,
                 headers: {
@@ -636,12 +636,12 @@
                 },
                 body: JSON.stringify(data)
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 showToast(result.message || 'تم الحفظ بنجاح');
-                
+
                 // Update row with server data
                 if (result.data) {
                     setRowViewMode(row, result.data);
@@ -649,7 +649,7 @@
                 } else {
                     setRowViewMode(row, data);
                 }
-                
+
                 // Exit edit mode
                 row.classList.remove('editing-row');
                 row.querySelector('.btn-edit').classList.remove('d-none');
@@ -668,23 +668,23 @@
             btn.innerHTML = '<i class="fas fa-save me-1"></i> حفظ';
         }
     };
-    
+
     // Delete row
     window.deleteRow = async function(btn) {
         if (!confirm('هل أنت متأكد من الحذف؟ لا يمكن التراجع عن هذا الإجراء.')) return;
-        
+
         const row = btn.closest('tr');
         const id = row.dataset.id;
         const type = row.dataset.type;
-        
+
         if (!id || id === 'new') {
             row.remove();
             return;
         }
-        
+
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-sm me-1"></span> جاري الحذف...';
-        
+
         try {
             const slug = apiEndpoints[type] || (type + 's');
             const response = await fetch(API_BASE + slug + '/' + id + '/delete/', {
@@ -692,7 +692,7 @@
                 headers: { 'X-CSRFToken': csrftoken },
             });
             const result = await response.json();
-            
+
             if (result.success) {
                 showToast(result.message || 'تم الحذف بنجاح');
                 row.remove();
@@ -706,7 +706,7 @@
             btn.innerHTML = '<i class="fas fa-trash me-1"></i> حذف';
         }
     };
-    
+
     // Modal handling for new records
     const modalFormFields = {
         accountType: `
@@ -850,43 +850,43 @@
             </div>
         `
     };
-    
+
     const modalTitles = {
         accountType: 'إضافة نوع حساب جديد',
         product: 'إضافة منتج جديد',
         category: 'إضافة تصنيف جديد',
         unit: 'إضافة وحدة قياس جديدة'
     };
-    
+
     const apiEndpoints = {
         accountType: 'account-types',
         product: 'products',
         category: 'categories',
         unit: 'units'
     };
-    
+
     window.openCreateModal = function(type) {
         const modal = document.getElementById('createModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalBody = document.getElementById('modalBody');
         const form = document.getElementById('createForm');
-        
+
         modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>' + modalTitles[type];
         modalBody.innerHTML = modalFormFields[type];
         form.dataset.type = type;
         form.dataset.id = '';
-        
+
         const bsModal = new bootstrap.Modal(modal);
         bsModal.show();
     };
-    
+
     // Handle modal form submission
     document.getElementById('createForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const form = e.target;
         const type = form.dataset.type;
         const submitBtn = document.getElementById('modalSubmitBtn');
-        
+
         const formData = new FormData(form);
         const data = {};
         formData.forEach((value, key) => {
@@ -898,15 +898,15 @@
                 data[key] = value;
             }
         });
-        
+
         if (!data.code?.trim() || !data.name?.trim()) {
             showToast('الكود والاسم حقول مطلوبة', 'danger');
             return;
         }
-        
+
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-sm me-1"></span> جاري الحفظ...';
-        
+
         try {
             const response = await fetch(API_BASE + apiEndpoints[type] + '/create/', {
                 method: 'POST',
@@ -916,13 +916,13 @@
                 },
                 body: JSON.stringify(data)
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 showToast(result.message || 'تم الإنشاء بنجاح');
                 bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
-                
+
                 // Add new row to table
                 addRowToTable(type, result.data);
             } else {
@@ -935,21 +935,21 @@
             submitBtn.innerHTML = '<i class="fas fa-save me-1"></i> حفظ';
         }
     });
-    
+
     function addRowToTable(type, data) {
         const tableId = type + 'sTable';
         const table = document.getElementById(tableId);
         if (!table) return;
-        
+
         const tbody = table.querySelector('tbody');
         const emptyRow = tbody.querySelector('.empty-state')?.closest('tr');
         if (emptyRow) emptyRow.remove();
-        
+
         // This is a simplified version - in production, use a template
         // For now, just reload the page to show the new row
         setTimeout(() => window.location.reload(), 500);
     }
-    
+
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && currentEditingRow) {
@@ -960,7 +960,7 @@
             saveRow(currentEditingRow.querySelector('.btn-save'));
         }
     });
-    
+
     // Initialize tooltips
     document.addEventListener('DOMContentLoaded', function() {
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
@@ -968,7 +968,7 @@
             new bootstrap.Tooltip(el);
         });
     });
-    
+
 })();
 </script>
 {% endblock %}

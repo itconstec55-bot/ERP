@@ -75,7 +75,7 @@ $SkippedCount = 0
 foreach ($file in $AllFiles) {
     $RelPath = $file.FullName.Substring($SourceRoot.Length + 1)
     $ShouldExclude = $false
-    
+
     foreach ($pattern in $ExcludePatterns) {
         if ($RelPath -like $pattern) {
             $ShouldExclude = $true
@@ -92,7 +92,7 @@ foreach ($file in $AllFiles) {
         }
         if ($ShouldExclude) { break }
     }
-    
+
     if ($ShouldExclude) {
         $SkippedCount++
     } else {
@@ -131,20 +131,20 @@ foreach ($file in $FilesToArchive) {
     $RelPath = $file.FullName.Substring($SourceRoot.Length + 1)
     $entry = $zip.CreateEntry($RelPath, [System.IO.Compression.CompressionLevel]::Optimal)
     $stream = $entry.Open()
-    
+
     # Use temp DB copy if this is the main database file
     $sourcePath = $file.FullName
     if ($RelPath -eq "db.sqlite3" -and (Test-Path $TempDbPath)) {
         $sourcePath = $TempDbPath
     }
-    
+
     $fileStream = [System.IO.File]::OpenRead($sourcePath)
     $fileStream.CopyTo($stream)
     $fileStream.Close()
     $stream.Close()
     $count++
     $totalSize += $file.Length
-    
+
     if ($count % 500 -eq 0) {
         Write-Host "  Archived $count files..." -NoNewline
         Write-Host "`r" -NoNewline

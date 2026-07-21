@@ -47,7 +47,7 @@ try {
             if (Test-Path $p) { $TestCmd = $p; break }
         }
     }
-    
+
     $result = & $TestCmd "postgresql://$DB_USER:$DB_PASSWORD@$DB_SERVER_IP:$DB_PORT/$DB_NAME" -c "SELECT 'OK' as status;" -t -A
     if ($result -like "*OK*") {
         Write-Host "  Connection test: SUCCESS" -ForegroundColor Green

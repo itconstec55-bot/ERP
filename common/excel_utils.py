@@ -49,7 +49,7 @@ def export_to_excel(queryset, columns, filename='export'):
                     value = getattr(obj, field, '')
                     if hasattr(value, 'strftime'):
                         value = value.strftime('%d/%m/%Y')
-                    elif hasattr(value, '__str__') and not isinstance(value, (int, float, str)):
+                    elif hasattr(value, '__str__') and not isinstance(value, int | float | str):
                         value = str(value)
 
                 if isinstance(value, str) and value and value[0] in '=+-@':
