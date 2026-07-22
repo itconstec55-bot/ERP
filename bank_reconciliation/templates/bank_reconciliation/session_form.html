@@ -1,0 +1,28 @@
+{% extends 'base/base.html' %}
+
+{% block title %}جلسة تسوية جديدة{% endblock %}
+{% block page_title %}جلسة تسوية جديدة{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-plus"></i> جلسة تسوية</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3"><label class="form-label">الحساب البنكي</label>
+                        <select name="bank_account" class="form-select" required>{% for b in banks %}<option value="{{ b.pk }}">{{ b }}</option>{% endfor %}</select>
+                    </div>
+                    <div class="mb-3"><label class="form-label">من تاريخ</label><input type="date" name="period_start" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">إلى تاريخ</label><input type="date" name="period_end" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">رصيد الدفتر</label><input type="number" name="book_balance" class="form-control" step="0.01" required></div>
+                    <div class="mb-3"><label class="form-label">رصيد البنك</label><input type="number" name="bank_balance" class="form-control" step="0.01" required></div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> إنشاء</button>
+                    <a href="{% url 'bank_reconciliation:dashboard' %}" class="btn btn-outline-secondary">إلغاء</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

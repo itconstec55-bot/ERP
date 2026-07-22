@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="860" viewBox="0 0 600 860"
+     font-family="Segoe UI, Arial, sans-serif" direction="ltr">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="6" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#33475b"/>
+    </marker>
+    <marker id="arrowR" markerWidth="12" markerHeight="12" refX="6" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1cc88a"/>
+    </marker>
+    <style>
+      .box  { fill:#4e73df; stroke:#2e4fb0; stroke-width:1.5; }
+      .boxg { fill:#1cc88a; stroke:#129c6b; stroke-width:1.5; }
+      .boxa { fill:#f6c23e; stroke:#d4a017; stroke-width:1.5; }
+      .lbl  { fill:#ffffff; font-size:16px; font-weight:700; text-anchor:middle; }
+      .sub  { fill:#eef2ff; font-size:11px; text-anchor:middle; }
+      .edge { stroke:#33475b; stroke-width:2.5; marker-end:url(#arrow); }
+      .ret  { stroke:#1cc88a; stroke-width:2.5; stroke-dasharray:6 4; marker-end:url(#arrowR); fill:none; }
+      .title{ fill:#222; font-size:19px; font-weight:800; text-anchor:middle; }
+      .note { fill:#556; font-size:11px; text-anchor:middle; }
+    </style>
+  </defs>
+
+  <text x="300" y="30" class="title">Data Flow: Browser &#8596; Django Backend</text>
+
+  <!-- 1 Browser -->
+  <rect class="box" x="130" y="56" width="340" height="56" rx="9"/>
+  <text x="300" y="82" class="lbl">1 &#183; Browser</text>
+  <text x="300" y="100" class="sub">HTTP GET/POST + CSRF token</text>
+
+  <!-- 2 Nginx -->
+  <line class="edge" x1="300" y1="112" x2="300" y2="142"/>
+  <rect class="box" x="130" y="142" width="340" height="56" rx="9"/>
+  <text x="300" y="168" class="lbl">2 &#183; Nginx</text>
+  <text x="300" y="186" class="sub">Reverse Proxy / TLS termination</text>
+
+  <!-- 3 Gunicorn -->
+  <line class="edge" x1="300" y1="198" x2="300" y2="228"/>
+  <rect class="box" x="130" y="228" width="340" height="56" rx="9"/>
+  <text x="300" y="254" class="lbl">3 &#183; Gunicorn / runserver</text>
+  <text x="300" y="272" class="sub">WSGI @ 127.0.0.1:8012</text>
+
+  <!-- 4 Middleware -->
+  <line class="edge" x1="300" y1="284" x2="300" y2="314"/>
+  <rect class="box" x="130" y="314" width="340" height="56" rx="9"/>
+  <text x="300" y="340" class="lbl">4 &#183; Middleware</text>
+  <text x="300" y="358" class="sub">Throttle &#8594; Session &#8594; CSRF</text>
+
+  <!-- 5 URL Router -->
+  <line class="edge" x1="300" y1="370" x2="300" y2="400"/>
+  <rect class="box" x="130" y="400" width="340" height="56" rx="9"/>
+  <text x="300" y="426" class="lbl">5 &#183; URL Router</text>
+  <text x="300" y="444" class="sub">include(apps) + namespaces</text>
+
+  <!-- 6 View -->
+  <line class="edge" x1="300" y1="456" x2="300" y2="486"/>
+  <rect class="boxa" x="130" y="486" width="340" height="56" rx="9"/>
+  <text x="300" y="512" class="lbl">6 &#183; View</text>
+  <text x="300" y="530" class="sub">permission check &#8594; ORM query</text>
+
+  <!-- 7 Database -->
+  <line class="edge" x1="300" y1="542" x2="300" y2="572"/>
+  <rect class="boxg" x="130" y="572" width="340" height="56" rx="9"/>
+  <text x="300" y="598" class="lbl">7 &#183; Database</text>
+  <text x="300" y="616" class="sub">SQLite / PostgreSQL (atomic+lock)</text>
+
+  <!-- 8 Context + Template -->
+  <line class="edge" x1="300" y1="628" x2="300" y2="658"/>
+  <rect class="box" x="130" y="658" width="340" height="56" rx="9"/>
+  <text x="300" y="684" class="lbl">8 &#183; Context + Template</text>
+  <text x="300" y="702" class="sub">DTL render + static assets</text>
+
+  <!-- return arrow (response) -->
+  <path class="ret" d="M480,686 C560,686 560,84 480,84"/>
+  <text x="545" y="386" class="note">HTTP Response</text>
+
+  <text x="300" y="840" class="note">Solid = request flow &#183; Dashed green = response returns to Browser</text>
+</svg>

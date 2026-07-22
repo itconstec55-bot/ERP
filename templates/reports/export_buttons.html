@@ -1,0 +1,35 @@
+{% load static %}
+<div class="btn-group mb-3" id="exportButtons">
+    <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="fas fa-download"></i> تصدير
+    </button>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="#" onclick="exportReport('excel')">
+            <i class="fas fa-file-excel text-success"></i> تصدير Excel
+        </a></li>
+        <li><a class="dropdown-item" href="#" onclick="exportReport('pdf')">
+            <i class="fas fa-file-pdf text-danger"></i> تصدير PDF
+        </a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="javascript:window.print()">
+            <i class="fas fa-print"></i> طباعة
+        </a></li>
+    </ul>
+</div>
+
+<script>
+function exportReport(format) {
+    var url = window.location.pathname;
+    if (url.endsWith('/')) url = url.slice(0, -1);
+    var exportUrl = url.replace(/\/$/, '') + '/../export/' + url.split('/').filter(Boolean).pop() + '/?format=' + format;
+
+    var params = [];
+    var dateFrom = document.querySelector('[name="date_from"]');
+    var dateTo = document.querySelector('[name="date_to"]');
+    if (dateFrom && dateFrom.value) params.push('date_from=' + dateFrom.value);
+    if (dateTo && dateTo.value) params.push('date_to=' + dateTo.value);
+    if (params.length) exportUrl += '&' + params.join('&');
+
+    window.location.href = exportUrl;
+}
+</script>

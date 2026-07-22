@@ -1,0 +1,433 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}لوحة سيلو{% endblock %}
+{% block page_title %}<i class="fas fa-cubes me-2"></i>لوحة مراقبة سيلو{% endblock %}
+
+{% block extra_css %}
+<style>
+    .silo-card { border-radius: 16px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.06); transition: all 0.3s; overflow: hidden; }
+    .silo-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+    .silo-header { padding: 1.2rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .silo-body { padding: 0 1.5rem 1.5rem; }
+
+    .gauge-container { position: relative; width: 120px; height: 120px; margin: 0 auto 1rem; }
+    .gauge-bg { fill: none; stroke: #e9ecef; stroke-width: 12; }
+    .gauge-fill { fill: none; stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 1.5s ease, stroke 0.5s; }
+    .gauge-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+    .gauge-pct { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+    .gauge-label { font-size: 0.65rem; color: #888; }
+
+    .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
+    .status-ok { background: #d4edda; color: #155724; }
+    .status-low { background: #fff3cd; color: #856404; }
+    .status-critical { background: #f8d7da; color: #721c24; animation: pulse-red 2s infinite; }
+
+    @keyframes pulse-red {
+        0%,100% { box-shadow: 0 0 0 0 rgba(220,53,69,0.3); }
+        50% { box-shadow: 0 0 0 8px rgba(220,53,69,0); }
+    }
+
+    .stock-bar { height: 8px; border-radius: 4px; background: #e9ecef; position: relative; overflow: hidden; margin-top: 0.5rem; }
+    .stock-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+    .min-marker { position: absolute; top: -4px; width: 2px; height: 16px; background: #dc3545; z-index: 2; }
+
+    .stat-box { background: linear-gradient(135deg, #f8f9fa, #fff); border-radius: 12px; padding: 1.2rem; text-align: center; border: 1px solid #f0f0f0; }
+    .stat-box h3 { font-size: 1.8rem; font-weight: 700; margin: 0; }
+    .stat-box small { color: #888; }
+
+    .alert-row { background: #fff5f5; border-right: 4px solid #dc3545; border-radius: 8px; padding: 0.8rem 1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.8rem; }
+    .alert-row i { color: #dc3545; font-size: 1.2rem; }
+
+    .txn-row { padding: 0.6rem 0; border-bottom: 1px solid #f5f5f5; display: flex; align-items: center; gap: 0.8rem; font-size: 0.88rem; }
+    .txn-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+    .txn-in { background: #d4edda; color: #155724; }
+    .txn-out { background: #f8d7da; color: #721c24; }
+    .txn-adj { background: #d1ecf1; color: #0c5460; }
+
+    .chart-card { border-radius: 16px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .chart-container { position: relative; height: 350px; }
+</style>
+{% endblock %}
+
+{% block content %}
+{# ── تنبيهات الحد الأدنى ── #}
+{% if alerts %}
+<div class="mb-4">
+    <h6 class="fw-bold mb-3" style="color:#dc3545;"><i class="fas fa-exclamation-triangle me-2"></i>تنبيهات إعادة الطلب ({{ alerts|length }})</h6>
+    {% for silo in alerts %}
+    <div class="alert-row">
+        <i class="fas fa-exclamation-circle"></i>
+        <div class="flex-grow-1">
+            <strong>{{ silo.name }}</strong>
+            <span class="mx-1">—</span>
+            المخزون: <strong>{{ silo.current_stock_tons|intcomma }}</strong> طن
+            (الحد الأدنى: {{ silo.minimum_order_tons|intcomma }} طن)
+        </div>
+        <a href="{% url 'concrete_production:silo_transaction_create' silo_pk=silo.pk %}" class="btn btn-sm btn-outline-danger">
+            <i class="fas fa-plus me-1"></i>توريد
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# ── الإحصائيات العامة ── #}
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-box">
+            <small class="text-muted">إجمالي السيلو</small>
+            <h3 class="text-primary">{{ silos|length }}</h3>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-box">
+            <small class="text-muted">إجمالي المخزون (طن)</small>
+            <h3 class="text-success">{{ total_stock|floatformat:1|intcomma }}</h3>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-box">
+            <small class="text-muted">السعة الكلية (طن)</small>
+            <h3 class="text-info">{{ total_capacity|floatformat:0|intcomma }}</h3>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-box">
+            <small class="text-muted">نسبة التعبئة</small>
+            {% widthratio total_stock total_capacity 100 as pct %}
+            <h3 class="{% if total_capacity == 0 %}text-muted{% elif pct|floatformat:0 < 30 %}text-danger{% elif pct|floatformat:0 < 60 %}text-warning{% else %}text-success{% endif %}">
+                {% widthratio total_stock total_capacity 100 %}%
+            </h3>
+        </div>
+    </div>
+</div>
+
+{# ── بطاقات السيلو + الرسم البياني ── #}
+<div class="row mb-4">
+    <div class="col-lg-8 mb-4">
+        <div class="card chart-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="m-0 fw-bold"><i class="fas fa-chart-bar me-2 text-muted"></i>مقارنة المخزون بالسعة</h5>
+                <button class="btn btn-sm btn-outline-secondary" onclick="refreshChart()"><i class="fas fa-sync-alt"></i></button>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="siloChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+        <div class="card chart-card" style="height:100%;">
+            <div class="card-header">
+                <h5 class="m-0 fw-bold"><i class="fas fa-chart-pie me-2 text-muted"></i>توزيع المخزون</h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <div class="chart-container" style="height:280px; width:100%;">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── بطاقات السيلو التفصيلية ── #}
+<div class="row mb-4">
+    {% for item in silos_data %}
+    <div class="col-xl-4 col-lg-6 mb-4">
+        <div class="card silo-card">
+            <div class="silo-header" style="background: {% if item.silo.status == 'critical' %}linear-gradient(135deg,#fff5f5,#ffe0e0){% elif item.silo.status == 'low' %}linear-gradient(135deg,#fffcf0,#fff3cd){% else %}linear-gradient(135deg,#f0fff4,#d4edda){% endif %};">
+                <div>
+                    <h6 class="fw-bold mb-1">{{ item.silo.name }}</h6>
+                    <small class="text-muted">{{ item.silo.code }} · {{ item.silo.cement_type }}</small>
+                </div>
+                <span class="status-badge {% if item.silo.status == 'critical' %}status-critical{% elif item.silo.status == 'low' %}status-low{% else %}status-ok{% endif %}">
+                    {% if item.silo.status == 'critical' %}حرج{% elif item.silo.status == 'low' %}منخفض{% else %}ممتاز{% endif %}
+                </span>
+            </div>
+            <div class="silo-body">
+                <div class="gauge-container">
+                    <svg viewBox="0 0 120 120" class="w-100 h-100">
+                        <circle cx="60" cy="60" r="50" class="gauge-bg"/>
+                        <circle cx="60" cy="60" r="50" class="gauge-fill"
+                                stroke="{% if item.silo.status == 'critical' %}#dc3545{% elif item.silo.status == 'low' %}#ffc107{% else %}#28a745{% endif %}"
+                                stroke-dasharray="314.16"
+                                stroke-dashoffset="{{ item.silo.fill_percentage|stringformat:'.1f' }}"
+                                transform="rotate(-90 60 60)"/>
+                    </svg>
+                    <div class="gauge-text">
+                        <div class="gauge-pct" style="color:{% if item.silo.status == 'critical' %}#dc3545{% elif item.silo.status == 'low' %}#ffc107{% else %}#28a745{% endif %}">
+                            {{ item.silo.fill_percentage|floatformat:0 }}%
+                        </div>
+                        <div class="gauge-label">التعبئة</div>
+                    </div>
+                </div>
+
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <div class="fw-bold fs-5">{{ item.silo.current_stock_tons|intcomma }}</div>
+                        <small class="text-muted">الحالي (طن)</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold fs-5 text-muted">{{ item.silo.capacity_tons|intcomma }}</div>
+                        <small class="text-muted">السعة (طن)</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold fs-5 text-danger">{{ item.silo.minimum_order_tons|intcomma }}</div>
+                        <small class="text-muted">الحد الأدنى</small>
+                    </div>
+                </div>
+
+                <div class="stock-bar">
+                    <div class="stock-fill" style="width:{{ item.silo.fill_percentage }}%; background:{% if item.silo.status == 'critical' %}#dc3545{% elif item.silo.status == 'low' %}#ffc107{% else %}#28a745{% endif %};"></div>
+                    <div class="min-marker" style="left:{% widthratio item.silo.minimum_order_tons item.silo.capacity_tons 100 %}%;"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-2">
+                    <small class="text-muted">توريد هذا الشهر: <strong class="text-success">+{{ item.recent_in|floatformat:1|intcomma }}</strong> طن</small>
+                    <small class="text-muted">استهلاك: <strong class="text-danger">-{{ item.recent_out|floatformat:1|intcomma }}</strong> طن</small>
+                </div>
+
+                <div class="d-flex gap-2 mt-3">
+                    <a href="{% url 'concrete_production:silo_detail' pk=item.silo.pk %}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                        <i class="fas fa-chart-line me-1"></i>التفاصيل
+                    </a>
+                    <a href="{% url 'concrete_production:silo_transaction_create' silo_pk=item.silo.pk %}" class="btn btn-sm btn-outline-success flex-grow-1">
+                        <i class="fas fa-plus me-1"></i>حركة
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card p-5 text-center">
+            <i class="fas fa-cubes fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">لا توجد سلاسل مسجلة</h5>
+            <a href="{% url 'concrete_production:silo_create' %}" class="btn btn-primary mt-3"><i class="fas fa-plus me-2"></i>إضافة سيلة</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{# ── آخر الحركات ── #}
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card chart-card" style="height:100%;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="m-0 fw-bold"><i class="fas fa-exchange-alt me-2 text-muted"></i>آخر حركات السيلو</h5>
+            </div>
+            <div class="card-body" style="max-height:400px; overflow-y:auto;">
+                {% for txn in recent_transactions %}
+                <div class="txn-row">
+                    <div class="txn-icon {% if txn.transaction_type == 'in' %}txn-in{% elif txn.transaction_type == 'out' %}txn-out{% else %}txn-adj{% endif %}">
+                        {% if txn.transaction_type == 'in' %}<i class="fas fa-arrow-down"></i>
+                        {% elif txn.transaction_type == 'out' %}<i class="fas fa-arrow-up"></i>
+                        {% else %}<i class="fas fa-sliders-h"></i>{% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div><strong>{{ txn.silo.name }}</strong> · {{ txn.get_transaction_type_display }}</div>
+                        <small class="text-muted">{{ txn.date|date:"d/m/Y H:i" }}{% if txn.created_by %} · {{ txn.created_by.get_full_name|default:txn.created_by.username }}{% endif %}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="fw-bold {% if txn.transaction_type == 'in' %}text-success{% elif txn.transaction_type == 'out' %}text-danger{% else %}text-info{% endif %}">
+                            {% if txn.transaction_type == 'in' %}+{% elif txn.transaction_type == 'out' %}-{% endif %}{{ txn.quantity_tons|intcomma }} طن
+                        </span>
+                        {% if txn.reference_number %}<br><small class="text-muted">{{ txn.reference_number }}</small>{% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted p-4">لا توجد حركات بعد</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card chart-card" style="height:100%;">
+            <div class="card-header">
+                <h5 class="m-0 fw-bold"><i class="fas fa-chart-area me-2 text-muted"></i>حركة المخزون خلال الشهر</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height:300px;">
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── أزرار الإضافة ── #}
+<div class="text-center mb-4">
+    <a href="{% url 'concrete_production:silo_create' %}" class="btn btn-primary btn-lg px-4">
+        <i class="fas fa-plus me-2"></i>إضافة سيلة جديدة
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ chart_data_json|json_script:"chart-data" }}
+<script src="{% static 'vendor/chart.js/chart.umd.min.js' %}"></script>
+<script>
+const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+const COLORS = ['#0984e3','#00b894','#ff8c00','#6c5ce7','#00cec9','#d63031','#fdcb6e','#e17055','#74b9ff','#55efc4'];
+
+function buildBarChart() {
+    const ctx = document.getElementById('siloChart');
+    if (!ctx) return;
+    if (window._barChart) window._barChart.destroy();
+    window._barChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.names,
+            datasets: [
+                {
+                    label: 'المخزون الحالي',
+                    data: chartData.current,
+                    backgroundColor: chartData.current.map((v,i) => {
+                        const cap = chartData.capacity[i];
+                        const min = chartData.minimum[i];
+                        if (v <= min) return 'rgba(220,53,69,0.85)';
+                        if (v <= min * 1.5) return 'rgba(255,193,7,0.85)';
+                        return 'rgba(40,167,69,0.85)';
+                    }),
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    barThickness: 40,
+                },
+                {
+                    label: 'الحد الأدنى للطلب',
+                    data: chartData.minimum,
+                    type: 'line',
+                    borderColor: '#dc3545',
+                    borderDash: [6, 4],
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#dc3545',
+                    fill: false,
+                    order: 0,
+                },
+                {
+                    label: 'السعة القصوى',
+                    data: chartData.capacity,
+                    type: 'line',
+                    borderColor: '#6c757d',
+                    borderDash: [3, 3],
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                    fill: false,
+                    order: 0,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { font: { family: 'Cairo', size: 12 } } },
+                tooltip: {
+                    callbacks: {
+                        label: function(c) { return c.dataset.label + ': ' + c.parsed.y.toLocaleString('ar-EG') + ' طن'; }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'طن', font: { family: 'Cairo' } },
+                    grid: { color: '#f0f0f0' },
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { family: 'Cairo', size: 11 } }
+                }
+            }
+        }
+    });
+}
+
+function buildPieChart() {
+    const ctx = document.getElementById('pieChart');
+    if (!ctx || chartData.names.length === 0) return;
+    if (window._pieChart) window._pieChart.destroy();
+    window._pieChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: chartData.names,
+            datasets: [{
+                data: chartData.current,
+                backgroundColor: COLORS.slice(0, chartData.names.length),
+                borderWidth: 3,
+                borderColor: '#fff',
+                hoverOffset: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: { position: 'right', labels: { font: { family: 'Cairo', size: 11 }, padding: 8, boxWidth: 14 } },
+                tooltip: {
+                    callbacks: {
+                        label: function(c) { return c.label + ': ' + c.parsed.toLocaleString('ar-EG') + ' طن'; }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function buildLineChart() {
+    const ctx = document.getElementById('lineChart');
+    if (!ctx) return;
+    const labels = chartData.daily_labels || [];
+    const totals = chartData.daily_totals || [];
+    if (labels.length === 0 || totals.length === 0) return;
+
+    if (window._lineChart) window._lineChart.destroy();
+    window._lineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'إجمالي المخزون (طن)',
+                data: totals,
+                borderColor: '#0984e3',
+                backgroundColor: 'rgba(9,132,227,0.15)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointBackgroundColor: '#0984e3',
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { font: { family: 'Cairo', size: 11 } } },
+                tooltip: {
+                    callbacks: {
+                        label: function(c) { return c.parsed.y.toLocaleString('ar-EG') + ' طن'; }
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: false, title: { display: true, text: 'طن', font: { family: 'Cairo' } }, grid: { color: '#f0f0f0' } },
+                x: { title: { display: true, text: 'اليوم', font: { family: 'Cairo' } }, grid: { display: false }, ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+function refreshChart() { buildBarChart(); }
+
+document.addEventListener('DOMContentLoaded', function() {
+    buildBarChart();
+    buildPieChart();
+    buildLineChart();
+});
+</script>
+{% endblock %}

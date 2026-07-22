@@ -1,0 +1,133 @@
+{% extends "base/base.html" %}
+
+{% block title %}كشف حساب العميل{% endblock %}
+{% block page_title %}كشف حساب العميل{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-user"></i> كشف حساب العميل</span>
+        <form method="get" class="d-flex gap-2">
+            <select name="customer" class="form-select form-select-sm" style="width:200px">
+                <option value="">اختر عميل...</option>
+                {% for c in customers %}
+                <option value="{{ c.id }}" {% if selected_customer == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> عرض</button>
+        </form>
+    </div>
+    <div class="card-body">
+        {% if customer %}
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <h6><i class="fas fa-user"></i> بيانات العميل</h6>
+                        <hr>
+                        <p><strong>الاسم:</strong> {{ customer.name }}</p>
+                        <p><strong>الكود:</strong> {{ customer.code }}</p>
+                        <p><strong>الرقم الضريبي:</strong> {{ customer.tax_number|default:"-" }}</p>
+                        <p><strong>الهاتف:</strong> {{ customer.phone|default:customer.mobile|default:"-" }}</p>
+                        {% if customer.phone or customer.mobile %}
+                        <a href="https://wa.me/{% if customer.phone %}{{ customer.phone }}{% else %}{{ customer.mobile }}{% endif %}" target="_blank" class="btn btn-success btn-sm">
+                            <i class="fab fa-whatsapp"></i> واتساب
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">إجمالي المبيعات</h6>
+                                <h4 class="text-success">{{ total_sales|floatformat:2 }} ج.م</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-info">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">إجمالي المحصّل</h6>
+                                <h4 class="text-info">{{ total_collected|floatformat:2 }} ج.م</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-danger">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">المتبقي</h6>
+                                <h4 class="text-danger">{{ total_remaining|floatformat:2 }} ج.م</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>رقم الفاتورة</th>
+                    <th>التاريخ</th>
+                    <th>تاريخ الاستحقاق</th>
+                    <th>النوع</th>
+                    <th>الإجمالي</th>
+                    <th>المدفوع</th>
+                    <th>المتبقي</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invoices %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ inv.invoice_number }}</td>
+                    <td>{{ inv.date|date:"d/m/Y" }}</td>
+                    <td>{{ inv.due_date|date:"d/m/Y"|default:"-" }}</td>
+                    <td>
+                        {% if inv.is_tax_invoice %}
+                            <span class="badge bg-warning">ضريبية</span>
+                        {% else %}
+                            <span class="badge bg-secondary">عادية</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ inv.total_amount|floatformat:2 }}</td>
+                    <td>{{ inv.paid_amount|floatformat:2 }}</td>
+                    <td><strong class="text-danger">{{ inv.remaining_amount|floatformat:2 }}</strong></td>
+                    <td>
+                        {% if inv.remaining_amount <= 0 %}
+                            <span class="badge bg-success">مدفوعة</span>
+                        {% else %}
+                            <span class="badge bg-danger">مستحقة</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center text-muted">لا توجد فواتير في هذه الفترة</td></tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="table-dark">
+                    <th colspan="5">الإجمالي</th>
+                    <th>{{ total_sales|floatformat:2 }}</th>
+                    <th>{{ total_collected|floatformat:2 }}</th>
+                    <th>{{ total_remaining|floatformat:2 }}</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+        {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-user fa-3x mb-3"></i>
+            <h5>اختر عميل لعرض كشف الحساب</h5>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

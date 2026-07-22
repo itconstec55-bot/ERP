@@ -1,0 +1,94 @@
+{% extends "base/base.html" %}
+
+{% block content_header %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>الدفعة — {{ payment.payment_number }}</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="{% url 'contractors:dashboard' %}">لوحة التحكم</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'contractors:payment_list' %}">المدفوعات</a></li>
+          <li class="breadcrumb-item active">{{ payment.payment_number }}</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card card-primary card-outline">
+        <div class="card-header">
+          <h3 class="card-title">بيانات الدفعة</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <ul class="list-unstyled">
+                <li><strong>رقم الدفعة:</strong> {{ payment.payment_number }}</li>
+                <li><strong>العقد:</strong> <a href="{% url 'contractors:contract_detail' pk=payment.contract.pk %}">{{ payment.contract.contract_number }}</a></li>
+                <li><strong>المقاول:</strong> {{ payment.contract.contractor.name }}</li>
+                {% if payment.certificate %}
+                <li><strong>المستخلص:</strong> <a href="{% url 'contractors:certificate_detail' pk=payment.certificate.pk %}">{{ payment.certificate.certificate_number }}</a></li>
+                {% endif %}
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <ul class="list-unstyled">
+                <li><strong>المبلغ:</strong> {{ payment.amount|floatformat:2 }} ر.س</li>
+                <li><strong>طريقة الدفع:</strong> {{ payment.get_payment_method_display }}</li>
+                <li><strong>تاريخ الدفع:</strong> {{ payment.payment_date|date:"Y/m/d" }}</li>
+                <li><strong>الحالة:</strong>
+                  <span class="badge badge-{% if payment.status == 'paid' %}success{% elif payment.status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                    {{ payment.get_status_display }}
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {% if payment.check_number %}
+          <p><strong>رقم الشيك:</strong> {{ payment.check_number }}</p>
+          {% endif %}
+          {% if payment.bank_reference %}
+          <p><strong>المرجع البنكي:</strong> {{ payment.bank_reference }}</p>
+          {% endif %}
+          {% if payment.notes %}
+          <p><strong>ملاحظات:</strong> {{ payment.notes }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card card-info">
+        <div class="card-header">
+          <h3 class="card-title">إجراءات</h3>
+        </div>
+        <div class="card-body">
+          {% if payment.status == 'pending' %}
+          <form method="post" action="{% url 'contractors:payment_post' pk=payment.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-info btn-block">
+              <i class="fas fa-book"></i> ترحيل إلى دفتر الأستاذ
+            </button>
+          </form>
+          {% elif payment.status == 'paid' %}
+          <div class="alert alert-success text-center">
+            <i class="fas fa-check-circle"></i> تم الترحيل بنجاح
+            <br>
+            <small>{{ payment.journal_entry }}</small>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

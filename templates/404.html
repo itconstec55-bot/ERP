@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - الصفحة غير موجودة</title>
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/cairo.css' %}" rel="stylesheet">
+    {% include 'base/_responsive.html' %}
+    <style>
+        * { font-family: 'Cairo', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .error-container { text-align: center; padding: 40px; }
+        .error-code {
+            font-size: 10rem;
+            font-weight: 700;
+            opacity: 0.2;
+            line-height: 1;
+            text-shadow: 0 0 30px rgba(255,255,255,0.1);
+        }
+        .error-icon {
+            font-size: 5rem;
+            margin: -20px 0 20px;
+            opacity: 0.8;
+        }
+        .error-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        .error-message {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin-bottom: 30px;
+            max-width: 500px;
+        }
+        .btn-home {
+            padding: 12px 40px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            transition: all 0.3s;
+        }
+        .btn-home:hover {
+            background: white;
+            color: #1a237e;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .btn-back {
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: transparent;
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            margin-right: 15px;
+            transition: all 0.3s;
+        }
+        .btn-back:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .shape {
+            position: fixed;
+            border: 2px solid rgba(255,255,255,0.03);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+        .shape:nth-child(1) { width: 100px; height: 100px; top: 10%; left: 5%; }
+        .shape:nth-child(2) { width: 150px; height: 150px; top: 70%; left: 85%; animation-delay: -8s; }
+        .shape:nth-child(3) { width: 80px; height: 80px; top: 85%; left: 15%; animation-delay: -14s; }
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(720deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+
+    <div class="error-container">
+        <div class="error-code">404</div>
+        <div class="error-icon"><i class="fas fa-compass"></i></div>
+        <h1 class="error-title">الصفحة غير موجودة</h1>
+        <p class="error-message">
+            عذراً، الصفحة التي تبحث عنها غير موجودة أو تم نقلها إلى مكان آخر.
+        </p>
+        <div>
+            <a href="javascript:history.back()" class="btn btn-back">
+                <i class="fas fa-arrow-right me-2"></i>العودة
+            </a>
+            <a href="/" class="btn btn-home">
+                <i class="fas fa-home me-2"></i>الصفحة الرئيسية
+            </a>
+        </div>
+    </div>
+</body>
+</html>

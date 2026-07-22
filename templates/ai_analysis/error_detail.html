@@ -1,0 +1,145 @@
+{% extends "base/base.html" %}
+{% load access_tags %}
+
+{% block title %}تفاصيل الخطأ{% endblock %}
+{% block page_title %}تفاصيل الخطأ: {{ error.title }}{% endblock %}
+
+{% block content %}
+{% can_screen 'ai_analysis.errorlog' 'add' as ai_can_add %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-{{ error.severity }} text-white">
+                <i class="fas fa-exclamation-triangle"></i> تفاصيل الخطأ
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>{{ error.title }}</h5>
+                        <p>{{ error.description }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr><th>النوع:</th><td>{{ error.error_type }}</td></tr>
+                            <tr><th>الشدة:</th><td>{{ error.get_severity_display }}</td></tr>
+                            <tr><th>الحالة:</th><td>{{ error.get_status_display }}</td></tr>
+                            <tr><th>رقم المرجع:</th><td>{{ error.reference_number|default:"-" }}</td></tr>
+                            <tr><th>الحساب:</th><td>{{ error.affected_account_code|default:"-" }}</td></tr>
+                            <tr><th>المبلغ:</th><td>{{ error.amount|floatformat:2 }}</td></tr>
+                            <tr><th>التاريخ:</th><td>{{ error.entry_date|date:"d/m/Y"|default:"-" }}</td></tr>
+                            <tr><th>تم الكشف:</th><td>{{ error.created_at|date:"d/m/Y H:i" }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if error.ai_analysis %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-robot"></i> تحليل الذكاء الاصطناعي
+            </div>
+            <div class="card-body">
+                {{ error.ai_analysis|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if error.suggested_solution %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-lightbulb"></i> الحل المقترح
+            </div>
+            <div class="card-body">
+                {{ error.suggested_solution|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if error.financial_impact %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-chart-line"></i> التأثير المحاسبي
+            </div>
+            <div class="card-body">
+                {{ error.financial_impact|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-cog"></i> إجراءات
+            </div>
+            <div class="card-body">
+                {% if ai_can_add %}
+                <a href="{% url 'ai_analysis:analyze_error' %}" class="btn btn-primary w-100 mb-2">
+                    <i class="fas fa-search"></i> تحليل خطأ جديد
+                </a>
+                {% endif %}
+                <a href="{% url 'ai_analysis:error_history' %}" class="btn btn-secondary w-100">
+                    <i class="fas fa-history"></i> السجل
+                </a>
+            </div>
+        </div>
+
+        {% if solutions %}
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-lightbulb"></i> الحلول المقترحة
+            </div>
+            <div class="card-body">
+                {% for solution in solutions %}
+                <div class="mb-3 p-2 border rounded">
+                    <div class="d-flex justify-content-between">
+                        <span class="badge bg-{% if solution.priority == 1 %}success{% elif solution.priority == 2 %}warning{% else %}secondary{% endif %}">
+                            {{ solution.get_priority_display }}
+                        </span>
+                        <span class="badge bg-{% if solution.risk_level == 'low' %}success{% elif solution.risk_level == 'medium' %}warning{% else %}danger{% endif %}">
+                            {{ solution.get_risk_level_display }}
+                        </span>
+                    </div>
+                    <h6 class="mt-2">{{ solution.title }}</h6>
+                    <p class="mb-1 text-muted">{{ solution.description }}</p>
+                    {% if not solution.applied %}
+                    <button class="btn btn-sm btn-outline-success apply-solution mt-2" data-id="{{ solution.id }}">
+                        <i class="fas fa-check"></i> تطبيق
+                    </button>
+                    {% else %}
+                    <span class="badge bg-success mt-2">تم التطبيق</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.apply-solution').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const id = this.dataset.id;
+        if (confirm('هل تريد تطبيق هذا الحل؟')) {
+            fetch(`/ai/solution/${id}/apply/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'success') {
+                    alert('تم تطبيق الحل بنجاح');
+                    location.reload();
+                } else {
+                    alert('خطأ: ' + data.message);
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

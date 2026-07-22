@@ -1,0 +1,214 @@
+{% extends 'base/base.html' %}
+{% load humanize %}
+
+{% block title %}النسخ الاحتياطي{% endblock %}
+{% block page_title %}النسخ الاحتياطي{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #1565c0, #0d47a1);">
+            <i class="fas fa-database fa-2x mb-2"></i>
+            <h3>{{ db_size }}</h3>
+            <p>قاعدة البيانات</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #2e7d32, #1b5e20);">
+            <i class="fas fa-folder-open fa-2x mb-2"></i>
+            <h3>{{ media_size }}</h3>
+            <p>الملفات المرفقة</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #e65100, #bf360c);">
+            <i class="fas fa-archive fa-2x mb-2"></i>
+            <h3>{{ total_backups_count }}</h3>
+            <p>إجمالي النسخ</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #6a1b9a, #4a148c);">
+            <i class="fas fa-hdd fa-2x mb-2"></i>
+            <h3>{{ total_backups_size }}</h3>
+            <p>حجم النسخ المحفوظة</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-archive"></i> النسخ المحفوظة</span>
+                <span class="badge bg-light text-dark">{{ backups|length }} نسخة</span>
+            </div>
+            <div class="card-body p-0">
+                {% if backups %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>الاسم</th>
+                                <th>النوع</th>
+                                <th>الحجم</th>
+                                <th>الحالة</th>
+                                <th>التاريخ</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for backup in backups %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><strong>{{ backup.name }}</strong></td>
+                                <td>
+                                    {% if backup.backup_type == 'data' %}
+                                        <span class="badge bg-success"><i class="fas fa-database"></i> بيانات</span>
+                                    {% elif backup.backup_type == 'full' %}
+                                        <span class="badge bg-primary"><i class="fas fa-archive"></i> كاملة</span>
+                                    {% elif backup.backup_type == 'json' %}
+                                        <span class="badge bg-warning text-dark"><i class="fas fa-code"></i> JSON</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ backup.file_size_display }}</td>
+                                <td>
+                                    {% if backup.status == 'completed' %}
+                                        <span class="badge bg-success"><i class="fas fa-check"></i> مكتملة</span>
+                                    {% elif backup.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark"><i class="fas fa-clock"></i> قيد الإنشاء</span>
+                                    {% else %}
+                                        <span class="badge bg-danger"><i class="fas fa-times"></i> فشلت</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ backup.created_at|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        {% if backup.status == 'completed' %}
+                                        <a href="{% url 'backups:download_backup' backup.pk %}" class="btn btn-outline-success" title="تحميل">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        {% if backup.backup_type != 'json' %}
+                                        <form method="post" action="{% url 'backups:restore_backup' backup.pk %}" class="d-inline" onsubmit="return confirm('هل أنت متأكد من استرجاع هذه النسخة؟ سيتم استبدال البيانات الحالية!')">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-warning" title="استرجاع">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        {% endif %}
+                                        <form method="post" action="{% url 'backups:delete_backup' backup.pk %}" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذه النسخة؟')">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-danger" title="حذف">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">لا توجد نسخ احتياطية بعد</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-plus-circle"></i> إنشاء نسخة احتياطية
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'backups:create_backup' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">اسم النسخة</label>
+                        <input type="text" name="name" class="form-control" placeholder="مثال: نسخة قبل التحديث">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">نوع النسخة</label>
+                        <div class="form-check border rounded p-3 mb-2" style="cursor:pointer;">
+                            <input class="form-check-input" type="radio" name="backup_type" value="data" id="type_data" checked>
+                            <label class="form-check-label w-100" for="type_data">
+                                <i class="fas fa-database text-success"></i> <strong>DB + Media</strong>
+                                <br><small class="text-muted">قاعدة البيانات + الملفات المرفقة (الأكثر شيوعاً)</small>
+                            </label>
+                        </div>
+                        <div class="form-check border rounded p-3 mb-2" style="cursor:pointer;">
+                            <input class="form-check-input" type="radio" name="backup_type" value="full" id="type_full">
+                            <label class="form-check-label w-100" for="type_full">
+                                <i class="fas fa-archive text-primary"></i> <strong>نسخة كاملة</strong>
+                                <br><small class="text-muted">كل شيء: قاعدة البيانات + الملفات + الكود المصدري + القوالب</small>
+                            </label>
+                        </div>
+                        <div class="form-check border rounded p-3" style="cursor:pointer;">
+                            <input class="form-check-input" type="radio" name="backup_type" value="json" id="type_json">
+                            <label class="form-check-label w-100" for="type_json">
+                                <i class="fas fa-code text-warning"></i> <strong>تصدير JSON</strong>
+                                <br><small class="text-muted">بيانات قاعدة البيانات فقط بصيغة نصية</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('هل تريد إنشاء النسخة الاحتياطية الآن؟')">
+                        <i class="fas fa-save"></i> إنشاء النسخة الآن
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-file-import"></i> استيراد JSON
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'backups:import_json' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <input type="file" name="json_file" class="form-control" accept=".json" required>
+                    </div>
+                    <button type="submit" class="btn btn-info w-100" onclick="return confirm('هل تريد استيراد البيانات؟')">
+                        <i class="fas fa-upload"></i> استيراد
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <i class="fas fa-cog"></i> الإعدادات
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>النسخ التلقائي:</span>
+                    {% if backup_settings.auto_backup_enabled %}
+                        <span class="badge bg-success">مفعّل</span>
+                    {% else %}
+                        <span class="badge bg-secondary">معطّل</span>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>التكرار:</span>
+                    <span>{{ backup_settings.backup_interval_hours }} ساعة</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span>الحد الأقصى:</span>
+                    <span>{{ backup_settings.max_backups }} نسخة</span>
+                </div>
+                <a href="{% url 'backups:backup_settings' %}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-cog"></i> تعديل الإعدادات
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل طلب الشراء {{ req.number }}{% endblock %}
+{% block page_title %}طلب شراء: {{ req.number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span><i class="fas fa-clipboard-list"></i> بنود طلب الشراء</span>
+                <div>
+                    {% if req.status == 'draft' or req.status == 'rejected' %}
+                    <a href="{% url 'requisitions:req_edit' pk=req.pk %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> تعديل
+                    </a>
+                    <form method="POST" action="{% url 'requisitions:req_submit' pk=req.pk %}" style="display:inline"
+                          onsubmit="return confirm('تقديم طلب الشراء للموافقة؟')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-info btn-sm ms-1"><i class="fas fa-paper-plane"></i> تقديم</button>
+                    </form>
+                    {% endif %}
+                    {% if req.status == 'pending' %}
+                    <form method="POST" action="{% url 'requisitions:req_approve' pk=req.pk %}" style="display:inline"
+                          onsubmit="return confirm('هل تريد اعتماد طلب الشراء؟')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm ms-1"><i class="fas fa-check"></i> اعتماد</button>
+                    </form>
+                    <button type="button" class="btn btn-danger btn-sm ms-1" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                        <i class="fas fa-times"></i> رفض
+                    </button>
+                    {% endif %}
+                    {% if req.status == 'approved' %}
+                    <a href="{% url 'requisitions:req_convert' pk=req.pk %}" class="btn btn-primary btn-sm ms-1">
+                        <i class="fas fa-exchange-alt"></i> تحويل لمرحلة لاحقة
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>المنتج</th>
+                            <th>الكمية</th>
+                            <th>وحدة القياس</th>
+                            <th>السعر التقديري</th>
+                            <th>تاريخ التوريد</th>
+                            <th>الإجمالي</th>
+                            <th>ملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>{{ line.product.name }}</td>
+                            <td>{{ line.quantity }}</td>
+                            <td>{{ line.uom|default:"-" }}</td>
+                            <td>{% if line.estimated_unit_price %}{{ line.estimated_unit_price|floatformat:2 }}{% else %}-{% endif %}</td>
+                            <td>{% if line.required_date %}{{ line.required_date|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+                            <td>{{ line.line_total|floatformat:2 }}</td>
+                            <td>{{ line.notes|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-info-circle"></i> ملخص طلب الشراء</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>طالب الشراء:</th><td>{{ req.requested_by|default:"-" }}</td></tr>
+                    <tr><th>مركز التكلفة:</th><td>{{ req.cost_center|default:"-" }}</td></tr>
+                    <tr><th>التاريخ:</th><td>{{ req.date|date:"d/m/Y" }}</td></tr>
+                    {% if req.need_by_date %}
+                    <tr><th>تاريخ الحاجة:</th><td>{{ req.need_by_date|date:"d/m/Y" }}</td></tr>
+                    {% endif %}
+                    <tr><th>الأولوية:</th><td>
+                        {% if req.priority == 'low' %}منخفض
+                        {% elif req.priority == 'medium' %}متوسط
+                        {% elif req.priority == 'high' %}عالي{% endif %}
+                    </td></tr>
+                    <tr><th>أنشئ بواسطة:</th><td>{{ req.created_by|default:"-" }}</td></tr>
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr><th>الإجمالي التقديري:</th><th class="text-primary">{{ req.total|floatformat:2 }} ج.م</th></tr>
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr>
+                        <th>الحالة:</th>
+                        <td>
+                            {% if req.status == 'draft' %}<span class="badge bg-secondary">مسودة</span>
+                            {% elif req.status == 'pending' %}<span class="badge bg-warning">بانتظار الموافقة</span>
+                            {% elif req.status == 'approved' %}<span class="badge bg-primary">معتمد</span>
+                            {% elif req.status == 'rejected' %}<span class="badge bg-danger">مرفوض</span>
+                            {% elif req.status == 'ordered' %}<span class="badge bg-success">تم الطلب</span>
+                            {% elif req.status == 'cancelled' %}<span class="badge bg-dark">ملغي</span>{% endif %}
+                        </td>
+                    </tr>
+                </table>
+                {% if req.notes %}
+                <div class="mt-2"><strong>ملاحظات:</strong><br>{{ req.notes|linebreaksbr }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" action="{% url 'requisitions:req_reject' pk=req.pk %}">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">رفض طلب الشراء</h5></div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">سبب الرفض</label>
+                        <textarea name="reason" class="form-control" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="submit" class="btn btn-danger">تأكيد الرفض</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

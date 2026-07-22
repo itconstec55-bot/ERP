@@ -1,0 +1,110 @@
+{% extends 'base/base.html' %}
+{% load humanize %}
+{% load access_tags %}
+
+{% block title %}التسوية البنكية{% endblock %}
+{% block page_title %}التسوية البنكية{% endblock %}
+
+{% block content %}
+{% can_screen 'bank_reconciliation.statement' 'add' as bank_can_add %}
+{% can_screen 'bank_reconciliation.statement' 'edit' as bank_can_edit %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-primary">
+            <div class="card-body text-center">
+                <i class="fas fa-file-alt fa-2x text-primary mb-2"></i>
+                <h6>إجمالي البنود</h6>
+                <h3 class="text-primary">{{ total_items }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-circle fa-2x text-warning mb-2"></i>
+                <h6>غير مطابق</h6>
+                <h3 class="text-warning">{{ unmatched_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h6>مطابق</h6>
+                <h3 class="text-success">{{ matched_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-info">
+            <div class="card-body text-center">
+                <i class="fas fa-calendar fa-2x text-info mb-2"></i>
+                <h6>جلسات التسوية</h6>
+                <h3 class="text-info">{{ sessions|length }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    {% if bank_can_add %}<a href="{% url 'bank_reconciliation:session_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> جلسة تسوية جديدة</a>
+    <a href="{% url 'bank_reconciliation:import_csv' %}" class="btn btn-success"><i class="fas fa-file-csv"></i> استيراد CSV</a>{% endif %}
+    <a href="{% url 'bank_reconciliation:item_list' %}" class="btn btn-outline-secondary"><i class="fas fa-list"></i> بنود كشف الحساب</a>
+    {% if bank_can_edit %}<form method="post" action="{% url 'bank_reconciliation:auto_match' %}" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-info"><i class="fas fa-magic"></i> مطابقة تلقائية</button>
+    </form>{% endif %}
+</div>
+
+{% if bank_balances %}
+<div class="card mb-3">
+    <div class="card-header"><i class="fas fa-university"></i> أرصدة الحسابات البنكية في كشف الحساب</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark"><tr><th>البنك</th><th>إجمالي الإيداعات</th><th>إجمالي السحوبات</th><th>عدد البنود</th></tr></thead>
+            <tbody>
+                {% for b in bank_balances %}
+                <tr>
+                    <td>{{ b.bank }}</td>
+                    <td class="text-success">{{ b.total_credit|floatformat:2|intcomma }}</td>
+                    <td class="text-danger">{{ b.total_debit|floatformat:2|intcomma }}</td>
+                    <td>{{ b.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header bg-primary text-white"><i class="fas fa-university"></i> جلسات التسوية</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>الحساب البنكي</th><th>من</th><th>إلى</th><th>رصيد الدفتر</th><th>رصيد البنك</th><th>الفرق</th><th>الحالة</th></tr></thead>
+            <tbody>
+                {% for s in sessions %}
+                <tr>
+                    <td>{{ s.bank_account }}</td>
+                    <td>{{ s.period_start|date:"d/m/Y" }}</td>
+                    <td>{{ s.period_end|date:"d/m/Y" }}</td>
+                    <td>{{ s.book_balance|intcomma }}</td>
+                    <td>{{ s.bank_balance|intcomma }}</td>
+                    <td>
+                        {% if s.reconciled_diff == 0 %}
+                            <span class="text-success">0</span>
+                        {% else %}
+                            <span class="text-danger">{{ s.reconciled_diff|intcomma }}</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge bg-{% if s.status == 'completed' %}success{% elif s.status == 'in_progress' %}warning{% else %}secondary{% endif %}">{{ s.get_status_display }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-4 text-muted">لا توجد جلسات بعد</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

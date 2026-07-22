@@ -1,0 +1,72 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}الميزانية العمومية{% endblock %}
+{% block page_title %}الميزانية العمومية{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/print.css' %}" rel="stylesheet">
+<style>
+    @media screen { .print-header-wrapper, .print-footer-wrapper { display: none; } }
+    @media print { .print-header-wrapper, .print-footer-wrapper { display: block !important; } }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'components/print_header.html' with doc_title='الميزانية العمومية' doc_date=date_to %}
+<div class="card">
+    <div class="card-header"><i class="fas fa-file-alt"></i> الميزانية العمومية</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <thead class="table-primary"><tr><th colspan="2">الأصول</th></tr></thead>
+                    <tbody>
+                        <tr class="table-light"><td colspan="2"><strong>الأصول المتداولة</strong></td></tr>
+                        {% for acc in current_assets %}
+                        <tr><td>{{ acc.name }}</td><td class="text-end">{{ acc.current_balance|floatformat:2 }}</td></tr>
+                        {% endfor %}
+                        <tr class="table-primary"><td><strong>الإجمالي</strong></td><td class="text-end"><strong>{{ total_current_assets|floatformat:2 }}</strong></td></tr>
+
+                        <tr class="table-light"><td colspan="2"><strong>الأصول غير المتداولة</strong></td></tr>
+                        {% for acc in non_current_assets %}
+                        <tr><td>{{ acc.name }}</td><td class="text-end">{{ acc.current_balance|floatformat:2 }}</td></tr>
+                        {% endfor %}
+                        <tr class="table-primary"><td><strong>الإجمالي</strong></td><td class="text-end"><strong>{{ total_non_current_assets|floatformat:2 }}</strong></td></tr>
+
+                        <tr class="table-dark"><td><strong>إجمالي الأصول</strong></td><td class="text-end"><strong>{{ total_assets|floatformat:2 }}</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <thead class="table-danger"><tr><th colspan="2">الخصوم وحقوق الملكية</th></tr></thead>
+                    <tbody>
+                        <tr class="table-light"><td colspan="2"><strong>الخصوم المتداولة</strong></td></tr>
+                        {% for acc in current_liabilities %}
+                        <tr><td>{{ acc.name }}</td><td class="text-end">{{ acc.current_balance|floatformat:2 }}</td></tr>
+                        {% endfor %}
+                        <tr class="table-warning"><td><strong>الإجمالي</strong></td><td class="text-end"><strong>{{ total_current_liabilities|floatformat:2 }}</strong></td></tr>
+
+                        <tr class="table-light"><td colspan="2"><strong>الخصوم غير المتداولة</strong></td></tr>
+                        {% for acc in non_current_liabilities %}
+                        <tr><td>{{ acc.name }}</td><td class="text-end">{{ acc.current_balance|floatformat:2 }}</td></tr>
+                        {% endfor %}
+                        <tr class="table-warning"><td><strong>الإجمالي</strong></td><td class="text-end"><strong>{{ total_non_current_liabilities|floatformat:2 }}</strong></td></tr>
+
+                        <tr class="table-light"><td colspan="2"><strong>حقوق الملكية</strong></td></tr>
+                        {% for acc in equity_accounts %}
+                        <tr><td>{{ acc.name }}</td><td class="text-end">{{ acc.current_balance|floatformat:2 }}</td></tr>
+                        {% endfor %}
+                        <tr><td>صافي الربح</td><td class="text-end text-success">{{ net_profit|floatformat:2 }}</td></tr>
+                        <tr class="table-success"><td><strong>الإجمالي</strong></td><td class="text-end"><strong>{{ total_equity|add:net_profit|floatformat:2 }}</strong></td></tr>
+
+                        <tr class="table-dark"><td><strong>إجمالي الخصوم وحقوق الملكية</strong></td><td class="text-end"><strong>{{ total_liabilities|add:total_equity|add:net_profit|floatformat:2 }}</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'components/print_footer.html' %}
+{% endblock %}

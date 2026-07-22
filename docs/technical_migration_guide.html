@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل النقل والترقية التقني - Technical Migration Guide</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #1c2333;
+            --bg-card: #1a1f2e;
+            --gold-primary: #d4a843;
+            --gold-light: #f0d078;
+            --gold-dark: #b8922e;
+            --gold-muted: #a08530;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border-color: #30363d;
+            --border-gold: #d4a84333;
+            --code-bg: #0d1117;
+            --success: #3fb950;
+            --info: #58a6ff;
+            --warning: #d29922;
+            --danger: #f85149;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, 'Noto Sans Arabic', 'Noto Kufi Arabic', Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.8;
+            direction: rtl;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border-bottom: 2px solid var(--gold-primary);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .header h1 {
+            color: var(--gold-primary);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .header .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: var(--gold-dark);
+            color: var(--bg-primary);
+            padding: 0.2rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .toc {
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .toc h2 {
+            color: var(--gold-primary);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .toc ol {
+            padding-right: 1.5rem;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin-bottom: 0.4rem;
+        }
+
+        .toc a {
+            color: var(--info);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .toc a:hover {
+            color: var(--gold-light);
+            text-decoration: underline;
+        }
+
+        section {
+            margin-bottom: 2.5rem;
+        }
+
+        h2.section-title {
+            color: var(--gold-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--gold-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2.section-title .num {
+            background: var(--gold-dark);
+            color: var(--bg-primary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        h3 {
+            color: var(--gold-light);
+            font-size: 1.15rem;
+            margin: 1.2rem 0 0.6rem;
+        }
+
+        h4 {
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin: 1rem 0 0.4rem;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .info-card.warn {
+            border-right-color: var(--warning);
+        }
+
+        .info-card.danger {
+            border-right-color: var(--danger);
+        }
+
+        .info-card.success {
+            border-right-color: var(--success);
+        }
+
+        .info-card .label {
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .info-card.warn .label { color: var(--warning); }
+        .info-card.danger .label { color: var(--danger); }
+        .info-card.success .label { color: var(--success); }
+
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem 1.2rem;
+            overflow-x: auto;
+            margin: 0.8rem 0;
+            direction: ltr;
+            text-align: left;
+        }
+
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.88rem;
+            color: var(--gold-light);
+        }
+
+        pre code {
+            color: var(--text-primary);
+        }
+
+        .cmd-comment {
+            color: var(--text-muted);
+        }
+
+        .cmd-flag {
+            color: var(--success);
+        }
+
+        .cmd-string {
+            color: #a5d6ff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            color: var(--gold-primary);
+            padding: 0.7rem 1rem;
+            text-align: right;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        tr:hover td {
+            background: var(--bg-secondary);
+        }
+
+        ul, ol {
+            padding-right: 1.5rem;
+            padding-left: 0;
+            margin: 0.5rem 0;
+        }
+
+        li {
+            margin-bottom: 0.3rem;
+            color: var(--text-secondary);
+        }
+
+        .step-num {
+            display: inline-block;
+            background: var(--gold-dark);
+            color: var(--bg-primary);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+
+        .file-tree {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem 1.5rem;
+            font-family: 'Cascadia Code', monospace;
+            font-size: 0.85rem;
+            direction: ltr;
+            text-align: left;
+            color: var(--text-secondary);
+            margin: 0.8rem 0;
+        }
+
+        .file-tree .dir { color: var(--info); }
+        .file-tree .file { color: var(--gold-light); }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .footer span {
+            color: var(--gold-primary);
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header h1 { font-size: 1.3rem; }
+            pre { font-size: 0.8rem; padding: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>دليل النقل والترقية التقني</h1>
+    <div class="subtitle">TECHNICAL_MIGRATION_GUIDE</div>
+    <span class="version-badge">v1.0.0</span>
+</div>
+
+<div class="container">
+
+    <!-- Table of Contents -->
+    <nav class="toc">
+        <h2>فهرس المحتويات</h2>
+        <ol>
+            <li><a href="#sec1">نظرة عامة</a></li>
+            <li><a href="#sec2">متطلبات النظام</a></li>
+            <li><a href="#sec3">خطوات التثبيت من الصفر</a></li>
+            <li><a href="#sec4">الترقية من إصدار سابق</a></li>
+            <li><a href="#sec5">النقل إلى خادم آخر</a></li>
+            <li><a href="#sec6">التثبيت عبر Docker</a></li>
+            <li><a href="#sec7">إعداد PostgreSQL للإنتاج</a></li>
+            <li><a href="#sec8">إعداد Nginx كوكيل عكسي</a></li>
+            <li><a href="#sec9">التوزيع عبر CI/CD</a></li>
+            <li><a href="#sec10">أدوات التطوير</a></li>
+            <li><a href="#sec11">استكشاف أخطاء التثبيت</a></li>
+        </ol>
+    </nav>
+
+    <!-- Section 1 -->
+    <section id="sec1">
+        <h2 class="section-title"><span class="num">1</span> نظرة عامة</h2>
+        <p>نظام المحاسبة المتكامل لإنتاج الخرسانة الجاهزة &mdash; نسخة الإصدار الأول.</p>
+        <table>
+            <thead>
+                <tr><th>المكون</th><th>الإصدار</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>إصدار البرنامج</td><td>1.0.0</td></tr>
+                <tr><td>إصدار Python</td><td>3.12+</td></tr>
+                <tr><td>إصدار Django</td><td>4.2 LTS</td></tr>
+                <tr><td>إصدار Django REST Framework</td><td>3.14+</td></tr>
+                <tr><td>قاعدة البيانات</td><td>PostgreSQL 15+ / SQLite 3.x</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="sec2">
+        <h2 class="section-title"><span class="num">2</span> متطلبات النظام</h2>
+        <table>
+            <thead>
+                <tr><th>المكون</th><th>الحد الأدنى</th><th>الموصى به</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>نظام التشغيل</td><td colspan="2">Windows Server 2019+ / Ubuntu 22.04+</td></tr>
+                <tr><td>المعالج (CPU)</td><td>2 Core</td><td>4 Core</td></tr>
+                <tr><td>الذاكرة (RAM)</td><td>4 GB</td><td>8 GB</td></tr>
+                <tr><td>مساحة التخزين</td><td>20 GB</td><td>50 GB (SSD)</td></tr>
+                <tr><td>قاعدة البيانات</td><td>SQLite 3.x</td><td>PostgreSQL 15+</td></tr>
+                <tr><td>نظام الكاش</td><td>&mdash;</td><td>Redis 7+</td></tr>
+            </tbody>
+        </table>
+
+        <div class="info-card warn">
+            <div class="label">&#9888; ملاحظة</div>
+            <p>يُنصح بشدة باستخدام PostgreSQL بدل SQLite في بيئة الإنتاج نظراً للأداء والموثوقية.</p>
+        </div>
+    </section>
+
+    <!-- Section 3 -->
+    <section id="sec3">
+        <h2 class="section-title"><span class="num">3</span> خطوات التثبيت من الصفر</h2>
+
+        <!-- 3.1 -->
+        <h3>3.1 تثبيت Python 3.12</h3>
+        <h4>على Windows:</h4>
+        <pre><code><span class="cmd-comment"># تنزيل Python 3.12 من الموقع الرسمي</span>
+https://www.python.org/downloads/
+
+<span class="cmd-comment"># التحقق من الإصدار</span>
+python --version
+<span class="cmd-comment"># المخرج: Python 3.12.x</span></code></pre>
+
+        <h4>على Ubuntu/Debian:</h4>
+        <pre><code><span class="cmd-comment"># تحديث قائمة الحزم</span>
+sudo apt update && sudo apt upgrade -y
+
+<span class="cmd-comment"># تثبيت المتطلبات الأساسية</span>
+sudo apt install -y python3.12 python3.12-venv python3.12-dev python3-pip
+
+<span class="cmd-comment"># التحقق من الإصدار</span>
+python3.12 --version</code></pre>
+
+        <!-- 3.2 -->
+        <h3>3.2 إنشاء البيئة الافتراضية</h3>
+        <pre><code><span class="cmd-comment"># الانتقال إلى مجلد المشروع</span>
+cd D:\accounting_system
+
+<span class="cmd-comment"># إنشاء البيئة الافتراضية</span>
+python -m venv venv
+
+<span class="cmd-comment"># تفعيل البيئة على Windows</span>
+venv\Scripts\activate
+
+<span class="cmd-comment"># تفعيل البيئة على Linux</span>
+source venv/bin/activate
+
+<span class="cmd-comment"># التأكد من التفعيل (يجب أن يظهر مسار venv في الـ prompt)</span>
+where python  <span class="cmd-comment"># Windows</span>
+which python   <span class="cmd-comment"># Linux</span></code></pre>
+
+        <!-- 3.3 -->
+        <h3>3.3 تثبيت الاعتماديات</h3>
+        <pre><code><span class="cmd-comment"># ترقية pip إلى أحدث إصدار</span>
+python -m pip install --upgrade pip
+
+<span class="cmd-comment"># تثبيت الاعتماديات من ملف requirements</span>
+pip install -r requirements.txt
+
+<span class="cmd-comment"># في حالة وجود ملف requirements-dev.txt للتطوير</span>
+pip install -r requirements-dev.txt</code></pre>
+
+        <div class="file-tree">
+<span class="dir">accounting_system/</span>
+  requirements.txt          <span class="file"># الاعتماديات الأساسية</span>
+  requirements-dev.txt      <span class="file"># اعتماديات التطوير (اختياري)</span>
+  pyproject.toml            <span class="file"># إعدادات المشروع</span>
+        </div>
+
+        <!-- 3.4 -->
+        <h3>3.4 إعداد ملف .env</h3>
+        <p>أنشئ ملف <code>.env</code> في جذر المشروع بالبيانات التالية:</p>
+        <pre><code><span class="cmd-comment"># ==========================================</span>
+<span class="cmd-comment"># ملف البيئة - .env</span>
+<span class="cmd-comment"># ==========================================</span>
+
+<span class="cmd-comment"># وضع التشغيل</span>
+DJANGO_SETTINGS_MODULE=config.settings.production
+DEBUG=False
+SECRET_KEY=<span class="cmd-string">your-super-secret-key-change-this</span>
+
+<span class="cmd-comment"># قاعدة البيانات</span>
+DATABASE_URL=<span class="cmd-string">postgres://user:password@localhost:5432/accounting_db</span>
+
+<span class="cmd-comment"># أو للاختبار بـ SQLite</span>
+<span class="cmd-comment"># DATABASE_URL=sqlite:///db.sqlite3</span>
+
+<span class="cmd-comment"># Redis (اختياري - للكاش والجلسات)</span>
+REDIS_URL=<span class="cmd-string">redis://127.0.0.1:6379/0</span>
+
+<span class="cmd-comment"># البريد الإلكتروني</span>
+EMAIL_HOST=<span class="cmd-string">smtp.gmail.com</span>
+EMAIL_PORT=587
+EMAIL_HOST_USER=<span class="cmd-string">your-email@gmail.com</span>
+EMAIL_HOST_PASSWORD=<span class="cmd-string">your-app-password</span>
+EMAIL_USE_TLS=True
+
+<span class="cmd-comment"># الأمان</span>
+ALLOWED_HOSTS=<span class="cmd-string">your-domain.com,localhost</span>
+CSRF_TRUSTED_ORIGINS=<span class="cmd-string">https://your-domain.com</span>
+
+<span class="cmd-comment"># اللغة والمنطقة</span>
+LANGUAGE_CODE=ar
+TIME_ZONE=Africa/Cairo
+USE_TZ=True</code></pre>
+
+        <div class="info-card danger">
+            <div class="label">&#9888; تحذير أمني</div>
+            <p>لا تُ敷ّح ملف <code>.env</code> أبداً في مستودع Git. تأكد من وجوده في <code>.gitignore</code>.</p>
+        </div>
+
+        <!-- 3.5 -->
+        <h3>3.5 تشغيل الترحيلات</h3>
+        <pre><code><span class="cmd-comment"># تطبيق الترحيلات على قاعدة البيانات</span>
+python manage.py migrate
+
+<span class="cmd-comment"># مراجعة الترحيلات المُطبقة</span>
+python manage.py showmigrations
+
+<span class="cmd-comment"># التحقق من عدم وجود ترحيلات معلقة</span>
+python manage.py migrate --check</code></pre>
+
+        <!-- 3.6 -->
+        <h3>3.6 إنشاء المستخدم المشرف</h3>
+        <pre><code><span class="cmd-comment"># إنشاء حساب مشرف</span>
+python manage.py createsuperuser
+
+<span class="cmd-comment"># عند التشغيل سُئل عن:</span>
+<span class="cmd-comment">#   Username: admin</span>
+<span class="cmd-comment">#   Email: admin@company.com</span>
+<span class="cmd-comment">#   Password: ********</span></code></pre>
+
+        <p>لإضافة مستخدمين إضافيين بالرمز البرمجي:</p>
+        <pre><code><span class="cmd-comment"># شل Django</span>
+python manage.py shell
+
+<span class="cmd-comment"># في واجهة الشل:</span>
+<span class="cmd-comment"># from django.contrib.auth import get_user_model</span>
+<span class="cmd-comment"># User = get_user_model()</span>
+<span class="cmd-comment"># User.objects.create_user('accountant', 'acc@company.com', 'password123')</span>
+<span class="cmd-comment"># exit()</span></code></pre>
+
+        <!-- 3.7 -->
+        <h3>3.7 تجميع الملفات الثابتة</h3>
+        <pre><code><span class="cmd-comment"># تجميع ملفات CSS و JavaScript و الصور الثابتة</span>
+python manage.py collectstatic --noinput
+
+<span class="cmd-comment"># التحقق من المجلد</span>
+dir staticfiles  <span class="cmd-comment"># Windows</span>
+ls staticfiles/  <span class="cmd-comment"># Linux</span></code></pre>
+
+        <!-- 3.8 -->
+        <h3>3.8 تشغيل السيرفر</h3>
+        <pre><code><span class="cmd-comment"># سيرفر التطوير (للتجربة فقط)</span>
+python manage.py runserver 0.0.0.0:8000
+
+<span class="cmd-comment"># سيرفر الإنتاج باستخدام Gunicorn (Linux فقط)</span>
+gunicorn config.wsgi:application \
+    --bind 0.0.0.0:8000 \
+    --workers 4 \
+    --threads 2 \
+    --timeout 120 \
+    --access-logfile - \
+    --error-logfile -
+
+<span class="cmd-comment"># سيرفر الإنتاج باستخدام Waitress (Windows)</span>
+waitress-serve --host=0.0.0.0 --port=8000 config.wsgi:application</code></pre>
+    </section>
+
+    <!-- Section 4 -->
+    <section id="sec4">
+        <h2 class="section-title"><span class="num">4</span> الترقية من إصدار سابق</h2>
+
+        <h3>4.1 النسخ الاحتياطي</h3>
+        <pre><code><span class="cmd-comment"># نسخ احتياطي لقاعدة البيانات</span>
+<span class="cmd-comment"># PostgreSQL:</span>
+pg_dump -U username -d accounting_db -f backup_$(date +%Y%m%d).sql
+
+<span class="cmd-comment"># SQLite:</span>
+copy db.sqlite3 db_backup_$(date +%Y%m%d).sqlite3
+
+<span class="cmd-comment"># نسخ احتياطي للمجلدات</span>
+xcopy media media_backup /E /I
+xcopy staticfiles staticfiles_backup /E /I</code></pre>
+
+        <div class="info-card warn">
+            <div class="label">&#9888; ضروري</div>
+            <p>تأكد دائماً من إنشاء نسخة احتياطية كاملة قبل أي عملية ترقية.</p>
+        </div>
+
+        <h3>4.2 تحديث الكود</h3>
+        <pre><code><span class="cmd-comment"># سحب أحدث التغييرات</span>
+git fetch origin
+git status
+
+<span class="cmd-comment"># الدمج</span>
+git merge origin/main
+
+<span class="cmd-comment"># أو سحب مباشر (إذا كنت تستخدم main)</span>
+git pull origin main</code></pre>
+
+        <h3>4.3 تشغيل الترحيلات</h3>
+        <pre><code><span class="cmd-comment"># تفعيل البيئة الافتراضية</span>
+venv\Scripts\activate
+
+<span class="cmd-comment"># تحديث الاعتماديات</span>
+pip install -r requirements.txt
+
+<span class="cmd-comment"># تشغيل الترحيلات الجديدة</span>
+python manage.py migrate
+
+<span class="cmd-comment"># تجميع الملفات الثابتة</span>
+python manage.py collectstatic --noinput</code></pre>
+
+        <h3>4.4 اختبار ما بعد الترقية</h3>
+        <pre><code><span class="cmd-comment"># تشغيل الاختبارات</span>
+python manage.py test
+
+<span class="cmd-comment"># فحص سلامة النظام</span>
+python manage.py check --deploy
+
+<span class="cmd-comment"># معاينة أي مشاكل محتملة</span>
+python manage.py showmigrations</code></pre>
+
+        <ol>
+            <li>تحقق من عمل جميع الشاشات الرئيسية</li>
+            <li>تأكد من صحة التقارير المالية</li>
+            <li>اختبر إدخال وتعديل وحذف البيانات</li>
+            <li>راجع سجلات الخطأ في <code>logs/</code></li>
+        </ol>
+    </section>
+
+    <!-- Section 5 -->
+    <section id="sec5">
+        <h2 class="section-title"><span class="num">5</span> النقل إلى خادم آخر</h2>
+
+        <h3>5.1 تصدير قاعدة البيانات</h3>
+        <pre><code><span class="cmd-comment"># على الخادم القديم - تصدير PostgreSQL</span>
+pg_dump -U db_user -d accounting_db -F c -f accounting_dump.dump
+
+<span class="cmd-comment"># تصدير كملف SQL عادي</span>
+pg_dump -U db_user -d accounting_db -f accounting_dump.sql</code></pre>
+
+        <h3>5.2 ضغط الملفات</h3>
+        <pre><code><span class="cmd-comment"># ضغط المشروع كاملاً</span>
+tar -czvf accounting_system_backup.tar.gz \
+    --exclude='venv' \
+    --exclude='__pycache__' \
+    --exclude='*.pyc' \
+    --exclude='.git' \
+    accounting_system/</code></pre>
+
+        <h3>5.3 النقل عبر rsync/SCP</h3>
+        <pre><code><span class="cmd-comment"># عبر SCP</span>
+scp accounting_system_backup.tar.gz user@new-server:/home/user/
+
+<span class="cmd-comment"># عبر rsync (أفضل للملفات الكبيرة)</span>
+rsync -avzP accounting_system_backup.tar.gz user@new-server:/home/user/
+
+<span class="cmd-comment"># نقل قاعدة البيانات</span>
+scp accounting_dump.dump user@new-server:/home/user/</code></pre>
+
+        <h3>5.4 استيراد قاعدة البيانات</h3>
+        <pre><code><span class="cmd-comment"># على الخادم الجديد</span>
+sudo -u postgres psql -c "CREATE DATABASE accounting_db;"
+sudo -u postgres psql -c "CREATE USER db_user WITH PASSWORD 'secure_password';"
+sudo -u postgres psql -c "ALTER ROLE db_user SET client_encoding TO 'utf8';"
+sudo -u postgres psql -c "ALTER ROLE db_user SET default_transaction_isolation TO 'read committed';"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE accounting_db TO db_user;"
+
+<span class="cmd-comment"># استيراد البيانات</span>
+pg_restore -U db_user -d accounting_db accounting_dump.dump</code></pre>
+
+        <h3>5.5 اختبار التشغيل</h3>
+        <pre><code><span class="cmd-comment"># تفعيل البيئة</span>
+source venv/bin/activate
+
+<span class="cmd-comment"># تشغيل الترحيلات</span>
+python manage.py migrate
+
+<span class="cmd-comment"># فحص النظام</span>
+python manage.py check --deploy
+
+<span class="cmd-comment"># تشغيل السيرفر</span>
+python manage.py runserver 0.0.0.0:8000</code></pre>
+    </section>
+
+    <!-- Section 6 -->
+    <section id="sec6">
+        <h2 class="section-title"><span class="num">6</span> التثبيت عبر Docker</h2>
+
+        <h3>6.1 Dockerfile</h3>
+        <pre><code><span class="cmd-comment"># Dockerfile</span>
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+RUN python manage.py collectstatic --noinput
+
+EXPOSE 8000
+
+CMD ["gunicorn", "config.wsgi:application", \
+     "--bind", "0.0.0.0:8000", \
+     "--workers", "4", \
+     "--threads", "2"]</code></pre>
+
+        <h3>6.2 docker-compose.yml</h3>
+        <pre><code><span class="cmd-comment"># docker-compose.yml</span>
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: accounting_db
+      POSTGRES_USER: db_user
+      POSTGRES_PASSWORD: secure_password
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U db_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application
+             --bind 0.0.0.0:8000
+             --workers 4
+             --threads 2"
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:</code></pre>
+
+        <h3>6.3 ملف .env للـ Docker</h3>
+        <pre><code><span class="cmd-comment"># .env للبيئة</span>
+DEBUG=False
+SECRET_KEY=<span class="cmd-string">change-this-to-a-random-secret-key</span>
+DATABASE_URL=<span class="cmd-string">postgres://db_user:secure_password@db:5432/accounting_db</span>
+REDIS_URL=<span class="cmd-string">redis://redis:6379/0</span>
+ALLOWED_HOSTS=<span class="cmd-string">your-domain.com,localhost</span>
+LANGUAGE_CODE=ar
+TIME_ZONE=Africa/Cairo</code></pre>
+
+        <h3>6.4 بناء وتشغيل</h3>
+        <pre><code><span class="cmd-comment"># بناء الصور وتشغيل جميع الخدمات</span>
+docker compose up -d --build
+
+<span class="cmd-comment"># عرض السجلات</span>
+docker compose logs -f web
+
+<span class="cmd-comment"># إنشاء المستخدم المشرف داخل الحاوية</span>
+docker compose exec web python manage.py createsuperuser
+
+<span class="cmd-comment"># إيقاف جميع الخدمات</span>
+docker compose down
+
+<span class="cmd-comment"># إيقاف وحذف بيانات التخزين</span>
+docker compose down -v</code></pre>
+
+        <div class="info-card success">
+            <div class="label">&#10003; ملاحظة</div>
+            <p>Docker هي الطريقة الموصى بها للنشر في الإنتاج لضمان بيئة موحدة وقابلة للتكرار.</p>
+        </div>
+    </section>
+
+    <!-- Section 7 -->
+    <section id="sec7">
+        <h2 class="section-title"><span class="num">7</span> إعداد PostgreSQL للإنتاج</h2>
+
+        <h3>7.1 إنشاء المستخدم وقاعدة البيانات</h3>
+        <pre><code><span class="cmd-comment"># الدخول إلى PostgreSQL كمستخدم postgres</span>
+sudo -u postgres psql
+
+<span class="cmd-comment"># إنشاء المستخدم</span>
+CREATE USER db_user WITH PASSWORD '<span class="cmd-string">StrongPassword123!</span>';
+
+<span class="cmd-comment"># إنشاء قاعدة البيانات</span>
+CREATE DATABASE accounting_db OWNER db_user;
+
+<span class="cmd-comment"># تعيين الترميز</span>
+ALTER ROLE db_user SET client_encoding TO 'utf8';
+
+<span class="cmd-comment"># تعيين عزل المعاملات</span>
+ALTER ROLE db_user SET default_transaction_isolation TO 'read committed';
+
+<span class="cmd-comment"># تعيين المنطقة الزمنية</span>
+ALTER ROLE db_user SET timezone TO 'Africa/Cairo';
+
+<span class="cmd-comment"># منح الصلاحيات</span>
+GRANT ALL PRIVILEGES ON DATABASE accounting_db TO db_user;
+
+<span class="cmd-comment"># الخروج</span>
+\q</code></pre>
+
+        <h3>7.2 صلاحيات الأدوار</h3>
+        <pre><code><span class="cmd-comment"># إنشاء دور للقراءة فقط (للتقارير)</span>
+CREATE ROLE readonly_role;
+GRANT CONNECT ON DATABASE accounting_db TO readonly_role;
+GRANT USAGE ON SCHEMA public TO readonly_role;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO readonly_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO readonly_role;
+
+<span class="cmd-comment"># ربط مستخدم للدور</span>
+GRANT readonly_role TO report_user;</code></pre>
+
+        <h3>7.3 إعداد SSL</h3>
+        <pre><code><span class="cmd-comment"># تعديل postgresql.conf</span>
+<span class="cmd-comment"># على Ubuntu: /etc/postgresql/15/main/postgresql.conf</span>
+ssl = on
+ssl_cert_file = '/etc/ssl/certs/ssl-cert-snakeoil.pem'
+ssl_key_file = '/etc/ssl/private/ssl-cert-snakeoil.key'
+ssl_min_protocol_version = 'TLSv1.2'
+
+<span class="cmd-comment"># تعديل pg_hba.conf لإلزام SSL</span>
+<span class="cmd-comment"># على Ubuntu: /etc/postgresql/15/main/pg_hba.conf</span>
+hostssl accounting_db db_user 0.0.0.0/0 scram-sha-256
+
+<span class="cmd-comment"># إعادة تشغيل PostgreSQL</span>
+sudo systemctl restart postgresql</code></pre>
+
+        <h3>7.4 ضبط الأداء</h3>
+        <pre><code><span class="cmd-comment"># ضبط postgresql.conf للإنتاج</span>
+shared_buffers = '1GB'            <span class="cmd-comment"># 25% من RAM</span>
+effective_cache_size = '3GB'      <span class="cmd-comment"># 75% من RAM</span>
+work_mem = '16MB'
+maintenance_work_mem = '256MB'
+max_connections = 100
+wal_buffers = '16MB'
+checkpoint_completion_target = 0.9
+random_page_cost = 1.1            <span class="cmd-comment"># لـ SSD</span></code></pre>
+    </section>
+
+    <!-- Section 8 -->
+    <section id="sec8">
+        <h2 class="section-title"><span class="num">8</span> إعداد Nginx كوكيل عكسي</h2>
+
+        <h3>8.1 ملف الإعداد</h3>
+        <pre><code><span class="cmd-comment"># /etc/nginx/conf.d/accounting.conf</span>
+upstream accounting_app {
+    server 127.0.0.1:8000;
+}
+
+server {
+    listen 80;
+    server_name your-domain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name your-domain.com;
+
+    <span class="cmd-comment"># إعدادات SSL</span>
+    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    <span class="cmd-comment"># تفعيل ضغط</span>
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript
+               text/xml application/xml text/javascript;
+
+    <span class="cmd-comment"># الملفات الثابتة</span>
+    location /static/ {
+        alias /home/user/accounting_system/staticfiles/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    <span class="cmd-comment"># الملفات المرفوعة</span>
+    location /media/ {
+        alias /home/user/accounting_system/media/;
+        expires 7d;
+    }
+
+    <span class="cmd-comment"># التطبيق الرئيسي</span>
+    location / {
+        proxy_pass http://accounting_app;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+        client_max_body_size 20M;
+    }
+
+    <span class="cmd-comment"># حماية المجلدات</span>
+    location ~ /\. {
+        deny all;
+    }
+}</code></pre>
+
+        <h3>8.2 شهادة SSL عبر Let's Encrypt</h3>
+        <pre><code><span class="cmd-comment"># تثبيت Certbot</span>
+sudo apt install -y certbot python3-certbot-nginx
+
+<span class="cmd-comment"># الحصول على الشهادة</span>
+sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+
+<span class="cmd-comment"># تجديد تلقائي</span>
+sudo crontab -e
+<span class="cmd-comment"># أضف هذا السطر:</span>
+0 12 * * * /usr/bin/certbot renew --quiet</code></pre>
+
+        <h3>8.3 تشغيل Nginx</h3>
+        <pre><code><span class="cmd-comment"># اختبار الإعداد</span>
+sudo nginx -t
+
+<span class="cmd-comment"># إعادة تشغيل Nginx</span>
+sudo systemctl restart nginx
+sudo systemctl enable nginx</code></pre>
+    </section>
+
+    <!-- Section 9 -->
+    <section id="sec9">
+        <h2 class="section-title"><span class="num">9</span> التوزيع عبر CI/CD</h2>
+
+        <h3>9.1 GitHub Actions</h3>
+        <pre><code><span class="cmd-comment"># .github/workflows/deploy.yml</span>
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run linting
+        run: ruff check .
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgres://test_user:test_pass@localhost:5432/test_db
+          SECRET_KEY: test-secret-key
+        run: python manage.py test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/user/accounting_system
+            git pull origin main
+            source venv/bin/activate
+            pip install -r requirements.txt
+            python manage.py migrate
+            python manage.py collectstatic --noinput
+            sudo systemctl restart gunicorn</code></pre>
+
+        <h3>9.2 المتغيرات السرية المطلوبة</h3>
+        <table>
+            <thead>
+                <tr><th>المتغير</th><th>الوصف</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>SERVER_HOST</code></td><td>عنوان الخادم</td></tr>
+                <tr><td><code>SERVER_USER</code></td><td>اسم مستخدم SSH</td></tr>
+                <tr><td><code>SSH_PRIVATE_KEY</code></td><td>مفتاح SSH الخاص</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Section 10 -->
+    <section id="sec10">
+        <h2 class="section-title"><span class="num">10</span> أدوات التطوير</h2>
+
+        <h3>10.1 Ruff Linting</h3>
+        <pre><code><span class="cmd-comment"># تثبيت Ruff</span>
+pip install ruff
+
+<span class="cmd-comment"># فحص الكود</span>
+ruff check .
+
+<span class="cmd-comment"># إصلاح تلقائي</span>
+ruff check --fix .
+
+<span class="cmd-comment"># إعدادات Ruff في pyproject.toml</span>
+<span class="cmd-comment"># [tool.ruff]</span>
+<span class="cmd-comment"># line-length = 120</span>
+<span class="cmd-comment"># target-version = "py312"</span>
+<span class="cmd-comment"># select = ["E", "F", "I", "N", "W", "UP"]</span></code></pre>
+
+        <h3>10.2 Pre-commit Hooks</h3>
+        <pre><code><span class="cmd-comment"># تثبيت pre-commit</span>
+pip install pre-commit
+
+<span class="cmd-comment"># إنشاء ملف .pre-commit-config.yaml</span>
+<span class="cmd-comment"># repos:</span>
+<span class="cmd-comment">#   - repo: https://github.com/astral-sh/ruff-pre-commit</span>
+<span class="cmd-comment">#     rev: v0.4.0</span>
+<span class="cmd-comment">#     hooks:</span>
+<span class="cmd-comment">#       - id: ruff</span>
+<span class="cmd-comment">#         args: [--fix]</span>
+<span class="cmd-comment">#       - id: ruff-format</span>
+
+<span class="cmd-comment"># تثبيت الخطافات</span>
+pre-commit install
+
+<span class="cmd-comment"># تشغيل يدوي</span>
+pre-commit run --all-files</code></pre>
+
+        <h3>10.3 pytest</h3>
+        <pre><code><span class="cmd-comment"># تثبيت pytest</span>
+pip install pytest pytest-django pytest-cov
+
+<span class="cmd-comment"># تشغيل الاختبارات</span>
+pytest
+
+<span class="cmd-comment"># تشغيل مع تغطية</span>
+pytest --cov=. --cov-report=html
+
+<span class="cmd-comment"># تشغيل اختبارات محددة</span>
+pytest apps/core/tests/ -v</code></pre>
+
+        <h3>10.4 Coverage</h3>
+        <pre><code><span class="cmd-comment"># توليد تقرير التغطية</span>
+coverage run manage.py test
+coverage report
+coverage html
+
+<span class="cmd-comment"># النتيجة المتوقعة: coverage.html في مجلد htmlcov/</span></code></pre>
+    </section>
+
+    <!-- Section 11 -->
+    <section id="sec11">
+        <h2 class="section-title"><span class="num">11</span> استكشاف أخطاء التثبيت</h2>
+
+        <h3>11.1 مشاكل الاعتماديات</h3>
+        <table>
+            <thead>
+                <tr><th>الخطأ</th><th>الحل</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ModuleNotFoundError</code></td>
+                    <td>تأكد من تفعيل البيئة الافتراضية وتثبيت <code>requirements.txt</code></td>
+                </tr>
+                <tr>
+                    <td><code>error: Microsoft Visual C++ required</code></td>
+                    <td>ثبّت Visual Studio Build Tools أو استخدم حزم wheels مسبقة البناء</td>
+                </tr>
+                <tr>
+                    <td><code>psycopg2 installation error</code></td>
+                    <td>ثبّت <code>libpq-dev</code> (Ubuntu) أو <code>postgresql-devel</code> (RHEL)</td>
+                </tr>
+                <tr>
+                    <td><code>pip version conflict</code></td>
+                    <td>شغّل <code>pip install --upgrade pip</code> ثم أعد تثبيت الاعتماديات</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>11.2 أخطاء قاعدة البيانات</h3>
+        <table>
+            <thead>
+                <tr><th>الخطأ</th><th>الحل</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>connection refused</code></td>
+                    <td>تأكد أن PostgreSQL يعمل: <code>sudo systemctl status postgresql</code></td>
+                </tr>
+                <tr>
+                    <td><code>database does not exist</code></td>
+                    <td>أنشئ قاعدة البيانات يدوياً</td>
+                </tr>
+                <tr>
+                    <td><code>permission denied</code></td>
+                    <td>تحقق من صلاحيات المستخدم على قاعدة البيانات</td>
+                </tr>
+                <tr>
+                    <td><code>relation already exists</code></td>
+                    <td>شغّل <code>python manage.py migrate --fake-initial</code> أو احذف الجداول المتعارضة</td>
+                </tr>
+                <tr>
+                    <td><code>no such column</code></td>
+                    <td>شغّل <code>python manage.py migrate</code> لتطبيق الترحيلات المعلقة</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>11.3 أخطاء الملفات الثابتة</h3>
+        <table>
+            <thead>
+                <tr><th>الخطأ</th><th>الحل</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>404 for static files</code></td>
+                    <td>شغّل <code>python manage.py collectstatic --noinput</code></td>
+                </tr>
+                <tr>
+                    <td><code>Permission denied on staticfiles</code></td>
+                    <td>غيّر صلاحيات المجلد: <code>chmod -R 755 staticfiles/</code></td>
+                </tr>
+                <tr>
+                    <td>ملفات ثابتة قديمة</td>
+                    <td>احذف <code>staticfiles/</code> وأعد التجميع</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-card">
+            <div class="label" style="color: var(--info);">نصيحة</div>
+            <p>عند مواجهة أي مشكلة، تحقق أولاً من سجلات الخطأ في <code>logs/django.log</code> أو <code>journalctl -u gunicorn</code> على Linux.</p>
+        </div>
+
+        <h3>11.4 أوامر استكشاف الأخطاء السريعة</h3>
+        <pre><code><span class="cmd-comment"># فحص إعدادات النظام</span>
+python manage.py check
+
+<span class="cmd-comment"># فحص إعدادات الإنتاج</span>
+python manage.py check --deploy
+
+<span class="cmd-comment"># عرض جميع الإعدادات</span>
+python manage.py diffsettings
+
+<span class="cmd-comment"># عرض الترحيلات</span>
+python manage.py showmigrations
+
+<span class="cmd-comment"># شل Django للاختبار</span>
+python manage.py shell
+
+<span class="cmd-comment"># فحص قاعدة البيانات</span>
+python manage.py dbshell
+
+<span class="cmd-comment"># عرض سجلات الخطأ (Linux)</span>
+sudo journalctl -u gunicorn -f
+tail -f logs/django.log</code></pre>
+    </section>
+
+</div>
+
+<div class="footer">
+    <p><span>نظام المحاسبة المتكامل</span> &mdash; دليل النقل والترقية التقني v1.0.0</p>
+    <p>آخر تحديث: يوليو 2026</p>
+</div>
+
+</body>
+</html>

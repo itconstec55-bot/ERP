@@ -1,0 +1,110 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<form method="post" id="quotationForm">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-header"><i class="fas fa-file-invoice-dollar"></i> بيانات عرض السعر</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">{{ form.customer|as_crispy_field }}</div>
+                <div class="col-md-4">{{ form.date|as_crispy_field }}</div>
+                <div class="col-md-4">{{ form.valid_until|as_crispy_field }}</div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">{{ form.payment_terms|as_crispy_field }}</div>
+                <div class="col-md-4">{{ form.delivery_terms|as_crispy_field }}</div>
+                <div class="col-md-4">{{ form.notes|as_crispy_field }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-header"><i class="fas fa-list"></i> بنود عرض السعر</div>
+        <div class="card-body">
+            {{ formset.management_form }}
+            <table class="table table-bordered" id="linesTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:25%">المنتج</th>
+                        <th>الوصف</th>
+                        <th>الكمية</th>
+                        <th>سعر الوحدة</th>
+                        <th>نسبة الخصم %</th>
+                        <th>الإجمالي</th>
+                        <th>حذف</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for form in formset %}
+                    <tr class="line-row">
+                        <td>{{ form.product }}</td>
+                        <td>{{ form.description }}</td>
+                        <td>{{ form.quantity }}</td>
+                        <td>{{ form.unit_price }}</td>
+                        <td>{{ form.discount_percent }}</td>
+                        <td class="line-total text-end">0.00</td>
+                        <td>{{ form.DELETE }}</td>
+                        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="row mt-3">
+                <div class="col-md-4 offset-md-8">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <table class="table table-borderless mb-0">
+                                <tr><th>المجموع الفرعي:</th><td id="subtotal" class="text-end fw-bold">0.00 ج.م</td></tr>
+                                <tr><th>ضريبة القيمة المضافة (14%):</th><td id="vat" class="text-end fw-bold">0.00 ج.م</td></tr>
+                                <tr class="table-primary"><th>الإجمالي:</th><td id="total" class="text-end fw-bold">0.00 ج.م</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+                <a href="{% url 'sales_quotation:quotation_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-right"></i> رجوع</a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function recalc() {
+    let subtotal = 0;
+    document.querySelectorAll('.line-row').forEach(row => {
+        if (row.querySelector('input[name$="-DELETE"]') && row.querySelector('input[name$="-DELETE"]').checked) {
+            row.querySelector('.line-total').textContent = '0.00';
+            return;
+        }
+        const qty = parseFloat(row.querySelector('input[name$="-quantity"]').value) || 0;
+        const price = parseFloat(row.querySelector('input[name$="-unit_price"]').value) || 0;
+        const discount = parseFloat(row.querySelector('input[name$="-discount_percent"]').value) || 0;
+        let lineTotal = qty * price;
+        if (discount > 0) {
+            lineTotal = lineTotal - (lineTotal * discount / 100);
+        }
+        row.querySelector('.line-total').textContent = lineTotal.toFixed(2);
+        subtotal += lineTotal;
+    });
+    const vat = subtotal * 0.14;
+    const total = subtotal + vat;
+    document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' ج.م';
+    document.getElementById('vat').textContent = vat.toFixed(2) + ' ج.م';
+    document.getElementById('total').textContent = total.toFixed(2) + ' ج.م';
+}
+document.addEventListener('input', function(e) {
+    if (e.target.closest('.line-row')) recalc();
+});
+window.addEventListener('load', recalc);
+</script>
+{% endblock %}

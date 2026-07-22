@@ -1,0 +1,31 @@
+{% extends 'base/base.html' %}
+{% load humanize %}
+
+{% block title %}تفاصيل الإشعار{% endblock %}
+{% block page_title %}{{ note.get_note_type_display }} - {{ note.note_number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-file-invoice"></i> بيانات الإشعار</div>
+            <div class="card-body">
+                <table class="table">
+                    <tr><td><strong>الرقم</strong></td><td>{{ note.note_number }}</td></tr>
+                    <tr><td><strong>النوع</strong></td><td>{{ note.get_note_type_display }}</td></tr>
+                    <tr><td><strong>التاريخ</strong></td><td>{{ note.date|date:"d/m/Y" }}</td></tr>
+                    <tr><td><strong>العميل/المورد</strong></td><td>{% if note.customer %}{{ note.customer.name }}{% elif note.supplier %}{{ note.supplier.name }}{% else %}-{% endif %}</td></tr>
+                    <tr><td><strong>الفاتورة الأصلية</strong></td><td>
+                        {% if note.original_sales_invoice %}{{ note.original_sales_invoice.invoice_number }}{% elif note.original_purchase_invoice %}{{ note.original_purchase_invoice.invoice_number }}{% elif note.original_invoice_number %}{{ note.original_invoice_number }}{% else %}-{% endif %}
+                    </td></tr>
+                    <tr><td><strong>المبلغ</strong></td><td>{{ note.subtotal|intcomma }}</td></tr>
+                    <tr><td><strong>الضريبة</strong></td><td>{{ note.vat_amount|intcomma }}</td></tr>
+                    <tr><td><strong>الإجمالي</strong></td><td><strong>{{ note.total_amount|intcomma }}</strong></td></tr>
+                    <tr><td><strong>السبب</strong></td><td>{{ note.reason|default:"-" }}</td></tr>
+                    <tr><td><strong>الحالة</strong></td><td><span class="badge bg-{% if note.is_posted %}success{% else %}secondary{% endif %}">{% if note.is_posted %}مرحل{% else %}مسودة{% endif %}</span></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

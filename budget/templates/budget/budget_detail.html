@@ -1,0 +1,77 @@
+{% extends 'base/base.html' %}
+{% load humanize %}
+
+{% block title %}تفاصيل الموازنة: {{ budget.name }}{% endblock %}
+{% block page_title %}تفاصيل الموازنة{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #1565c0, #0d47a1);">
+            <h3>{{ budget.budgeted_amount|intcomma }}</h3>
+            <p>المخطط</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #2e7d32, #1b5e20);">
+            <h3>{{ budget.actual_amount|intcomma }}</h3>
+            <p>الفعلي</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, {% if budget.variance > 0 %}#c62828{% else %}#2e7d32{% endif %}, {% if budget.variance > 0 %}#b71c1c{% else %}#1b5e20{% endif %});">
+            <h3>{{ budget.variance|intcomma }}</h3>
+            <p>الانحراف</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #e65100, #bf360c);">
+            <h3>{{ budget.variance_percent }}%</h3>
+            <p>نسبة الانحراف</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between">
+        <span><i class="fas fa-chart-bar"></i> {{ budget.name }}</span>
+        <a href="{% url 'budget:budget_edit' pk=budget.pk %}" class="btn btn-light btn-sm"><i class="fas fa-edit"></i> تعديل</a>
+        <form method="post" action="{% url 'budget:budget_delete' pk=budget.pk %}" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذه الموازنة؟')">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> حذف</button>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table">
+                    <tr><th>الاسم</th><td>{{ budget.name }}</td></tr>
+                    <tr><th>الحساب</th><td>{{ budget.account }}</td></tr>
+                    <tr><th>مركز التكلفة</th><td>{{ budget.cost_center|default:"-" }}</td></tr>
+                    <tr><th>الفترة</th><td>{{ budget.get_period_display }}</td></tr>
+                    <tr><th>السنة</th><td>{{ budget.year }}</td></tr>
+                    <tr><th>الشهر</th><td>{{ budget.month|default:"-" }}</td></tr>
+                    <tr><th>الحالة</th><td><span class="badge bg-{% if budget.status == 'active' %}success{% elif budget.status == 'draft' %}secondary{% else %}dark{% endif %}">{{ budget.get_status_display }}</span></td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <div class="progress mb-3" style="height: 30px;">
+                    {% if budget.budgeted_amount > 0 %}
+                    {% widthvar budget.actual_amount budget.budgeted_amount as pct %}
+                    {% else %}
+                    {% widthvar 0 1 as pct %}
+                    {% endif %}
+                    <div class="progress-bar {% if pct > 100 %}bg-danger{% elif pct > 80 %}bg-warning{% else %}bg-success{% endif %}"
+                         role="progressbar" style="width: {{ pct }}%">
+                        {{ pct }}%
+                    </div>
+                </div>
+                <p class="text-muted">نسبة التنفيذ: <strong>{{ budget.actual_amount|intcomma }} / {{ budget.budgeted_amount|intcomma }}</strong></p>
+                {% if budget.notes %}
+                <p><strong>ملاحظات:</strong> {{ budget.notes }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

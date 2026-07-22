@@ -1,0 +1,62 @@
+{% extends 'base/base.html' %}
+{% load humanize %}
+
+{% block title %}القيود الدورية{% endblock %}
+{% block page_title %}القيود الدورية{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #1565c0, #0d47a1);">
+            <h3>{{ active_count }}</h3><p>قيود نشطة</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #2e7d32, #1b5e20);">
+            <h3>{{ journals|length }}</h3><p>إجمالي القيود</p>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <a href="{% url 'recurring:recurring_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة قيد دوري</a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white"><i class="fas fa-sync-alt"></i> القيود الدورية</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>الاسم</th><th>التكرار</th><th>التاريخ التالي</th><th>النوع</th><th>مدين</th><th>دائن</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody>
+                {% for j in journals %}
+                <tr>
+                    <td><a href="{% url 'recurring:recurring_detail' j.pk %}"><strong>{{ j.name }}</strong></a></td>
+                    <td>{{ j.get_frequency_display }}</td>
+                    <td>{{ j.next_due_date|date:"d/m/Y" }}</td>
+                    <td>{{ j.get_journal_type_display }}</td>
+                    <td>{{ j.total_debit|intcomma }}</td>
+                    <td>{{ j.total_credit|intcomma }}</td>
+                    <td><span class="badge bg-{% if j.status == 'active' %}success{% elif j.status == 'paused' %}warning{% else %}secondary{% endif %}">{{ j.get_status_display }}</span></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <form method="post" action="{% url 'recurring:recurring_execute' j.pk %}" class="d-inline">{% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success" title="تنفيذ الآن"><i class="fas fa-play"></i></button>
+                            </form>
+                            <a href="{% url 'recurring:recurring_edit' j.pk %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
+                            <form method="post" action="{% url 'recurring:recurring_toggle' j.pk %}" class="d-inline">{% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-warning" title="{% if j.status == 'active' %}إيقاف{% else %}تفعيل{% endif %}"><i class="fas fa-{% if j.status == 'active' %}pause{% else %}play{% endif %}"></i></button>
+                            </form>
+                            <form method="post" action="{% url 'recurring:recurring_delete' j.pk %}" class="d-inline" onsubmit="return confirm('هل أنت متأكد؟')">{% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center py-4 text-muted">لا توجد قود دورية بعد</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

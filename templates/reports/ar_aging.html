@@ -1,0 +1,154 @@
+{% extends "base/base.html" %}
+
+{% block title %}أعمار الذمم المدينة{% endblock %}
+{% block page_title %}أعمار الذمم المدينة (المستحق من العملاء){% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-user-clock"></i> أعمار الذمم المدينة</span>
+        <form method="get" class="d-flex gap-2">
+            <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> بحث</button>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-2">
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">غير مستحق</h6>
+                        <h4 class="text-success">{{ bucket_current|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">1 - 30 يوم</h6>
+                        <h4 class="text-primary">{{ bucket_30|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">31 - 60 يوم</h6>
+                        <h4 class="text-warning">{{ bucket_60|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card border-danger">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">61 - 90 يوم</h6>
+                        <h4 class="text-danger">{{ bucket_90|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card border-dark">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">أكثر من 90 يوم</h6>
+                        <h4 class="text-dark">{{ bucket_120|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card" style="background: linear-gradient(135deg, #1a237e, #0d47a1);">
+                    <div class="card-body text-center text-white">
+                        <h6>الإجمالي</h6>
+                        <h4>{{ total_remaining|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress mb-4" style="height: 30px;">
+            {% if total_remaining > 0 %}
+            <div class="progress-bar bg-success" style="width: {{ bucket_current|floatformat:0 }}%" title="غير مستحق: {{ bucket_current|floatformat:2 }}">
+                {% if bucket_current > 0 %}{{ bucket_current|floatformat:0 }}{% endif %}
+            </div>
+            <div class="progress-bar bg-primary" style="width: {{ bucket_30|floatformat:0 }}%" title="1-30 يوم: {{ bucket_30|floatformat:2 }}">
+                {% if bucket_30 > 0 %}{{ bucket_30|floatformat:0 }}{% endif %}
+            </div>
+            <div class="progress-bar bg-warning" style="width: {{ bucket_60|floatformat:0 }}%" title="31-60 يوم: {{ bucket_60|floatformat:2 }}">
+                {% if bucket_60 > 0 %}{{ bucket_60|floatformat:0 }}{% endif %}
+            </div>
+            <div class="progress-bar bg-danger" style="width: {{ bucket_90|floatformat:0 }}%" title="61-90 يوم: {{ bucket_90|floatformat:2 }}">
+                {% if bucket_90 > 0 %}{{ bucket_90|floatformat:0 }}{% endif %}
+            </div>
+            <div class="progress-bar bg-dark" style="width: {{ bucket_120|floatformat:0 }}%" title="90+ يوم: {{ bucket_120|floatformat:2 }}">
+                {% if bucket_120 > 0 %}{{ bucket_120|floatformat:0 }}{% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>العميل</th>
+                    <th>رقم الفاتورة</th>
+                    <th>تاريخ الفاتورة</th>
+                    <th>تاريخ الاستحقاق</th>
+                    <th>أيام التأخر</th>
+                    <th>إجمالي الفاتورة</th>
+                    <th>المدفوع</th>
+                    <th>المتبقي</th>
+                    <th>الفئة العمرية</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in aging_data %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><strong>{{ item.customer_name }}</strong></td>
+                    <td>{{ item.invoice.invoice_number }}</td>
+                    <td>{{ item.invoice_date|date:"d/m/Y" }}</td>
+                    <td>{{ item.due_date|date:"d/m/Y"|default:"-" }}</td>
+                    <td>
+                        {% if item.days_overdue <= 0 %}
+                            <span class="badge bg-success">غير مستحق</span>
+                        {% elif item.days_overdue <= 30 %}
+                            <span class="badge bg-primary">{{ item.days_overdue }} يوم</span>
+                        {% elif item.days_overdue <= 60 %}
+                            <span class="badge bg-warning">{{ item.days_overdue }} يوم</span>
+                        {% elif item.days_overdue <= 90 %}
+                            <span class="badge bg-danger">{{ item.days_overdue }} يوم</span>
+                        {% else %}
+                            <span class="badge bg-dark">{{ item.days_overdue }} يوم</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.total_amount|floatformat:2 }}</td>
+                    <td>{{ item.paid_amount|floatformat:2 }}</td>
+                    <td><strong class="text-danger">{{ item.remaining|floatformat:2 }}</strong></td>
+                    <td>
+                        {% if item.bucket == 'current' %}
+                            <span class="badge bg-success">غير مستحق</span>
+                        {% elif item.bucket == '1-30' %}
+                            <span class="badge bg-primary">1-30 يوم</span>
+                        {% elif item.bucket == '31-60' %}
+                            <span class="badge bg-warning">31-60 يوم</span>
+                        {% elif item.bucket == '61-90' %}
+                            <span class="badge bg-danger">61-90 يوم</span>
+                        {% else %}
+                            <span class="badge bg-dark">+90 يوم</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="10" class="text-center text-muted">لا توجد فواتير مستحقة</td></tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="table-dark">
+                    <th colspan="8">الإجمالي</th>
+                    <th>{{ total_remaining|floatformat:2 }} ج.م</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base/base.html" %}
+
+{% block title %}الرواتب{% endblock %}
+{% block page_title %}الرواتب{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-money-check-alt"></i> سجل الرواتب</span>
+        <a href="{% url 'hr:salary_create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> راتب جديد</a>
+        <a href="{% url 'hr:export_salaries' %}" class="btn btn-success btn-sm"><i class="fas fa-file-excel"></i> تصدير Excel</a>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead><tr><th>الموظف</th><th>الفترة</th><th>الأساسي</th><th>البدلات</th><th>الإضافي</th><th>المكافآت</th><th>الخصومات</th><th>التأمين</th><th>الضريبة</th><th>الصافي</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody>
+                {% for sal in salaries %}
+                <tr>
+                    <td><a href="{% url 'hr:salary_detail' pk=sal.pk %}">{{ sal.employee.full_name }}</a></td>
+                    <td>{{ sal.month }}/{{ sal.year }}</td>
+                    <td>{{ sal.basic_salary|floatformat:0 }}</td>
+                    <td>{{ sal.allowances|floatformat:0 }}</td>
+                    <td>{{ sal.overtime|floatformat:0 }}</td>
+                    <td>{{ sal.bonus|floatformat:0 }}</td>
+                    <td class="text-danger">{{ sal.deductions|floatformat:0 }}</td>
+                    <td class="text-danger">{{ sal.social_insurance|floatformat:0 }}</td>
+                    <td class="text-danger">{{ sal.income_tax|floatformat:0 }}</td>
+                    <td class="text-success"><strong>{{ sal.net_salary|floatformat:0 }}</strong></td>
+                    <td>{% if sal.is_paid %}<span class="badge bg-success">مدفوع</span>{% else %}<span class="badge bg-warning">غير مدفوع</span>{% endif %}</td>
+                    <td>
+                        {% if not sal.is_paid %}
+                        <a href="{% url 'hr:salary_post' pk=sal.pk %}" class="btn btn-success btn-sm" onclick="return confirm('هل تريد ترحيل قيد الرواتب؟')"><i class="fas fa-check"></i></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base/base.html" %}
+{% block title %}تفاصيل خلطة {{ mix.code }}{% endblock %}
+{% block page_title %}<i class="fas fa-flask me-2"></i>خلطة {{ mix.code }} - {{ mix.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between">
+                <h5 class="m-0">بيانات الخلطة</h5>
+                <a href="{% url 'concrete_production:mix_design_edit' pk=mix.pk %}" class="btn btn-sm btn-outline-warning">
+                    <i class="fas fa-edit"></i> تعديل
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>كود الخلطة:</strong> {{ mix.code }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>فئة القوة:</strong> <span class="badge bg-primary">{{ mix.strength_class }}</span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <strong>الانهيار:</strong> {{ mix.slump_cm }} سم
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <strong>أقصى ركام:</strong> {{ mix.max_aggregate_mm }} مم
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <strong>نسبة وسطرة:</strong> {{ mix.water_cement_ratio }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <strong>قوة الهدف:</strong> {{ mix.target_strength_mpa }} MPa
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <strong>الوزن الكلي:</strong> {{ mix.total_weight_per_m3 }} كجم/م³
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <strong>سعر البيع:</strong> {{ mix.selling_price_per_m3|floatformat:2 }} ج.م/م³
+                    </div>
+                </div>
+                {% if mix.description %}
+                <p class="text-muted mt-2">{{ mix.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="m-0">مكونات الخلطة</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead>
+                        <tr><th>المكون</th><th>النوع</th><th>الكمية</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for comp in components %}
+                        <tr>
+                            <td>{{ comp.name }}</td>
+                            <td><span class="badge bg-secondary">{{ comp.get_component_type_display }}</span></td>
+                            <td><strong>{{ comp.quantity_kg }}</strong> كجم</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center text-muted p-3">لا توجد مكونات</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

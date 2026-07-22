@@ -1,0 +1,86 @@
+{% extends "base/base.html" %}
+
+{% block content_header %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>المستخلصات</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="{% url 'contractors:dashboard' %}">لوحة التحكم</a></li>
+          <li class="breadcrumb-item active">المستخلصات</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-header">
+      <div class="row">
+        <div class="col-md-8">
+          <form method="get" class="form-inline">
+            <div class="mr-2">
+              <select name="status" class="form-control form-control-sm">
+                <option value="">الكل</option>
+                <option value="draft" {% if status == 'draft' %}selected{% endif %}>مسودة</option>
+                <option value="submitted" {% if status == 'submitted' %}selected{% endif %}>مقدمة</option>
+                <option value="approved" {% if status == 'approved' %}selected{% endif %}>معتمدة</option>
+                <option value="certified" {% if status == 'certified' %}selected{% endif %}>مرحللة</option>
+                <option value="paid" {% if status == 'paid' %}selected{% endif %}>مدفوعة</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-info btn-sm"><i class="fas fa-filter"></i> تصفية</button>
+          </form>
+        </div>
+        <div class="col-md-4 text-left">
+          <a href="{% url 'contractors:certificate_create' %}" class="btn btn-success btn-sm">
+            <i class="fas fa-plus"></i> مستخلص جديد
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="card-body table-responsive p-0">
+      <table class="table table-hover text-wrap">
+        <thead>
+          <tr>
+            <th>رقم المستخلص</th>
+            <th>العقد</th>
+            <th>المقاول</th>
+            <th>الفترة</th>
+            <th>الإجمالي</th>
+            <th>الاحتفاظ</th>
+            <th>الصافي</th>
+            <th>الحالة</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in certificates %}
+          <tr>
+            <td><a href="{% url 'contractors:certificate_detail' pk=c.pk %}">{{ c.certificate_number }}</a></td>
+            <td>{{ c.contract.contract_number }}</td>
+            <td>{{ c.contract.contractor.name }}</td>
+            <td>{{ c.period_from|date:"Y/m" }} — {{ c.period_to|date:"Y/m" }}</td>
+            <td>{{ c.gross_amount|floatformat:2 }}</td>
+            <td>{{ c.retention_amount|floatformat:2 }}</td>
+            <td>{{ c.net_amount|floatformat:2 }}</td>
+            <td>
+              <span class="badge badge-{% if c.status == 'approved' %}success{% elif c.status == 'certified' %}info{% elif c.status == 'paid' %}primary{% elif c.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                {{ c.get_status_display }}
+              </span>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center">لا توجد مستخلصات</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

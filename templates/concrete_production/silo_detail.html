@@ -1,0 +1,182 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}{{ silo.name }}{% endblock %}
+{% block page_title %}<i class="fas fa-cubes me-2"></i>{{ silo.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card { border-radius: 16px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .kpi-box { background: linear-gradient(135deg, #f8f9fa, #fff); border-radius: 12px; padding: 1.2rem; text-align: center; border: 1px solid #f0f0f0; }
+    .kpi-box h4 { margin: 0; font-weight: 700; }
+    .kpi-box small { color: #888; }
+    .gauge-wrap { position: relative; width: 160px; height: 160px; margin: 0 auto; }
+    .gauge-bg { fill: none; stroke: #e9ecef; stroke-width: 14; }
+    .gauge-fill { fill: none; stroke-width: 14; stroke-linecap: round; transition: stroke-dashoffset 1.5s ease; }
+    .gauge-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-0">{{ silo.name }} <span class="text-muted" style="font-size:0.85rem;">{{ silo.code }}</span></h4>
+        <small class="text-muted">{{ silo.cement_type }} · {{ silo.location }}</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'concrete_production:silo_transaction_create' silo_pk=silo.pk %}" class="btn btn-success"><i class="fas fa-plus me-1"></i>حركة جديدة</a>
+        <a href="{% url 'concrete_production:silo_edit' pk=silo.pk %}" class="btn btn-outline-secondary"><i class="fas fa-edit me-1"></i>تعديل</a>
+        <a href="{% url 'concrete_production:silo_dashboard' %}" class="btn btn-outline-primary"><i class="fas fa-arrow-right me-1"></i>العودة</a>
+    </div>
+</div>
+
+{# ── KPIs ── #}
+<div class="row mb-4">
+    <div class="col-lg-2 col-md-4 col-6 mb-3">
+        <div class="kpi-box">
+            <small>المخزون الحالي</small>
+            <h4 class="text-primary">{{ silo.current_stock_tons|intcomma }}</h4>
+            <small>طن</small>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-6 mb-3">
+        <div class="kpi-box">
+            <small>السعة القصوى</small>
+            <h4 class="text-info">{{ silo.capacity_tons|intcomma }}</h4>
+            <small>طن</small>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-6 mb-3">
+        <div class="kpi-box">
+            <small>الحد الأدنى</small>
+            <h4 class="text-warning">{{ silo.minimum_order_tons|intcomma }}</h4>
+            <small>طن</small>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-6 mb-3">
+        <div class="kpi-box">
+            <small>الحد الحرج</small>
+            <h4 class="text-danger">{{ silo.critical_level_tons|intcomma }}</h4>
+            <small>طن</small>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-6 mb-3">
+        <div class="kpi-box">
+            <small>نسبة التعبئة</small>
+            <h4 class="{% if silo.status == 'critical' %}text-danger{% elif silo.status == 'low' %}text-warning{% else %}text-success{% endif %}">
+                {{ silo.fill_percentage|floatformat:1 }}%
+            </h4>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-6 mb-3">
+        <div class="kpi-box">
+            <small>الحالة</small>
+            <h4>
+                {% if silo.status == 'critical' %}<span class="badge bg-danger">حرج</span>
+                {% elif silo.status == 'low' %}<span class="badge bg-warning text-dark">منخفض</span>
+                {% else %}<span class="badge bg-success">ممتاز</span>{% endif %}
+            </h4>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    {# ── Gauge ── #}
+    <div class="col-lg-4 mb-4">
+        <div class="card detail-card p-4 text-center" style="height:100%;">
+            <h6 class="fw-bold mb-3">مقياس المخزون</h6>
+            <div class="gauge-wrap">
+                <svg viewBox="0 0 160 160" class="w-100 h-100">
+                    <circle cx="80" cy="80" r="65" class="gauge-bg"/>
+                    <circle cx="80" cy="80" r="65" class="gauge-fill"
+                            stroke="{% if silo.status == 'critical' %}#dc3545{% elif silo.status == 'low' %}#ffc107{% else %}#28a745{% endif %}"
+                            stroke-dasharray="408.41"
+                            stroke-dashoffset="{{ silo.fill_percentage|stringformat:'.1f' }}"
+                            transform="rotate(-90 80 80)"/>
+                </svg>
+                <div class="gauge-text">
+                    <div class="fw-bold" style="font-size:2rem;color:{% if silo.status == 'critical' %}#dc3545{% elif silo.status == 'low' %}#ffc107{% else %}#28a745{% endif %};">
+                        {{ silo.fill_percentage|floatformat:1 }}%
+                    </div>
+                    <div style="font-size:0.75rem;color:#888;">النسبة</div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="progress" style="height:12px; border-radius:6px;">
+                    <div class="progress-bar {% if silo.status == 'critical' %}bg-danger{% elif silo.status == 'low' %}bg-warning{% else %}bg-success{% endif %}"
+                         style="width:{{ silo.fill_percentage }}%"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-1">
+                    <small class="text-muted">0 طن</small>
+                    <small class="text-muted">{{ silo.capacity_tons|intcomma }} طن</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── آخر الحركات ── #}
+    <div class="col-lg-8 mb-4">
+        <div class="card detail-card" style="height:100%;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 fw-bold"><i class="fas fa-exchange-alt me-2 text-muted"></i>آخر الحركات</h6>
+                <span class="badge bg-secondary">{{ transactions|length }} حركة</span>
+            </div>
+            <div class="card-body p-0" style="max-height:380px; overflow-y:auto;">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-3">التاريخ</th>
+                            <th>النوع</th>
+                            <th>الكمية (طن)</th>
+                            <th>من</th>
+                            <th>إلى</th>
+                            <th>مرجع</th>
+                            <th>بواسطة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for txn in transactions %}
+                        <tr>
+                            <td class="ps-3"><small>{{ txn.date|date:"d/m/Y H:i" }}</small></td>
+                            <td>
+                                {% if txn.transaction_type == 'in' %}
+                                    <span class="badge bg-success"><i class="fas fa-arrow-down me-1"></i>توريد</span>
+                                {% elif txn.transaction_type == 'out' %}
+                                    <span class="badge bg-danger"><i class="fas fa-arrow-up me-1"></i>استهلاك</span>
+                                {% else %}
+                                    <span class="badge bg-info"><i class="fas fa-sliders-h me-1"></i>تسوية</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold">{{ txn.quantity_tons|intcomma }}</td>
+                            <td>{{ txn.previous_stock|intcomma }}</td>
+                            <td>{{ txn.new_stock|intcomma }}</td>
+                            <td><small class="text-muted">{{ txn.reference_number|default:"—" }}</small></td>
+                            <td><small>{{ txn.created_by.get_full_name|default:txn.created_by.username|default:"—" }}</small></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="text-center text-muted p-4">لا توجد حركات</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── إحصائيات الشهر ── #}
+<div class="row mb-4">
+    {% for stat in monthly_stats %}
+    <div class="col-md-4 mb-3">
+        <div class="card detail-card p-3 text-center">
+            <div class="fw-bold mb-1">
+                {% if stat.transaction_type == 'in' %}إجمالي التوريد{% elif stat.transaction_type == 'out' %}إجمالي الاستهلاك{% else %}التسويات{% endif %}
+            </div>
+            <h3 class="{% if stat.transaction_type == 'in' %}text-success{% elif stat.transaction_type == 'out' %}text-danger{% else %}text-info{% endif %} mb-1">
+                {{ stat.total_qty|intcomma }} <small style="font-size:0.6em;">طن</small>
+            </h3>
+            <small class="text-muted">{{ stat.count }} حركة</small>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

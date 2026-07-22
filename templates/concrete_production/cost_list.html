@@ -1,0 +1,40 @@
+{% extends "base/base.html" %}
+{% block title %}تكاليف الإنتاج{% endblock %}
+{% block page_title %}<i class="fas fa-dollar-sign me-2"></i>تكاليف الإنتاج{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="m-0">قائمة تكاليف الإنتاج</h5>
+        <a href="{% url 'concrete_production:cost_create' %}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i> تكلفة جديدة
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-3">أمر الإنتاج</th>
+                    <th>النوع</th>
+                    <th>المبلغ</th>
+                    <th>الوصف</th>
+                    <th>التاريخ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cost in costs %}
+                <tr>
+                    <td class="ps-3 fw-bold">{{ cost.production_order.order_number }}</td>
+                    <td><span class="badge bg-secondary">{{ cost.get_cost_type_display }}</span></td>
+                    <td>{{ cost.amount|floatformat:2 }} ج.م</td>
+                    <td>{{ cost.description|default:"-" }}</td>
+                    <td>{{ cost.date }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted p-4">لا توجد تكاليف مسجلة</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

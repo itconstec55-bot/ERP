@@ -1,0 +1,97 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل أمر البيع {{ order.order_number }}{% endblock %}
+{% block page_title %}أمر بيع: {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span><i class="fas fa-clipboard-list"></i> بنود أمر البيع</span>
+                <div>
+                    {% if order.status not in 'invoiced,cancelled' %}
+                    <a href="{% url 'sales_orders:so_edit' pk=order.pk %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> تعديل
+                    </a>
+                    {% endif %}
+                    {% if order.status != 'cancelled' and order.status != 'invoiced' %}
+                    <form method="POST" action="{% url 'sales_orders:so_confirm' pk=order.pk %}" style="display:inline"
+                          onsubmit="return confirm('هل تريد تأكيد أمر البيع؟')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm ms-1"><i class="fas fa-check"></i> تأكيد</button>
+                    </form>
+                    <form method="POST" action="{% url 'sales_orders:so_to_invoice' pk=order.pk %}" style="display:inline"
+                          onsubmit="return confirm('تحويل أمر البيع إلى فاتورة مبيعات؟')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-info btn-sm ms-1"><i class="fas fa-file-invoice"></i> تحويل إلى فاتورة مبيعات</button>
+                    </form>
+                    <form method="POST" action="{% url 'sales_orders:so_cancel' pk=order.pk %}" style="display:inline"
+                          onsubmit="return confirm('هل تريد إلغاء أمر البيع؟')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm ms-1"><i class="fas fa-times"></i> إلغاء</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>المنتج</th>
+                            <th>الكمية</th>
+                            <th>سعر البيع</th>
+                            <th>الكمية المفوترة</th>
+                            <th>المتبقي</th>
+                            <th>الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>{{ line.product.name }}</td>
+                            <td>{{ line.quantity }}</td>
+                            <td>{{ line.unit_price|floatformat:2 }}</td>
+                            <td>{{ line.invoiced_quantity }}</td>
+                            <td>{{ line.remaining_quantity }}</td>
+                            <td>{{ line.line_total|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-info-circle"></i> ملخص أمر البيع</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>العميل:</th><td>{{ order.customer.name }}</td></tr>
+                    <tr><th>التاريخ:</th><td>{{ order.date|date:"d/m/Y" }}</td></tr>
+                    {% if order.expected_date %}
+                    <tr><th>التسليم المتوقع:</th><td>{{ order.expected_date|date:"d/m/Y" }}</td></tr>
+                    {% endif %}
+                    <tr><th>أنشئ بواسطة:</th><td>{{ order.created_by|default:"-" }}</td></tr>
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr><th>الإجمالي:</th><th class="text-primary">{{ order.subtotal|floatformat:2 }} ج.م</th></tr>
+                    <tr><th>المتبقي فوترة:</th><td>{{ order.remaining_to_invoice }}</td></tr>
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr>
+                        <th>الحالة:</th>
+                        <td>
+                            {% if order.status == 'draft' %}<span class="badge bg-secondary">مسودة</span>
+                            {% elif order.status == 'confirmed' %}<span class="badge bg-primary">مؤكد</span>
+                            {% elif order.status == 'invoiced' %}<span class="badge bg-success">مفوتر</span>
+                            {% elif order.status == 'cancelled' %}<span class="badge bg-danger">ملغي</span>{% endif %}
+                        </td>
+                    </tr>
+                </table>
+                {% if order.notes %}
+                <div class="mt-2"><strong>ملاحظات:</strong><br>{{ order.notes|linebreaksbr }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'base/base.html' %}
+{% load humanize %}
+
+{% block title %}الموازنات{% endblock %}
+{% block page_title %}الموازنات{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #1565c0, #0d47a1);">
+            <h3>{{ total_budgeted|intcomma }}</h3>
+            <p>المخطط</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #2e7d32, #1b5e20);">
+            <h3>{{ total_actual|intcomma }}</h3>
+            <p>الفعلي</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #e65100, #bf360c);">
+            <h3>{{ budgets|length }}</h3>
+            <p>عدد الموازنات</p>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <a href="{% url 'budget:budget_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة موازنة</a>
+    <a href="{% url 'budget:cost_center_list' %}" class="btn btn-outline-secondary"><i class="fas fa-sitemap"></i> مراكز التكلفة</a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white"><i class="fas fa-chart-bar"></i> قائمة الموازنات</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>الاسم</th><th>الحساب</th><th>الفترة</th><th>المخطط</th><th>الفعلي</th><th>الانحراف %</th><th>الحالة</th></tr></thead>
+            <tbody>
+                {% for b in budgets %}
+                <tr>
+                    <td><strong>{{ b.name }}</strong></td>
+                    <td>{{ b.account }}</td>
+                    <td>{{ b.get_period_display }} {{ b.year }}</td>
+                    <td>{{ b.budgeted_amount|intcomma }}</td>
+                    <td>{{ b.actual_amount|intcomma }}</td>
+                    <td>
+                        {% if b.variance_percent > 100 %}
+                            <span class="text-danger">{{ b.variance_percent }}%</span>
+                        {% elif b.variance_percent > 80 %}
+                            <span class="text-warning">{{ b.variance_percent }}%</span>
+                        {% else %}
+                            <span class="text-success">{{ b.variance_percent }}%</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge bg-{% if b.status == 'active' %}success{% elif b.status == 'draft' %}secondary{% else %}dark{% endif %}">{{ b.get_status_display }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-4 text-muted">لا توجد موازنات بعد</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

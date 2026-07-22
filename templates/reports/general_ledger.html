@@ -1,0 +1,74 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}دفتر الأستاذ العام{% endblock %}
+{% block page_title %}دفتر الأستاذ العام{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/print.css' %}" rel="stylesheet">
+<style>
+    @media screen { .print-header-wrapper, .print-footer-wrapper { display: none; } }
+    @media print { .print-header-wrapper, .print-footer-wrapper { display: block !important; } }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'components/print_header.html' with doc_title='دفتر الأستاذ العام' doc_date=date_to %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between flex-wrap gap-2">
+        <span><i class="fas fa-book"></i> دفتر الأستاذ العام</span>
+        <form method="get" class="d-flex gap-2 flex-wrap">
+            <select name="account" class="form-select form-select-sm" style="width:220px">
+                <option value="">جميع الحسابات</option>
+                {% for a in accounts %}
+                <option value="{{ a.id }}" {% if selected_account == a.id|stringformat:"s" %}selected{% endif %}>{{ a.code }} - {{ a.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> عرض</button>
+            <a href="{% url 'reports:export_report' 'general-ledger' %}?account={{ selected_account }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&format=excel" class="btn btn-success btn-sm"><i class="fas fa-file-excel"></i> إكسل</a>
+            <a href="{% url 'reports:export_report' 'general-ledger' %}?account={{ selected_account }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&format=pdf" class="btn btn-danger btn-sm"><i class="fas fa-file-pdf"></i> PDF</a>
+        </form>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>التاريخ</th>
+                    <th>رقم القيد</th>
+                    <th>الحساب</th>
+                    <th>البيان</th>
+                    <th>مدين</th>
+                    <th>دائن</th>
+                    <th>الرصيد</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in ledger %}
+                <tr>
+                    <td>{{ row.date|date:"d/m/Y" }}</td>
+                    <td>{{ row.entry_number }}</td>
+                    <td>{{ row.account_code }} - {{ row.account_name }}</td>
+                    <td>{{ row.description }}</td>
+                    <td class="text-danger">{{ row.debit|floatformat:2 }}</td>
+                    <td class="text-success">{{ row.credit|floatformat:2 }}</td>
+                    <td class="fw-bold">{{ row.balance|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted">لا توجد قيود مرحلة في هذه الفترة</td></tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="table-dark">
+                    <th colspan="4">الإجمالي</th>
+                    <th class="text-danger">{{ total_debit|floatformat:2 }}</th>
+                    <th class="text-success">{{ total_credit|floatformat:2 }}</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% include 'components/print_footer.html' %}
+{% endblock %}

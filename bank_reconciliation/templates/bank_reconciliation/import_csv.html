@@ -1,0 +1,60 @@
+{% extends "base/base.html" %}
+
+{% block title %}استيراد كشف حساب بنكي{% endblock %}
+{% block page_title %}استيراد كشف حساب من CSV أو Excel{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <a href="{% url 'bank_reconciliation:item_list' %}" class="btn-back"><i class="fas fa-arrow-right"></i> العودة</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white"><i class="fas fa-file-csv"></i> استيراد كشف حساب بنكي (CSV أو Excel)</div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>صيغة الملف المطلوبة:</strong> ملف CSV أو Excel يحتوي على الأعمدة التالية:
+            <code>date</code> (التاريخ), <code>description</code> (الوصف), <code>reference</code> (المرجع - اختياري), 
+            <code>debit</code> (المدين), <code>credit</code> (الدائن).
+            <br>يمكن استخدام الأسماء العربية: <code>التاريخ, الوصف, المرجع, المدين, الدائن</code>
+            <br>التواريخ بصيغة: <code>YYYY-MM-DD</code> أو <code>DD/MM/YYYY</code>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">البنك *</label>
+                    <select name="bank_account" class="form-select" required>
+                        <option value="">اختر البنك</option>
+                        {% for bank in banks %}
+                        <option value="{{ bank.pk }}">{{ bank.name }} - {{ bank.account_number|default:"" }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">ملف CSV أو Excel *</label>
+                    <input type="file" name="csv_file" class="form-control" accept=".csv,.txt,.xlsx,.xls" required>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> استيراد</button>
+                <a href="{% url 'bank_reconciliation:item_list' %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header"><i class="fas fa-file-alt"></i> مثال على صيغة CSV</div>
+    <div class="card-body">
+        <pre class="bg-dark text-light p-3 rounded" style="direction:ltr; text-align:left;">date,description,reference,debit,credit
+2026-01-15,Transfer from client INV-001,REF-001,0,50000
+2026-01-16,Office rent payment,REF-002,12000,0
+2026-01-17,Bank charges,REF-003,150,0
+2026/01/20,Client payment,INV-005,0,75000</pre>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}إيصالات استلام البضاعة{% endblock %}
+{% block page_title %}قائمة إيصالات استلام البضاعة{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-truck-loading"></i> إيصالات استلام البضاعة</span>
+        <a href="{% url 'goods_received:grn_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> إيصال استلام جديد
+        </a>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">كل الحالات</option>
+                    <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>مسودة</option>
+                    <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>مؤكد</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-secondary"><i class="fas fa-filter"></i> تصفية</button>
+                <a href="{% url 'goods_received:grn_list' %}" class="btn btn-light">إعادة تعيين</a>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>رقم الإيصال</th>
+                        <th>المورد</th>
+                        <th>أمر الشراء</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                        <th>الإجمالي</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for n in notes %}
+                    <tr>
+                        <td>{{ n.grn_number }}</td>
+                        <td>{{ n.supplier.name }}</td>
+                        <td>{% if n.purchase_order %}{{ n.purchase_order.order_number }}{% else %}-{% endif %}</td>
+                        <td>{{ n.date|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if n.status == 'draft' %}<span class="badge bg-secondary">مسودة</span>
+                            {% elif n.status == 'confirmed' %}<span class="badge bg-success">مؤكد</span>{% endif %}
+                        </td>
+                        <td>{{ n.subtotal|floatformat:2 }} ج.م</td>
+                        <td>
+                            <a href="{% url 'goods_received:grn_detail' pk=n.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center">لا توجد إيصالات استلام</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if notes.has_other_pages %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if notes.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ notes.previous_page_number }}">السابق</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">صفحة {{ notes.number }} من {{ notes.paginator.num_pages }}</span></li>
+                {% if notes.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ notes.next_page_number }}">التالي</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% if page.has_other_pages %}
+<nav>
+    <ul class="pagination justify-content-center">
+        {% if page.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page.previous_page_number }}{% for k, v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}">السابق</a></li>
+        {% endif %}
+        {% for num in page.paginator.page_range %}
+        <li class="page-item {% if page.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}{% for k, v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}">{{ num }}</a>
+        </li>
+        {% endfor %}
+        {% if page.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page.next_page_number }}{% for k, v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}">التالي</a></li>
+        {% endif %}
+    </ul>
+    <p class="text-center text-muted"><small>صفحة {{ page.number }} من {{ page.paginator.num_pages }} | إجمالي: {{ page.paginator.count }} سجل</small></p>
+</nav>
+{% endif %}

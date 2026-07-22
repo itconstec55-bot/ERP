@@ -1,0 +1,52 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل حركة المخزون{% endblock %}
+{% block page_title %}حركة: {{ movement.movement_number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-exchange-alt"></i> تفاصيل الحركة
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>رقم الحركة:</th><td>{{ movement.movement_number }}</td></tr>
+                    <tr><th>التاريخ:</th><td>{{ movement.date|date:"d/m/Y" }}</td></tr>
+                    <tr><th>نوع الحركة:</th>
+                        <td>
+                            {% if movement.movement_type == 'in' %}
+                            <span class="badge bg-success">وارد</span>
+                            {% elif movement.movement_type == 'out' %}
+                            <span class="badge bg-danger">صادر</span>
+                            {% elif movement.movement_type == 'transfer' %}
+                            <span class="badge bg-info">تحويل</span>
+                            {% elif movement.movement_type == 'adjustment' %}
+                            <span class="badge bg-warning">تسوية</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ movement.get_movement_type_display }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr><th>المخزن:</th><td>{{ movement.warehouse }}</td></tr>
+                    {% if movement.to_warehouse %}
+                    <tr><th>إلى مخزن:</th><td>{{ movement.to_warehouse }}</td></tr>
+                    {% endif %}
+                    <tr><th>المنتج:</th><td>{{ movement.product }}</td></tr>
+                    <tr><th>الكمية:</th><td><strong>{{ movement.quantity|floatformat:0 }}</strong></td></tr>
+                    <tr><th>تكلفة الوحدة:</th><td>{% if can_view_prices %}{{ movement.unit_cost|floatformat:2 }} ج.م{% else %}••••{% endif %}</td></tr>
+                    <tr><th>التكلفة الإجمالية:</th><td>{% if can_view_prices %}{{ movement.total_cost|floatformat:2 }} ج.م{% else %}••••{% endif %}</td></tr>
+                    {% if movement.reference_number %}
+                    <tr><th>رقم المرجع:</th><td>{{ movement.reference_number }}</td></tr>
+                    {% endif %}
+                    <tr><th>بواسطة:</th><td>{{ movement.performed_by|default:"-" }}</td></tr>
+                    {% if movement.notes %}
+                    <tr><th>ملاحظات:</th><td>{{ movement.notes }}</td></tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

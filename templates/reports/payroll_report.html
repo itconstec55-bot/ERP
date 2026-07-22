@@ -1,0 +1,84 @@
+{% extends "base/base.html" %}
+
+{% block title %}تقرير الرواتب{% endblock %}
+{% block page_title %}تقرير الرواتب - {{ year }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-money-bill-wave"></i> تقرير الرواتب</span>
+        <form method="get" class="d-flex gap-2">
+            <select name="year" class="form-select form-select-sm" style="width:auto">
+                {% for y in years %}
+                <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white"><div class="card-body text-center">
+                    <h6>إجمالي الرواتب الأساسية</h6><h4>{{ total_salaries.total_basic|default:0|floatformat:2 }} ج.م</h4>
+                </div></div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white"><div class="card-body text-center">
+                    <h6>البدلات والإضافي والمكافآت</h6><h4>{{ total_salaries.total_allowances|default:0|add:total_salaries.total_overtime|default:0|add:total_salaries.total_bonus|default:0|floatformat:2 }} ج.م</h4>
+                </div></div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white"><div class="card-body text-center">
+                    <h6>الخصومات والإ Deductions</h6><h4>{{ total_salaries.total_deductions|default:0|add:total_salaries.total_social_insurance|default:0|add:total_salaries.total_income_tax|default:0|floatformat:2 }} ج.م</h4>
+                </div></div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white"><div class="card-body text-center">
+                    <h6>صافي الرواتب</h6><h4>{{ total_salaries.total_net|default:0|floatformat:2 }} ج.م</h4>
+                </div></div>
+            </div>
+        </div>
+
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>الموظف</th><th>الشهر</th><th>الأساسي</th><th>البدلات</th>
+                    <th>الإضافي</th><th>المكافآت</th><th>الخصومات</th><th>التأمين</th>
+                    <th>الضريبة</th><th>الصافي</th><th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sal in salaries %}
+                <tr>
+                    <td>{{ sal.employee.full_name }}</td>
+                    <td>{{ sal.get_month_display }} {{ sal.year }}</td>
+                    <td>{{ sal.basic_salary|floatformat:2 }}</td>
+                    <td>{{ sal.allowances|floatformat:2 }}</td>
+                    <td>{{ sal.overtime|floatformat:2 }}</td>
+                    <td>{{ sal.bonus|floatformat:2 }}</td>
+                    <td class="text-danger">{{ sal.deductions|floatformat:2 }}</td>
+                    <td class="text-danger">{{ sal.social_insurance|floatformat:2 }}</td>
+                    <td class="text-danger">{{ sal.income_tax|floatformat:2 }}</td>
+                    <td class="text-success"><strong>{{ sal.net_salary|floatformat:2 }}</strong></td>
+                    <td>{% if sal.is_paid %}<span class="badge bg-success">مدفوع</span>{% else %}<span class="badge bg-warning">معلق</span>{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="11" class="text-center text-muted">لا توجد رواتب في {{ year }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="mt-3">
+            <strong>ملاحظات وفقاً للقانون المصري:</strong>
+            <ul>
+                <li>الحد الأدنى للرواتب: 6,000 ج.م شهرياً (2024)</li>
+                <li>التأمين الاجتماعي: 11% (7% صاحب عمل + 4% موظف)</li>
+                <li>ضريبة الدخل: تتراوح من 0% إلى 25% حسب الشريحة</li>
+                <li>الحد المعفي من الضريبة: 21,000 ج.م شهرياً</li>
+                <li>بدل النقل والسكن والاطعام خاضع للنسبة القانونية</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

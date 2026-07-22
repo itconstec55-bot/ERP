@@ -1,0 +1,159 @@
+{% extends "base/base.html" %}
+
+{% block title %}نتائج تحليل الخطأ{% endblock %}
+{% block page_title %}نتائج تحليل الخطأ المحاسبي{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        {% if result.error %}
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-exclamation-triangle"></i> ملخص الخطأ
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>{{ result.error.title }}</h5>
+                        <p>{{ result.error.description }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr><th>النوع:</th><td>{{ result.error.error_type }}</td></tr>
+                            <tr><th>الشدة:</th><td>{{ result.error.get_severity_display }}</td></tr>
+                            <tr><th>رقم المرجع:</th><td>{{ result.error.reference_number|default:"-" }}</td></tr>
+                            <tr><th>المبلغ:</th><td>{{ result.error.amount }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if result.standards_check %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-gavel"></i> التحقق من المعايير المحاسبية
+            </div>
+            <div class="card-body">
+                {% if result.standards_check.applicable_standards %}
+                <h6>المعايير المطبقة:</h6>
+                <ul>
+                    {% for standard in result.standards_check.applicable_standards %}
+                    <li><strong>{{ standard.name }}:</strong> {{ standard.description }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if result.standards_check.violations %}
+                <div class="alert alert-danger">
+                    <strong>مخالفات:</strong>
+                    <ul class="mb-0">
+                        {% for v in result.standards_check.violations %}
+                        <li>{{ v.standard }}: {{ v.description }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if result.standards_check.warnings %}
+                <div class="alert alert-warning">
+                    <strong>تحذيرات:</strong>
+                    <ul class="mb-0">
+                        {% for w in result.standards_check.warnings %}
+                        <li>{{ w.standard }}: {{ w.description }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if result.solutions %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-lightbulb"></i> الحلول المقترحة
+            </div>
+            <div class="card-body">
+                {% for solution in result.solutions %}
+                <div class="card mb-3 {% if solution.priority == 1 %}border-success{% elif solution.priority == 2 %}border-warning{% else %}border-secondary{% endif %}">
+                    <div class="card-header d-flex justify-content-between">
+                        <span>
+                            {% if solution.priority == 1 %}
+                                <span class="badge bg-success">الأولى</span>
+                            {% elif solution.priority == 2 %}
+                                <span class="badge bg-warning">البديل</span>
+                            {% else %}
+                                <span class="badge bg-secondary">احتياطي</span>
+                            {% endif %}
+                            {{ solution.title }}
+                        </span>
+                        <span class="badge bg-{% if solution.risk_level == 'low' %}success{% elif solution.risk_level == 'medium' %}warning{% else %}danger{% endif %}">
+                            مخاطرة: {{ solution.get_risk_level_display }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <p>{{ solution.description }}</p>
+
+                        {% if solution.steps %}
+                        <h6>الخطوات:</h6>
+                        <ol>
+                            {% for step in solution.steps %}
+                            <li>{{ step }}</li>
+                            {% endfor %}
+                        </ol>
+                        {% endif %}
+
+                        {% if solution.financial_impact %}
+                        <div class="alert alert-info">
+                            <strong>التأثير المحاسبي:</strong> {{ solution.financial_impact }}
+                        </div>
+                        {% endif %}
+
+                        <button class="btn btn-sm btn-outline-primary apply-solution" data-id="{{ solution.id }}">
+                            <i class="fas fa-check"></i> تطبيق الحل
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="text-start">
+            <a href="{% url 'ai_analysis:analyze_error' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> تحليل خطأ جديد
+            </a>
+            <a href="{% url 'ai_analysis:dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-home"></i> لوحة التحكم
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.apply-solution').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const id = this.dataset.id;
+        if (confirm('هل تريد تطبيق هذا الحل؟')) {
+            fetch(`/ai/solution/${id}/apply/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'success') {
+                    alert('تم تطبيق الحل بنجاح');
+                    location.reload();
+                } else {
+                    alert('خطأ: ' + data.message);
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

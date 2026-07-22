@@ -1,0 +1,105 @@
+{% extends 'base/base.html' %}
+
+{% block title %}إعدادات النسخ الاحتياطي{% endblock %}
+{% block page_title %}إعدادات النسخ الاحتياطي{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-cog"></i> إعدادات النسخ الاحتياطي
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            {{ form.auto_backup_enabled }}
+                            <label class="form-check-label" for="{{ form.auto_backup_enabled.id_for_label }}">
+                                تفعيل النسخ التلقائي
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">فترة النسخ (ساعات)</label>
+                        {{ form.backup_interval_hours }}
+                        <small class="text-muted">كل كام ساعة يتم عمل نسخة تلقائية</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">الحد الأقصى للنسخ المحفوظة</label>
+                        {{ form.max_backups }}
+                        <small class="text-muted">النسخ الأقدم يتم حذفها تلقائياً</small>
+                    </div>
+
+                    <hr>
+
+                    <h6>ماذا يتم نسخه:</h6>
+
+                    <div class="mb-2">
+                        <div class="form-check">
+                            {{ form.backup_database }}
+                            <label class="form-check-label" for="{{ form.backup_database.id_for_label }}">
+                                <i class="fas fa-database text-primary"></i> قاعدة البيانات
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="form-check">
+                            {{ form.backup_media }}
+                            <label class="form-check-label" for="{{ form.backup_media.id_for_label }}">
+                                <i class="fas fa-folder-open text-success"></i> الملفات المرفقة (الصور والمستندات)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.backup_source }}
+                            <label class="form-check-label" for="{{ form.backup_source.id_for_label }}">
+                                <i class="fas fa-code text-warning"></i> الملفات المصدرية (الكود والقوالب)
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-save"></i> حفظ الإعدادات
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-info-circle"></i> معلومات النسخ الاحتياطي
+            </div>
+            <div class="card-body">
+                <h6 class="text-success"><i class="fas fa-database"></i> DB + Media (بيانات)</h6>
+                <p class="text-muted small">يحتوي على قاعدة البيانات بالكامل + جميع الملفات المرفقة (الصور والمستندات). هذا النوع هو الأنسب للاسترجاع السريع.</p>
+
+                <h6 class="text-primary"><i class="fas fa-archive"></i> نسخة كاملة (الكل)</h6>
+                <p class="text-muted small">يحتوي على كل شيء: قاعدة البيانات + الملفات + الكود المصدري + القوالب + إعدادات النظام. مفيد للنقل إلى سيرفر آخر.</p>
+
+                <h6 class="text-warning"><i class="fas fa-code"></i> تصدير JSON</h6>
+                <p class="text-muted small">تصدير نصي لبيانات قاعدة البيانات فقط. مفيد للتعديل اليدوي أو النقل بين أنظمة مختلفة.</p>
+
+                <hr>
+
+                <h6><i class="fas fa-lightbulb text-warning"></i> نصائح:</h6>
+                <ul class="text-muted small">
+                    <li>قم عمل نسخة احتياطية قبل أي تعديل كبير</li>
+                    <li>احتفظ بعدد كافٍ من النسخ (5-10 نسخ كافية)</li>
+                    <li>قم بتحميل النسخة وحفظها في مكان آمن (USB أو سحابة)</li>
+                    <li>اختبر الاسترجاع على بيئة تجريبية أولاً</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

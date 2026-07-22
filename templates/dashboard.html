@@ -1,0 +1,287 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}الرئيسية - نظام المحاسبة{% endblock %}
+{% block page_title %}لوحة التحكم الرئيسية{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #1a237e, #0d47a1);">
+            <i class="fas fa-shopping-cart fa-2x"></i>
+            <h3>{{ total_purchases_month|floatformat:0|intcomma }}</h3>
+            <p>مشتريات الشهر (ج.م)</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #1b5e20, #2e7d32);">
+            <i class="fas fa-cash-register fa-2x"></i>
+            <h3>{{ total_sales_month|floatformat:0|intcomma }}</h3>
+            <p>مبيعات الشهر (ج.م)</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #e65100, #f57c00);">
+            <i class="fas fa-chart-line fa-2x"></i>
+            <h3>{{ total_profit_month|floatformat:0|intcomma }}</h3>
+            <p>الربح الشهر (ج.م)</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #b71c1c, #c62828);">
+            <i class="fas fa-receipt fa-2x"></i>
+            <h3>{{ vat_net|floatformat:0|intcomma }}</h3>
+            <p>صافي VAT الشهر (ج.م)</p>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-university fa-2x text-primary"></i>
+                <h4 class="mt-2">{{ total_bank_balance|floatformat:0|intcomma }}</h4>
+                <p class="text-muted mb-0">أرصدة البنوك</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-lock fa-2x text-success"></i>
+                <h4 class="mt-2">{{ total_safe_balance|floatformat:0|intcomma }}</h4>
+                <p class="text-muted mb-0">أرصدة الخزائن</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x text-info"></i>
+                <h4 class="mt-2">{{ total_receivables|floatformat:0|intcomma }}</h4>
+                <p class="text-muted mb-0">المدينون (عملاء)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-truck fa-2x text-warning"></i>
+                <h4 class="mt-2">{{ total_payables|floatformat:0|intcomma }}</h4>
+                <p class="text-muted mb-0">الدائنون (موردين)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3"><div class="card"><div class="card-body text-center"><i class="fas fa-truck fa-2x text-primary"></i><h3>{{ suppliers_count }}</h3><p class="text-muted mb-0">الموردين</p></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body text-center"><i class="fas fa-users fa-2x text-success"></i><h3>{{ customers_count }}</h3><p class="text-muted mb-0">العملاء</p></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body text-center"><i class="fas fa-id-badge fa-2x text-info"></i><h3>{{ employees_count }}</h3><p class="text-muted mb-0">الموظفين</p></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body text-center"><i class="fas fa-boxes fa-2x text-warning"></i><h3>{{ products_count }}</h3><p class="text-muted mb-0">المنتجات</p></div></div></div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-chart-bar"></i> مقارنة المبيعات والمشتريات (آخر 6 أشهر)</div>
+            <div class="card-body">
+                <canvas id="salesChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-warning text-dark"><i class="fas fa-exclamation-triangle"></i> تنبيهات</div>
+            <div class="card-body">
+                {% if overdue_count %}
+                <div class="alert alert-danger py-2 mb-2"><i class="fas fa-clock"></i> {{ overdue_count }} فاتورة متأخرة الدفع</div>
+                {% endif %}
+                {% if low_stock_count %}
+                <div class="alert alert-warning py-2 mb-2"><i class="fas fa-box"></i> {{ low_stock_count }} منتج مخزونه منخفض</div>
+                {% endif %}
+                {% if overdue_ap_count %}
+                <div class="alert alert-info py-2 mb-2"><i class="fas fa-truck"></i> {{ overdue_ap_count }} فاتورة مشتريات متأخرة</div>
+                {% endif %}
+                {% if not overdue_count and not low_stock_count and not overdue_ap_count %}
+                <div class="text-center text-muted py-4"><i class="fas fa-check-circle fa-3x text-success mb-2"></i><p>لا توجد تنبيهات حالياً</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-chart-pie"></i> توزيع المشتريات والمبيعات</div>
+            <div class="card-body"><canvas id="pieChart" height="150"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white"><i class="fas fa-chart-line"></i> أرباح الشهر</div>
+            <div class="card-body">
+                <div class="text-center py-3">
+                    <h2 class="text-success">{{ total_profit_month|floatformat:0|intcomma }} <small class="text-muted">ج.م</small></h2>
+                    {% if total_sales_month %}
+                    <p class="text-muted">هامش الربح: {{ profit_margin|floatformat:1 }}%</p>
+                    {% endif %}
+                    <div class="row mt-3">
+                        <div class="col-6"><div class="border rounded p-2"><strong class="text-primary">{{ total_sales_today|floatformat:0|intcomma }}</strong><br><small>مبيعات اليوم</small></div></div>
+                        <div class="col-6"><div class="border rounded p-2"><strong class="text-success">{{ total_purchases_today|floatformat:0|intcomma }}</strong><br><small>مشتريات اليوم</small></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-shopping-cart"></i> آخر فواتير المشتريات</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>رقم</th><th>المورد</th><th>التاريخ</th><th>الإجمالي</th></tr></thead>
+                    <tbody>
+                        {% for inv in recent_purchases %}
+                        <tr><td><a href="{% url 'purchases:invoice_detail' inv.pk %}">{{ inv.invoice_number }}</a></td><td>{{ inv.supplier.name }}</td><td>{{ inv.date|date:"d/m/Y" }}</td><td>{{ inv.total_amount|floatformat:2|intcomma }}</td></tr>
+                        {% empty %}<tr><td colspan="4" class="text-center text-muted">لا توجد فواتير</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white"><i class="fas fa-cash-register"></i> آخر فواتير المبيعات</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>رقم</th><th>العميل</th><th>التاريخ</th><th>الإجمالي</th></tr></thead>
+                    <tbody>
+                        {% for inv in recent_sales %}
+                        <tr><td><a href="{% url 'sales:invoice_detail' inv.pk %}">{{ inv.invoice_number }}</a></td><td>{{ inv.customer.name }}</td><td>{{ inv.date|date:"d/m/Y" }}</td><td>{{ inv.total_amount|floatformat:2|intcomma }}</td></tr>
+                        {% empty %}<tr><td colspan="4" class="text-center text-muted">لا توجد فواتير</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 7: Top Customers Debt + Top Suppliers Debt + Assets + Pending Approvals -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-user-tie"></i> أكبر العملاء المدينين</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>الاسم</th><th>الرصيد</th></tr></thead>
+                    <tbody>
+                        {% for c in top_customers_debt %}
+                        <tr><td>{{ c.name }}</td><td class="text-danger">{{ c.current_balance|floatformat:2|intcomma }} ج.م</td></tr>
+                        {% empty %}<tr><td colspan="2" class="text-center text-muted">لا توجد أرصدة مستحقة</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header bg-danger text-white"><i class="fas fa-truck"></i> أكبر الموردين المدينين</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>الاسم</th><th>الرصيد</th></tr></thead>
+                    <tbody>
+                        {% for s in top_suppliers_debt %}
+                        <tr><td>{{ s.name }}</td><td class="text-danger">{{ s.current_balance|floatformat:2|intcomma }} ج.م</td></tr>
+                        {% empty %}<tr><td colspan="2" class="text-center text-muted">لا توجد أرصدة مستحقة</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-building fa-2x text-success"></i>
+                <h3 class="mt-2">{{ assets_count }}</h3>
+                <p class="text-muted mb-0">الأصول النشطة</p>
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-body text-center">
+                <i class="fas fa-hourglass-half fa-2x text-warning"></i>
+                <h3 class="mt-2">{{ pending_approvals_pi }}</h3>
+                <p class="text-muted mb-0">مشتريات بانتظار الاعتماد</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-hourglass-half fa-2x text-info"></i>
+                <h3 class="mt-2">{{ pending_approvals_si }}</h3>
+                <p class="text-muted mb-0">مبيعات بانتظار الاعتماد</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 8: Recent Journal Entries -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white"><i class="fas fa-book"></i> آخر القيود اليومية</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>الرقم</th><th>التاريخ</th><th>الوصف</th><th>أُنشأ بواسطة</th></tr></thead>
+                    <tbody>
+                        {% for entry in recent_journal_entries %}
+                        <tr>
+                            <td>{{ entry.entry_number }}</td>
+                            <td>{{ entry.date|date:"d/m/Y" }}</td>
+                            <td>{{ entry.description|truncatewords:10 }}</td>
+                            <td>{{ entry.created_by|default:"-" }}</td>
+                        </tr>
+                        {% empty %}<tr><td colspan="4" class="text-center text-muted">لا توجد قيود يومية</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/chart.js/chart.umd.min.js' %}"></script>
+<script>
+var labels = {{ chart_labels|safe }};
+var salesData = {{ chart_sales|safe }};
+var purchasesData = {{ chart_purchases|safe }};
+
+new Chart(document.getElementById('salesChart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [
+            { label: 'المبيعات', data: salesData, backgroundColor: 'rgba(46, 125, 50, 0.7)', borderColor: '#1b5e20', borderWidth: 1 },
+            { label: 'المشتريات', data: purchasesData, backgroundColor: 'rgba(26, 35, 126, 0.7)', borderColor: '#1a237e', borderWidth: 1 }
+        ]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
+});
+
+new Chart(document.getElementById('pieChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['المبيعات', 'المشتريات', 'الربح'],
+        datasets: [{ data: [{{ total_sales_month|default:0 }}, {{ total_purchases_month|default:0 }}, {{ total_profit_month|default:0 }}], backgroundColor: ['#2e7d32', '#1a237e', '#e65100'] }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+</script>
+{% endblock %}

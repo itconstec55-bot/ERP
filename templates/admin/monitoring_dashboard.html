@@ -1,0 +1,270 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}لوحة المراقبة - {{ block.super }}{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+  .metric-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06); padding: 20px; text-align: center; height: 100%; border: 1px solid #e8e8e8; }
+  .metric-card .icon { font-size: 28px; margin-bottom: 8px; }
+  .metric-card .value { font-size: 28px; font-weight: 800; color: #1a237e; }
+  .metric-card .label { font-size: 13px; color: #666; margin-top: 4px; }
+  .metric-card .sub { font-size: 11px; color: #999; }
+  .metric-card .bar { height: 6px; border-radius: 3px; margin-top: 10px; background: #e0e0e0; overflow: hidden; }
+  .metric-card .bar-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+  .bar-green { background: #2e7d32; }
+  .bar-yellow { background: #f57f17; }
+  .bar-red { background: #c62828; }
+
+  .chart-container { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06); padding: 20px; margin-top: 20px; border: 1px solid #e8e8e8; }
+  .chart-container h5 { margin-bottom: 16px; color: #1a237e; font-weight: 700; }
+
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-left: 6px; }
+  .status-ok { background: #2e7d32; }
+  .status-warn { background: #f57f17; }
+  .status-err { background: #c62828; }
+
+  .service-table td { padding: 8px 12px; font-size: 13px; }
+  .service-table th { padding: 8px 12px; font-size: 12px; }
+
+  .refresh-btn { background: #1a237e; color: #fff; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+  .refresh-btn:hover { background: #0d1642; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" dir="rtl">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 style="color:#1a237e;font-weight:800;margin:0">
+      <i class="fas fa-heartbeat" style="color:#c62828;"></i> لوحة المراقبة
+    </h3>
+    <div>
+      <span id="lastUpdate" style="font-size:12px;color:#999;margin-left:12px;"></span>
+      <button class="refresh-btn" onclick="refreshAll()"><i class="fas fa-sync-alt"></i> تحديث</button>
+    </div>
+  </div>
+
+  <!-- Metric Cards -->
+  <div class="row" id="metricCards">
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="metric-card">
+        <div class="icon">&#128200;</div>
+        <div class="value" id="cpuValue">--</div>
+        <div class="label">وحدة المعالجة (CPU)</div>
+        <div class="bar"><div class="bar-fill" id="cpuBar" style="width:0%"></div></div>
+        <div class="sub" id="cpuCores"></div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="metric-card">
+        <div class="icon">&#128190;</div>
+        <div class="value" id="memValue">--</div>
+        <div class="label">الذاكرة (RAM)</div>
+        <div class="bar"><div class="bar-fill" id="memBar" style="width:0%"></div></div>
+        <div class="sub" id="memDetail"></div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="metric-card">
+        <div class="icon">&#128190;</div>
+        <div class="value" id="diskValue">--</div>
+        <div class="label">القرص الصلب</div>
+        <div class="bar"><div class="bar-fill" id="diskBar" style="width:0%"></div></div>
+        <div class="sub" id="diskDetail"></div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="metric-card">
+        <div class="icon">&#9201;</div>
+        <div class="value" id="uptimeValue">--</div>
+        <div class="label">مدة التشغيل</div>
+        <div class="sub" id="processInfo"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row">
+    <div class="col-md-8">
+      <div class="chart-container">
+        <h5><i class="fas fa-chart-area"></i> أداء النظام — آخر 60 دقيقة</h5>
+        <canvas id="metricsChart" height="220"></canvas>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="chart-container">
+        <h5><i class="fas fa-info-circle"></i> حالة الخدمة</h5>
+        <table class="service-table" style="width:100%">
+          <tr><th>المؤشر</th><th>القيمة</th></tr>
+          <tr><td>حالة الخدمة</td><td id="serviceStatus"><span class="status-dot status-ok"></span> نشط</td></tr>
+          <tr><td>آخر فحص</td><td id="lastCheck">--</td></tr>
+          <tr><td>آخر تشغيل صحي</td><td id="lastHealthy">--</td></tr>
+          <tr><td>آخر إعادة تشغيل</td><td id="lastRestart">--</td></tr>
+          <tr><td>إعادة التشغيل الكلي</td><td id="totalRestarts">0</td></tr>
+          <tr><td>الفشل المتتالي</td><td id="consecutiveFailures">0</td></tr>
+        </table>
+      </div>
+      <div class="chart-container" style="margin-top:16px">
+        <h5><i class="fas fa-cube"></i> معلومات النظام</h5>
+        <table class="service-table" style="width:100%">
+          <tr><th>العنصر</th><th>القيمة</th></tr>
+          <tr><td>الخادم</td><td id="sysHostname">--</td></tr>
+          <tr><td>المنصة</td><td id="sysPlatform">--</td></tr>
+          <tr><td>Python</td><td id="sysPython">--</td></tr>
+          <tr><td>قاعدة البيانات</td><td id="dbInfo">--</td></tr>
+          <tr><td>PID</td><td id="sysPid">--</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'vendor/chart.js/chart.umd.min.js' %}"></script>
+<script>
+let metricsChart = null;
+
+function getBarColor(percent) {
+  if (percent < 60) return '#2e7d32';
+  if (percent < 85) return '#f57f17';
+  return '#c62828';
+}
+
+function updateMetricCards(metrics) {
+  // CPU
+  const cpu = metrics.cpu.percent;
+  document.getElementById('cpuValue').textContent = cpu + '%';
+  document.getElementById('cpuBar').style.width = cpu + '%';
+  document.getElementById('cpuBar').className = 'bar-fill ' + (cpu < 60 ? 'bar-green' : cpu < 85 ? 'bar-yellow' : 'bar-red');
+  document.getElementById('cpuCores').textContent = metrics.cpu.cores_logical + ' نواة';
+
+  // Memory
+  const mem = metrics.memory.percent;
+  document.getElementById('memValue').textContent = mem + '%';
+  document.getElementById('memBar').style.width = mem + '%';
+  document.getElementById('memBar').className = 'bar-fill ' + (mem < 60 ? 'bar-green' : mem < 85 ? 'bar-yellow' : 'bar-red');
+  document.getElementById('memDetail').textContent = metrics.memory.used_mb + ' / ' + metrics.memory.total_mb + ' MB';
+
+  // Disk
+  const disk = metrics.disk.percent;
+  document.getElementById('diskValue').textContent = disk + '%';
+  document.getElementById('diskBar').style.width = disk + '%';
+  document.getElementById('diskBar').className = 'bar-fill ' + (disk < 60 ? 'bar-green' : disk < 85 ? 'bar-yellow' : 'bar-red');
+  document.getElementById('diskDetail').textContent = metrics.disk.used_gb + ' / ' + metrics.disk.total_gb + ' GB';
+
+  // Uptime
+  document.getElementById('uptimeValue').textContent = metrics.uptime;
+  const proc = metrics.process;
+  document.getElementById('processInfo').textContent = 'PID: ' + proc.pid + ' | ' + (proc.threads || '--') + ' خيط';
+
+  // System info
+  document.getElementById('sysHostname').textContent = metrics.hostname || '--';
+  document.getElementById('sysPlatform').textContent = metrics.platform || '--';
+  document.getElementById('sysPython').textContent = metrics.python_version || '--';
+  document.getElementById('sysPid').textContent = proc.pid || '--';
+  if (metrics.database) {
+    document.getElementById('dbInfo').textContent = metrics.database.engine + ' — ' + metrics.database.size_mb + ' MB';
+  }
+
+  // Last update
+  document.getElementById('lastUpdate').textContent = 'آخر تحديث: ' + new Date().toLocaleTimeString('ar-SA');
+}
+
+function updateServiceStatus(status) {
+  const isHealthy = status.consecutive_failures === 0;
+  document.getElementById('serviceStatus').innerHTML =
+    '<span class="status-dot ' + (isHealthy ? 'status-ok' : 'status-warn') + '"></span> ' +
+    (isHealthy ? 'نشط' : 'غير مستقر');
+  document.getElementById('lastCheck').textContent = status.last_check ? new Date(status.last_check).toLocaleString('ar-SA') : '--';
+  document.getElementById('lastHealthy').textContent = status.last_healthy ? new Date(status.last_healthy).toLocaleString('ar-SA') : '--';
+  document.getElementById('lastRestart').textContent = status.last_restart ? new Date(status.last_restart).toLocaleString('ar-SA') : 'لم يحدث';
+  document.getElementById('totalRestarts').textContent = status.total_restarts || 0;
+  document.getElementById('consecutiveFailures').textContent = status.consecutive_failures || 0;
+}
+
+function updateChart(history) {
+  if (!history || history.length === 0) return;
+
+  const labels = history.map(h => {
+    const d = new Date(h.t);
+    return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+  });
+  const cpuData = history.map(h => h.cpu);
+  const memData = history.map(h => h.mem);
+
+  if (metricsChart) {
+    metricsChart.data.labels = labels;
+    metricsChart.data.datasets[0].data = cpuData;
+    metricsChart.data.datasets[1].data = memData;
+    metricsChart.update();
+    return;
+  }
+
+  const ctx = document.getElementById('metricsChart').getContext('2d');
+  metricsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'CPU %',
+          data: cpuData,
+          borderColor: '#1a237e',
+          backgroundColor: 'rgba(26,35,126,0.08)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 2,
+          borderWidth: 2,
+        },
+        {
+          label: 'RAM %',
+          data: memData,
+          borderColor: '#c62828',
+          backgroundColor: 'rgba(198,40,40,0.08)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 2,
+          borderWidth: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 500 },
+      scales: {
+        y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.05)' } },
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 12, font: { size: 10 } } },
+      },
+      plugins: {
+        legend: { position: 'top', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } },
+      },
+    },
+  });
+}
+
+function refreshAll() {
+  Promise.all([
+    fetch('{% url "monitoring_api_metrics" %}').then(r => r.json()),
+    fetch('{% url "monitoring_api_status" %}').then(r => r.json()),
+    fetch('{% url "monitoring_api_history" %}?hours=1').then(r => r.json()),
+  ]).then(([metrics, status, historyData]) => {
+    updateMetricCards(metrics);
+    updateServiceStatus(status);
+    updateChart(historyData.history);
+  }).catch(err => {
+    console.error('Monitoring fetch error:', err);
+  });
+}
+
+// Auto-refresh every 30 seconds
+setInterval(refreshAll, 30000);
+
+// Initial load
+document.addEventListener('DOMContentLoaded', refreshAll);
+</script>
+{% endblock %}

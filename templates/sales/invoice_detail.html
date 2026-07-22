@@ -1,0 +1,139 @@
+{% extends "base/base.html" %}
+{% load access_tags %}
+
+{% block title %}تفاصيل فاتورة المبيعات{% endblock %}
+{% block page_title %}فاتورة مبيعات: {{ invoice.invoice_number }}{% endblock %}
+
+{% block content %}
+{% if company %}
+<div class="card mb-3 print-header">
+    <div class="card-body py-2">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                {% if company.logo %}
+                <img src="{{ company.logo.url }}" alt="شعار الشركة" style="max-height: 50px;">
+                {% endif %}
+            </div>
+            <div class="col">
+                <h6 class="mb-0">{{ company.name }}</h6>
+                <small class="text-muted">{{ company.address }}{% if company.phone %} | هاتف: {{ company.phone }}{% endif %}{% if company.tax_number %} | ضريبي: {{ company.tax_number }}{% endif %}</small>
+            </div>
+            <div class="col-auto text-start">
+                <small class="text-muted">فاتورة مبيعات</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+<div class="row">
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span><i class="fas fa-cash-register"></i> بنود الفاتورة</span>
+                <div>
+                <a href="{% url 'sales:invoice_print' pk=invoice.pk %}" target="_blank" class="btn-print"><i class="fas fa-print"></i> طباعة</a>
+                {% if invoice.customer.mobile or invoice.customer.phone %}
+                <a href="{% url 'sales:invoice_whatsapp' pk=invoice.pk %}" class="btn btn-success btn-sm ms-2" title="إرسال عبر واتساب">
+                    <i class="fab fa-whatsapp"></i> واتساب
+                </a>
+                {% endif %}
+                {% if invoice.is_tax_invoice %}
+                {% if not invoice.tax_invoices.exists %}
+                <form method="post" action="{% url 'tax_invoices:tax_invoice_create_from_sales' sales_pk=invoice.pk %}" class="d-inline ms-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning btn-sm" title="إرسال لمنظومة الفاتورة الإلكترونية (ETA)"
+                            onclick="return confirm('هل تريد إرسال الفاتورة لمصلحة الضرائب الإلكترونية؟')">
+                        <i class="fas fa-file-invoice"></i> إرسال للضرائب
+                    </button>
+                </form>
+                {% else %}
+                {% with tax_inv=invoice.tax_invoices.first %}
+                <a href="{% url 'tax_invoices:tax_invoice_detail' pk=tax_inv.pk %}" class="btn btn-info btn-sm ms-2" title="عرض الفاتورة الضريبية">
+                    <i class="fas fa-file-invoice"></i> الفاتورة الضريبية
+                </a>
+                {% endwith %}
+                {% endif %}
+                {% endif %}
+                {% if not invoice.is_posted and not invoice.is_approved %}
+                <form method="POST" action="{% url 'sales:invoice_approve' pk=invoice.pk %}" style="display:inline"
+                      onsubmit="return confirm('هل تريد اعتماد هذه الفاتورة؟')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm ms-2">
+                        <i class="fas fa-stamp"></i> اعتماد
+                    </button>
+                </form>
+                {% endif %}
+                {% if not invoice.is_posted %}
+                <form method="POST" action="{% url 'sales:invoice_post' pk=invoice.pk %}" style="display:inline"
+                      onsubmit="return confirm('هل تريد ترحيل هذه الفاتورة وإنشاء القيد المحاسبي؟')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm ms-2" {% if not invoice.is_approved %}disabled title="يجب اعتماد الفاتورة أولاً"{% endif %}>
+                        <i class="fas fa-check"></i> ترحيل
+                    </button>
+                </form>
+                {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr><th>المنتج</th><th>الكمية</th><th>سعر البيع</th><th>التكلفة</th><th>الإجمالي</th><th>الربح</th><th>نسبة الربح %</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>{{ line.product.name }}</td>
+                            <td>{{ line.quantity }}</td>
+                            <td>{{ line.unit_price|floatformat:2|price_mask:can_view_prices }}</td>
+                            <td>{{ line.cost_price|floatformat:2|price_mask:can_view_prices }}</td>
+                            <td>{{ line.total_price|floatformat:2|price_mask:can_view_prices }}</td>
+                            <td class="text-success">{{ line.profit|floatformat:2|price_mask:can_view_prices }}</td>
+                            <td><span class="badge bg-{% if line.profit_margin > 20 %}success{% elif line.profit_margin > 10 %}warning{% else %}danger{% endif %}">{% if can_view_prices %}{{ line.profit_margin|floatformat:1 }}%{% else %}—{% endif %}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header bg-success text-white"><i class="fas fa-info-circle"></i> ملخص الفاتورة</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>العميل:</th><td>{{ invoice.customer.name }} {% if invoice.customer.phone or invoice.customer.mobile %}<a href="https://wa.me/{% if invoice.customer.phone %}{{ invoice.customer.phone }}{% else %}{{ invoice.customer.mobile }}{% endif %}" target="_blank" class="btn btn-sm btn-success ms-1" title="واتساب"><i class="fab fa-whatsapp"></i></a>{% endif %}</td></tr>
+                    <tr><th>التاريخ:</th><td>{{ invoice.date|date:"d/m/Y" }}</td></tr>
+                    <tr><th>فاتورة ضريبية:</th>
+                        <td>{% if invoice.is_tax_invoice %}<span class="badge bg-success">نعم</span>{% else %}<span class="badge bg-secondary">لا</span>{% endif %}</td>
+                    </tr>
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr><th>المبلغ:</th><td>{{ invoice.subtotal|floatformat:2|price_mask:can_view_prices }} ج.م</td></tr>
+                    <tr><th>التكلفة:</th><td>{{ invoice.cost_of_goods|floatformat:2|price_mask:can_view_prices }} ج.م</td></tr>
+                    <tr><th>VAT 14%:</th><td>{{ invoice.vat_amount|floatformat:2|price_mask:can_view_prices }} ج.م</td></tr>
+                    {% if invoice.discount_amount > 0 %}
+                    <tr><th>الخصم على الفاتورة:</th><td class="text-danger">{{ invoice.discount_amount|floatformat:2|price_mask:can_view_prices }} ج.م</td></tr>
+                    {% endif %}
+                    {% if invoice.withholding_tax_amount > 0 %}
+                    <tr><th>الخصم والتحصيل:</th><td class="text-danger">{{ invoice.withholding_tax_amount|floatformat:2|price_mask:can_view_prices }} ج.م <small>({{ invoice.get_withholding_tax_type_display }})</small></td></tr>
+                    {% endif %}
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr><th>الإجمالي:</th><th class="text-primary">{{ invoice.total_amount|floatformat:2|price_mask:can_view_prices }} ج.م</th></tr>
+                    <tr><th>المحصّل:</th><th class="text-success">{{ invoice.paid_amount|floatformat:2|price_mask:can_view_prices }} ج.م</th></tr>
+                    <tr><th>المتبقي:</th><th class="text-danger">{{ invoice.remaining_amount|floatformat:2|price_mask:can_view_prices }} ج.م</th></tr>
+                    <tr><th>الربح:</th><th class="text-success">{{ invoice.gross_profit|floatformat:2|price_mask:can_view_prices }} ج.م</th></tr>
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr><th>الحالة:</th>
+                        <td>{% if invoice.is_posted %}<span class="badge bg-success">مرحل</span>{% elif invoice.is_approved %}<span class="badge bg-info">معتمدة</span>{% else %}<span class="badge bg-secondary">مسودة</span>{% endif %}</td>
+                    </tr>
+                    {% if invoice.is_approved and invoice.approved_by %}
+                    <tr><th>معتمدة بواسطة:</th><td>{{ invoice.approved_by }} <small>({{ invoice.approved_at|date:"d/m/Y H:i" }})</small></td></tr>
+                    {% endif %}
+                    {% if invoice.journal_entry %}
+                    <tr><th>القيد:</th><td><a href="{% url 'accounts:journal_detail' pk=invoice.journal_entry.pk %}">{{ invoice.journal_entry.entry_number }}</a></td></tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

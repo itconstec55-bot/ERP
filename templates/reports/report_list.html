@@ -1,0 +1,218 @@
+{% extends "base/base.html" %}
+
+{% block title %}التقارير{% endblock %}
+{% block page_title %}التقارير المالية والإدارية{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:income_statement' %}" class="text-decoration-none">
+            <div class="card h-100 border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-invoice-dollar fa-3x text-primary"></i>
+                    <h5 class="mt-3">قائمة الدخل</h5>
+                    <p class="text-muted">الأرباح والخسائر</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:balance_sheet' %}" class="text-decoration-none">
+            <div class="card h-100 border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-alt fa-3x text-success"></i>
+                    <h5 class="mt-3">الميزانية العمومية</h5>
+                    <p class="text-muted">الأصول والخصوم وحقوق الملكية</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:trial_balance_report' %}" class="text-decoration-none">
+            <div class="card h-100 border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-balance-scale fa-3x text-info"></i>
+                    <h5 class="mt-3">ميزان المراجعة</h5>
+                    <p class="text-muted">أرصدة الحسابات</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:vat_return' %}" class="text-decoration-none">
+            <div class="card h-100 border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-receipt fa-3x text-warning"></i>
+                    <h5 class="mt-3">إقرار ضريبة القيمة المضافة</h5>
+                    <p class="text-muted">VAT 14%</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:withholding_tax_report' %}" class="text-decoration-none">
+            <div class="card h-100 border-danger">
+                <div class="card-body text-center">
+                    <i class="fas fa-percentage fa-3x text-danger"></i>
+                    <h5 class="mt-3">ضريبة الخصم والتحصيل</h5>
+                    <p class="text-muted">1% / 3% / 5%</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:ar_aging_report' %}" class="text-decoration-none">
+            <div class="card h-100 border-secondary">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-clock fa-3x text-secondary"></i>
+                    <h5 class="mt-3">أعمار الذمم المدينة</h5>
+                    <p class="text-muted">ديون العملاء حسب الأعمار</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:ap_aging_report' %}" class="text-decoration-none">
+            <div class="card h-100 border-dark">
+                <div class="card-body text-center">
+                    <i class="fas fa-truck fa-3x text-dark"></i>
+                    <h5 class="mt-3">أعمار الذمم الدائنة</h5>
+                    <p class="text-muted">ديون الموردين حسب الأعمار</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:customer_statement' %}" class="text-decoration-none">
+            <div class="card h-100 border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-user fa-3x text-primary"></i>
+                    <h5 class="mt-3">كشف حساب العميل</h5>
+                    <p class="text-muted">تفصيلي لكل عميل</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:supplier_statement' %}" class="text-decoration-none">
+            <div class="card h-100 border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-clipboard-list fa-3x text-success"></i>
+                    <h5 class="mt-3">كشف حساب المورد</h5>
+                    <p class="text-muted">تفصيلي لكل مورد</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:daily_sales_report' %}" class="text-decoration-none">
+            <div class="card h-100 border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-day fa-3x text-info"></i>
+                    <h5 class="mt-3">يومية المبيعات</h5>
+                    <p class="text-muted">ملخص يومي بالمبيعات</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:daily_purchases_report' %}" class="text-decoration-none">
+            <div class="card h-100 border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-shopping-cart fa-3x text-warning"></i>
+                    <h5 class="mt-3">يومية المشتريات</h5>
+                    <p class="text-muted">ملخص يومي بالمشتريات</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:inventory_report' %}" class="text-decoration-none">
+            <div class="card h-100 border-danger">
+                <div class="card-body text-center">
+                    <i class="fas fa-warehouse fa-3x text-danger"></i>
+                    <h5 class="mt-3">تقرير المخزون</h5>
+                    <p class="text-muted">أرصدة وحركات المخازن</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:stock_valuation_report' %}" class="text-decoration-none">
+            <div class="card h-100 border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-layer-group fa-3x text-info"></i>
+                    <h5 class="mt-3">تقييم المخزون (FIFO)</h5>
+                    <p class="text-muted">تكلفة FIFO حسب طبقات التكلفة</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:profit_margin_report' %}" class="text-decoration-none">
+            <div class="card h-100 border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-primary"></i>
+                    <h5 class="mt-3">نسب الربح</h5>
+                    <p class="text-muted">ربح الشراء والبيع للمنتجات</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:supplier_report' %}" class="text-decoration-none">
+            <div class="card h-100 border-secondary">
+                <div class="card-body text-center">
+                    <i class="fas fa-truck fa-3x text-secondary"></i>
+                    <h5 class="mt-3">تقرير الموردين</h5>
+                    <p class="text-muted">الأرصدة والمشتريات</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:customer_report' %}" class="text-decoration-none">
+            <div class="card h-100 border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x text-info"></i>
+                    <h5 class="mt-3">تقرير العملاء</h5>
+                    <p class="text-muted">الأرصدة والمبيعات</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:asset_schedule' %}" class="text-decoration-none">
+            <div class="card h-100 border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-building fa-3x text-success"></i>
+                    <h5 class="mt-3">جدول الأصول والإهلاك</h5>
+                    <p class="text-muted">الأصول الثابتة</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:payroll_report' %}" class="text-decoration-none">
+            <div class="card h-100 border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-money-bill-wave fa-3x text-warning"></i>
+                    <h5 class="mt-3">تقرير الرواتب</h5>
+                    <p class="text-muted">رواتب الموظفين</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'reports:cash_flow_report' %}" class="text-decoration-none">
+            <div class="card h-100 border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-exchange-alt fa-3x text-info"></i>
+                    <h5 class="mt-3">التدفق النقدي</h5>
+                    <p class="text-muted">التدفقات النقدية الواردة والصادرة</p>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

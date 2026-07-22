@@ -1,0 +1,81 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل إيصال الاستلام {{ grn.grn_number }}{% endblock %}
+{% block page_title %}إيصال استلام: {{ grn.grn_number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span><i class="fas fa-truck-loading"></i> بنود الاستلام</span>
+                <div>
+                    {% if grn.status != 'confirmed' %}
+                    <form method="POST" action="{% url 'goods_received:grn_confirm' pk=grn.pk %}" style="display:inline"
+                          onsubmit="return confirm('تأكيد الإيصال سيحدّث كميات الاستلام وأرصدة المخزن؟')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> تأكيد</button>
+                    </form>
+                    {% endif %}
+                    <form method="POST" action="{% url 'goods_received:grn_to_invoice' pk=grn.pk %}" style="display:inline"
+                          onsubmit="return confirm('تحويل الإيصال إلى فاتورة مشتريات؟')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-info btn-sm ms-1"><i class="fas fa-file-invoice"></i> تحويل إلى فاتورة مشتروات</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>بند أمر الشراء</th>
+                            <th>المنتج</th>
+                            <th>الكمية المستلمة</th>
+                            <th>سعر الوحدة</th>
+                            <th>الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>{% if line.purchase_order_line %}{{ line.purchase_order_line.order.order_number }}{% else %}-{% endif %}</td>
+                            <td>{{ line.product.name }}</td>
+                            <td>{{ line.quantity_received }}</td>
+                            <td>{{ line.unit_price|floatformat:2 }}</td>
+                            <td>{{ line.line_total|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-info-circle"></i> ملخص الإيصال</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>المورد:</th><td>{{ grn.supplier.name }}</td></tr>
+                    <tr><th>أمر الشراء:</th><td>{% if grn.purchase_order %}{{ grn.purchase_order.order_number }}{% else %}-{% endif %}</td></tr>
+                    <tr><th>المستودع:</th><td>{% if grn.warehouse %}{{ grn.warehouse.name }}{% else %}-{% endif %}</td></tr>
+                    <tr><th>التاريخ:</th><td>{{ grn.date|date:"d/m/Y" }}</td></tr>
+                    <tr><th>أنشئ بواسطة:</th><td>{{ grn.created_by|default:"-" }}</td></tr>
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr><th>الإجمالي:</th><th class="text-primary">{{ grn.subtotal|floatformat:2 }} ج.م</th></tr>
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr>
+                        <th>الحالة:</th>
+                        <td>
+                            {% if grn.status == 'draft' %}<span class="badge bg-secondary">مسودة</span>
+                            {% elif grn.status == 'confirmed' %}<span class="badge bg-success">مؤكد</span>{% endif %}
+                        </td>
+                    </tr>
+                </table>
+                {% if grn.notes %}
+                <div class="mt-2"><strong>ملاحظات:</strong><br>{{ grn.notes|linebreaksbr }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

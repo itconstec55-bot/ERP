@@ -1,0 +1,65 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<form method="post" id="orderForm">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-header"><i class="fas fa-clipboard-list"></i> بيانات طلب الشراء</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">{{ form.cost_center|as_crispy_field }}</div>
+                <div class="col-md-4">{{ form.date|as_crispy_field }}</div>
+                <div class="col-md-4">{{ form.need_by_date|as_crispy_field }}</div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">{{ form.priority|as_crispy_field }}</div>
+                <div class="col-md-3">{{ form.status|as_crispy_field }}</div>
+                <div class="col-md-6">{{ form.notes|as_crispy_field }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-header"><i class="fas fa-list"></i> بنود طلب الشراء</div>
+        <div class="card-body">
+            {{ formset.management_form }}
+            <table class="table table-bordered" id="linesTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:25%">المنتج</th>
+                        <th>الكمية</th>
+                        <th>وحدة القياس</th>
+                        <th>السعر التقديري</th>
+                        <th>تاريخ التوريد</th>
+                        <th>ملاحظات</th>
+                        <th>حذف</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for form in formset %}
+                    <tr class="line-row">
+                        <td>{{ form.product }}</td>
+                        <td>{{ form.quantity }}</td>
+                        <td>{{ form.uom }}</td>
+                        <td>{{ form.estimated_unit_price }}</td>
+                        <td>{{ form.required_date }}</td>
+                        <td>{{ form.notes }}</td>
+                        <td>{{ form.DELETE }}</td>
+                        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+                <a href="{% url 'requisitions:req_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-right"></i> رجوع</a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

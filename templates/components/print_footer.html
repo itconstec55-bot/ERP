@@ -1,0 +1,49 @@
+<!-- Print Footer - فوتر الطباعة الموحد -->
+
+<div class="print-footer-wrapper">
+    <div class="print-footer">
+        <div class="print-footer__right">
+            <div class="print-footer__company-name">{{ company.name|default:"تواريدات" }}</div>
+            {% if company.address %}
+            <div>{{ company.address }}{% if company.city %}، {{ company.city }}{% endif %}</div>
+            {% endif %}
+        </div>
+
+        <div class="print-footer__center">
+            <div class="print-footer__row">
+                {% if company.phone %}
+                <span class="print-footer__item">
+                    <i class="fas fa-phone"></i> {{ company.phone }}
+                </span>
+                {% endif %}
+                {% if company.mobile %}
+                <span class="print-footer__item">
+                    <i class="fas fa-mobile-alt"></i> {{ company.mobile }}
+                </span>
+                {% endif %}
+                {% if company.email %}
+                <span class="print-footer__item">
+                    <i class="fas fa-envelope"></i> {{ company.email }}
+                </span>
+                {% endif %}
+                {% if company.website %}
+                <span class="print-footer__item">
+                    <i class="fas fa-globe"></i> {{ company.website }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="print-footer__left">
+            {% if company.tax_number %}
+            <div><i class="fas fa-file-invoice"></i> ضريبي: {{ company.tax_number }}</div>
+            {% endif %}
+            {% if company.commercial_register %}
+            <div>سجل تجاري: {{ company.commercial_register }}</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="print-footer__legal">
+        تم إنشاء هذا المستند بواسطة نظام المحاسبة الإلكترونية — {{ company.name|default:"تواريدات" }} | {{ company.name_en|default:"Tawareedat" }}
+    </div>
+</div>

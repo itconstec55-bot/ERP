@@ -1,0 +1,51 @@
+{% extends 'base/base.html' %}
+
+{% block title %}الإشعارات{% endblock %}
+{% block page_title %}الإشعارات{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'notifications:send_test' %}" class="btn btn-primary"><i class="fas fa-paper-plane"></i> إرسال اختبار</a>
+    <a href="{% url 'notifications:template_list' %}" class="btn btn-outline-secondary"><i class="fas fa-file-alt"></i> القوالب</a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #1565c0, #0d47a1);">
+            <h3>{{ templates|length }}</h3><p>قوالب نشطة</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #2e7d32, #1b5e20);">
+            <h3>{{ logs|length }}</h3><p>إشعارات مرسلة</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white"><i class="fas fa-history"></i> سجل الإشعارات</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>التاريخ</th><th>الموضوع</th><th>المستلم</th><th>الحالة</th></tr></thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.sent_at|date:"d/m/Y H:i" }}</td>
+                    <td>{{ log.subject }}</td>
+                    <td>{{ log.recipient_email }}</td>
+                    <td>
+                        {% if log.success %}
+                            <span class="badge bg-success">تم الإرسال</span>
+                        {% else %}
+                            <span class="badge bg-danger">فشل</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center py-4 text-muted">لا توجد إشعارات بعد</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

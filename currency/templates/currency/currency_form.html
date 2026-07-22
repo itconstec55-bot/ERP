@@ -1,0 +1,29 @@
+{% extends 'base/base.html' %}
+
+{% block title %}عملة{% endblock %}
+{% block page_title %}{% if currency %}تعديل عملة{% else %}إضافة عملة{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-coins"></i> بيانات العملة</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3"><label class="form-label">الكود</label><input type="text" name="code" class="form-control" value="{{ currency.code|default:'' }}" required></div>
+                    <div class="mb-3"><label class="form-label">الاسم</label><input type="text" name="name" class="form-control" value="{{ currency.name|default:'' }}" required></div>
+                    <div class="mb-3"><label class="form-label">الرمز</label><input type="text" name="symbol" class="form-control" value="{{ currency.symbol|default:'' }}" required></div>
+                    <div class="mb-3"><label class="form-label">سعر الصرف إلى الجنيه المصري</label><input type="number" name="exchange_rate_to_egp" class="form-control" step="0.000001" value="{{ currency.exchange_rate_to_egp|default:'1' }}"></div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_base" class="form-check-input" {% if currency.is_base %}checked{% endif %}>
+                        <label class="form-check-label">العملة الأساسية</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+                    <a href="{% url 'currency:currency_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

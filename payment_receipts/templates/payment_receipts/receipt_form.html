@@ -1,0 +1,150 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}إنشاء سند{% endblock %}
+{% block page_title %}{% if receipt_type == 'receipt' %}سند قبض{% else %}سند دفع{% endif %} جديد{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header {% if receipt_type == 'receipt' %}bg-success{% else %}bg-danger{% endif %} text-white">
+        <i class="fas fa-file-invoice"></i> بيانات السند
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="receipt_type" value="{{ receipt_type }}">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">رقم السند *</label>
+                    <input type="text" name="receipt_number" class="form-control" value="{{ next_number }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">التاريخ *</label>
+                    <input type="date" name="date" class="form-control" value="{% now 'Y-m-d' %}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">المبلغ *</label>
+                    <input type="number" step="0.01" name="amount" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">طريقة الدفع *</label>
+                    <select name="payment_method" class="form-select">
+                        <option value="cash">نقداً</option>
+                        <option value="bank_transfer">تحويل بنكي</option>
+                        <option value="cheque">شيك</option>
+                        <option value="visa">فيزا/ماستر كارد</option>
+                    </select>
+                </div>
+
+                {% if receipt_type == 'receipt' %}
+                <div class="col-md-4">
+                    <label class="form-label">العميل *</label>
+                    <select name="customer" class="form-select" id="customerSelect">
+                        <option value="">اختر العميل</option>
+                        {% for c in customers %}<option value="{{ c.pk }}">{{ c.name }}</option>{% empty %}<option value="" disabled>لا يوجد عملاء نشطين</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">فاتورة المبيعات</label>
+                    <select name="invoice" class="form-select" id="invoiceSelect">
+                        <option value="">-- حدد العميل أولاً --</option>
+                    </select>
+                    <small class="text-muted" id="invoiceHint">اختر العميل لعرض الفواتير المستحقة</small>
+                </div>
+                {% else %}
+                <div class="col-md-4">
+                    <label class="form-label">المورد *</label>
+                    <select name="supplier" class="form-select" id="supplierSelect">
+                        <option value="">اختر المورد</option>
+                        {% for s in suppliers %}<option value="{{ s.pk }}">{{ s.name }}</option>{% empty %}<option value="" disabled>لا يوجد موردين نشطين</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">فاتورة المشتريات</label>
+                    <select name="purchase_invoice" class="form-select" id="invoiceSelect">
+                        <option value="">-- حدد المورد أولاً --</option>
+                    </select>
+                    <small class="text-muted" id="invoiceHint">اختر المورد لعرض الفواتير المستحقة</small>
+                </div>
+                {% endif %}
+
+                <div class="col-md-4">
+                    <label class="form-label">البنك</label>
+                    <select name="bank" class="form-select" id="bankSelect">
+                        <option value="">اختر البنك</option>
+                        {% for b in banks %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}
+                    </select>
+                    {% if not banks %}
+                    <small class="text-danger">لا يوجد بنوك نشطة. أضف بنكاً من شاشة الخزينة أولاً.</small>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">الخزينة</label>
+                    <select name="safe" class="form-select" id="safeSelect">
+                        <option value="">اختر الخزينة</option>
+                        {% for s in safes %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}
+                    </select>
+                    {% if not safes %}
+                    <small class="text-danger">لا توجد خزائن نشطة. أضف خزينة أولاً.</small>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">رقم الشيك</label>
+                    <input type="text" name="cheque_number" class="form-control">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">البيان</label>
+                    <textarea name="description" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+                <a href="{% url 'payment_receipts:list' %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function loadInvoices(url, param, selectId, hintId) {
+    const sel = document.getElementById(selectId);
+    const hint = document.getElementById(hintId);
+    const val = document.getElementById(param === 'customer_id' ? 'customerSelect' : 'supplierSelect').value;
+    sel.innerHTML = '<option value="">جاري التحميل...</option>';
+    if (hint) hint.style.display = 'none';
+    if (!val) {
+        sel.innerHTML = param === 'customer_id'
+            ? '<option value="">-- حدد العميل أولاً --</option>'
+            : '<option value="">-- حدد المورد أولاً --</option>';
+        if (hint) { hint.style.display = ''; hint.textContent = param === 'customer_id'
+            ? 'اختر العميل لعرض الفواتير المستحقة' : 'اختر المورد لعرض الفواتير المستحقة'; }
+        return;
+    }
+    fetch(`${url}?${param}=${val}`)
+        .then(r => { if (!r.ok) throw new Error('Network error'); return r.json(); })
+        .then(data => {
+            sel.innerHTML = '<option value="">اختر الفاتورة</option>';
+            if (data.length === 0) {
+                sel.innerHTML = '<option value="">لا توجد فواتير مستحقة</option>';
+                if (hint) { hint.style.display = ''; hint.textContent = 'لا توجد فواتير غير مسددة لهذا العميل/المورد'; hint.className = 'text-warning'; }
+                return;
+            }
+            data.forEach(inv => {
+                const remaining = parseFloat(inv.remaining_amount).toLocaleString('ar-EG');
+                const total = parseFloat(inv.total_amount).toLocaleString('ar-EG');
+                sel.innerHTML += `<option value="${inv.pk}">${inv.invoice_number} | المبلغ: ${total} ج.م | المتبقي: ${remaining} ج.م</option>`;
+            });
+        })
+        .catch(err => {
+            sel.innerHTML = '<option value="">خطأ في التحميل</option>';
+            if (hint) { hint.style.display = ''; hint.textContent = 'حدث خطأ أثناء تحميل الفواتير. حاول مرة أخرى.'; hint.className = 'text-danger'; }
+        });
+}
+document.getElementById('customerSelect')?.addEventListener('change', function() {
+    loadInvoices('/payment-receipts/api/customer-invoices/', 'customer_id', 'invoiceSelect', 'invoiceHint');
+});
+document.getElementById('supplierSelect')?.addEventListener('change', function() {
+    loadInvoices('/payment-receipts/api/supplier-invoices/', 'supplier_id', 'invoiceSelect', 'invoiceHint');
+});
+</script>
+{% endblock %}

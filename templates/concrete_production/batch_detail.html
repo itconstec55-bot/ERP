@@ -1,0 +1,102 @@
+{% extends "base/base.html" %}
+{% block title %}تفاصيل الدفعة {{ batch.batch_number }}{% endblock %}
+{% block page_title %}<i class="fas fa-industry me-2"></i>الدفعة {{ batch.batch_number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between">
+                <h5 class="m-0">بيانات الدفعة</h5>
+                <span class="badge bg-{% if batch.status == 'completed' %}success{% elif batch.status == 'in_transit' %}info{% elif batch.status == 'pouring' %}primary{% else %}secondary{% endif %}" style="font-size: 1rem;">
+                    {{ batch.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3"><strong>رقم الدفعة:</strong> {{ batch.batch_number }}</div>
+                    <div class="col-md-6 mb-3"><strong>أمر الإنتاج:</strong> {{ batch.production_order.order_number }}</div>
+                    <div class="col-md-6 mb-3"><strong>العميل:</strong> {{ batch.production_order.customer_request.customer.name }}</div>
+                    <div class="col-md-6 mb-3"><strong>المشروع:</strong> {{ batch.production_order.customer_request.project_name }}</div>
+                    <div class="col-md-6 mb-3"><strong>الخلطة:</strong> {{ batch.production_order.mix_design.code }}</div>
+                    <div class="col-md-6 mb-3"><strong>الشاحنة:</strong> {{ batch.truck.plate_number|default:"غير محددة" }} - {{ batch.truck.driver_name|default:"" }}</div>
+                    <div class="col-md-4 mb-3"><strong>المطلوب:</strong> {{ batch.quantity_m3 }} م³</div>
+                    <div class="col-md-4 mb-3"><strong>الفعلي:</strong> {{ batch.actual_quantity_m3 }} م³</div>
+                    <div class="col-md-4 mb-3"><strong>المرتجع:</strong> {{ batch.returned_quantity_m3 }} م³</div>
+                </div>
+                {% if batch.notes %}<p class="text-muted mt-2">{{ batch.notes }}</p>{% endif %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><h5 class="m-0">تتبع الأوقات</h5></div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col">
+                        <i class="fas fa-cog fa-2x mb-2 {% if batch.mixing_time %}text-success{% else %}text-muted{% endif %}"></i>
+                        <div class="fw-bold">الخلط</div>
+                        <small class="text-muted">{{ batch.mixing_time|time:"H:i"|default:"--:--" }}</small>
+                    </div>
+                    <div class="col"><i class="fas fa-arrow-left fa-2x text-muted"></i></div>
+                    <div class="col">
+                        <i class="fas fa-truck-loading fa-2x mb-2 {% if batch.departure_time %}text-success{% else %}text-muted{% endif %}"></i>
+                        <div class="fw-bold">المغادرة</div>
+                        <small class="text-muted">{{ batch.departure_time|time:"H:i"|default:"--:--" }}</small>
+                    </div>
+                    <div class="col"><i class="fas fa-arrow-left fa-2x text-muted"></i></div>
+                    <div class="col">
+                        <i class="fas fa-map-marker-alt fa-2x mb-2 {% if batch.arrival_time %}text-success{% else %}text-muted{% endif %}"></i>
+                        <div class="fw-bold">الوصول</div>
+                        <small class="text-muted">{{ batch.arrival_time|time:"H:i"|default:"--:--" }}</small>
+                    </div>
+                    <div class="col"><i class="fas fa-arrow-left fa-2x text-muted"></i></div>
+                    <div class="col">
+                        <i class="fas fa-water fa-2x mb-2 {% if batch.pouring_start %}text-success{% else %}text-muted{% endif %}"></i>
+                        <div class="fw-bold">الصب</div>
+                        <small class="text-muted">{{ batch.pouring_start|time:"H:i"|default:"--:--" }}</small>
+                    </div>
+                    <div class="col"><i class="fas fa-arrow-left fa-2x text-muted"></i></div>
+                    <div class="col">
+                        <i class="fas fa-check-circle fa-2x mb-2 {% if batch.pouring_end %}text-success{% else %}text-muted{% endif %}"></i>
+                        <div class="fw-bold">النهاية</div>
+                        <small class="text-muted">{{ batch.pouring_end|time:"H:i"|default:"--:--" }}</small>
+                    </div>
+                </div>
+                {% if batch.transit_duration %}
+                <div class="text-center mt-3">
+                    <span class="badge bg-info">مدة النقل: {{ batch.transit_duration }}</span>
+                    {% if batch.pouring_duration %}
+                    <span class="badge bg-success">مدة الصب: {{ batch.pouring_duration }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header"><h5 class="m-0">تحديث الحالة</h5></div>
+            <div class="card-body">
+                <form method="post" action="{% url 'concrete_production:batch_update_status' pk=batch.pk %}">
+                    {% csrf_token %}
+                    <div class="mb-3">{{ status_form.status }}</div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">الكمية الفعلية (م³)</label>
+                        {{ status_form.actual_quantity_m3 }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">الكمية المرتجعة (م³)</label>
+                        {{ status_form.returned_quantity_m3 }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ملاحظات</label>
+                        {{ status_form.notes }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-1"></i> تحديث</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base/base.html" %}
+
+{% block title %}فواتير المشتريات{% endblock %}
+{% block page_title %}فواتير المشتريات{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-shopping-cart"></i> فواتير المشتريات</span>
+        <a href="{% url 'purchases:invoice_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> فاتورة جديدة
+        </a>
+    </div>
+    <div class="card-body">
+        <div id="bulk-actions" class="mb-3" style="display:none;">
+            <div class="d-flex gap-2 align-items-center">
+                <span class="text-muted">تم تحديد <strong id="selected-count">0</strong> فاتورة</span>
+                <form method="post" action="{% url 'purchases:invoice_bulk_approve' %}" class="d-inline" id="bulk-approve-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="invoice_ids" id="approve-ids">
+                    <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check-double"></i> اعتماد مجمّع</button>
+                </form>
+                <form method="post" action="{% url 'purchases:invoice_bulk_post' %}" class="d-inline" id="bulk-post-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="invoice_ids" id="post-ids">
+                    <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-paper-plane"></i> ترحيل مجمّع</button>
+                </form>
+            </div>
+        </div>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="select-all" class="form-check-input"></th>
+                    <th>رقم الفاتورة</th>
+                    <th>المورد</th>
+                    <th>التاريخ</th>
+                    <th>المبلغ</th>
+                    <th>الضريبة</th>
+                    <th>الإجمالي</th>
+                    <th>المدفوع</th>
+                    <th>فاتورة ضريبية</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in invoices %}
+                <tr>
+                    <td><input type="checkbox" class="invoice-check form-check-input" value="{{ invoice.pk }}" data-posted="{{ invoice.is_posted|yesno:'true,false' }}"></td>
+                    <td><strong>{{ invoice.invoice_number }}</strong></td>
+                    <td>{{ invoice.supplier.name }}</td>
+                    <td>{{ invoice.date|date:"d/m/Y" }}</td>
+                    <td>{{ invoice.subtotal|floatformat:2 }}</td>
+                    <td>{{ invoice.vat_amount|floatformat:2 }}</td>
+                    <td class="text-danger">{{ invoice.total_amount|floatformat:2 }}</td>
+                    <td class="text-success">{{ invoice.paid_amount|floatformat:2 }}</td>
+                    <td>
+                        {% if invoice.is_tax_invoice %}
+                        <span class="badge bg-success"><i class="fas fa-check"></i> مؤثرة</span>
+                        {% else %}
+                        <span class="badge bg-secondary">غير مؤثرة</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if invoice.is_posted %}<span class="badge bg-success">مرحل</span>{% else %}<span class="badge bg-secondary">مسودة</span>{% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'purchases:invoice_detail' pk=invoice.pk %}" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+document.getElementById('select-all')?.addEventListener('change', function() {
+    document.querySelectorAll('.invoice-check').forEach(cb => cb.checked = this.checked);
+    updateBulkUI();
+});
+document.querySelectorAll('.invoice-check').forEach(cb => cb.addEventListener('change', updateBulkUI));
+function updateBulkUI() {
+    const checks = document.querySelectorAll('.invoice-check:checked');
+    const count = checks.length;
+    document.getElementById('selected-count').textContent = count;
+    document.getElementById('bulk-actions').style.display = count > 0 ? 'block' : 'none';
+    const ids = Array.from(checks).map(c => c.value);
+    document.getElementById('approve-ids').value = ids.join(',');
+    document.getElementById('post-ids').value = ids.join(',');
+}
+</script>
+{% endblock %}

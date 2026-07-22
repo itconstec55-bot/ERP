@@ -1,0 +1,37 @@
+{% extends 'base/base.html' %}
+
+{% block title %}إضافة قالب إشعار{% endblock %}
+{% block page_title %}إضافة قالب إشعار{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-plus"></i> قالب جديد</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3"><label class="form-label">اسم القالب</label><input type="text" name="name" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">الحدث</label>
+                        <select name="event" class="form-select" required>
+                            <option value="invoice_created">إنشاء فاتورة</option>
+                            <option value="invoice_posted">ترحيل فاتورة</option>
+                            <option value="invoice_overdue">فاتورة متأخرة</option>
+                            <option value="low_stock">مخزون منخفض</option>
+                            <option value="salary_due">موعد صرف رواتب</option>
+                            <option value="backup_completed">اكتمال النسخ الاحتياطي</option>
+                            <option value="reconciliation_needed">حاجة تسوية بنكية</option>
+                            <option value="document_expiring">وثيقة تنتهي صلاحيتها</option>
+                        </select>
+                    </div>
+                    <div class="mb-3"><label class="form-label">قالب الموضوع</label><input type="text" name="subject_template" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">قالب المحتوى</label><textarea name="body_template" class="form-control" rows="6" required></textarea></div>
+                    <div class="mb-3 form-check"><input type="checkbox" name="is_active" class="form-check-input" checked><label class="form-check-label">نشط</label></div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+                    <a href="{% url 'notifications:template_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

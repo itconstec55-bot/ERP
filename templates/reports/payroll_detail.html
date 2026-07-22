@@ -1,0 +1,111 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}تقرير تفصيلي الرواتب{% endblock %}
+{% block page_title %}تقرير تفصيلي الرواتب{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/print.css' %}" rel="stylesheet">
+<style>
+    @media screen { .print-header-wrapper, .print-footer-wrapper { display: none; } }
+    @media print { .print-header-wrapper, .print-footer-wrapper { display: block !important; } }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'components/print_header.html' with doc_title='تقرير تفصيلي الرواتب' doc_date=year %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between flex-wrap gap-2">
+        <span><i class="fas fa-money-bill-wave"></i> تقرير تفصيلي الرواتب ({{ year }}{% if month %} - {% for m,l in months %}{% if m == month %}{{ l }}{% endif %}{% endfor %}{% endif %})</span>
+        <form method="get" class="d-flex gap-2 flex-wrap">
+            <select name="year" class="form-select form-select-sm" style="width:auto">
+                {% for y in years %}
+                <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+            <select name="month" class="form-select form-select-sm" style="width:auto">
+                <option value="">كل الشهور</option>
+                {% for m,l in months %}
+                <option value="{{ m }}" {% if m == month %}selected{% endif %}>{{ l }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+            <a href="{% url 'reports:export_report' 'payroll-detail' %}?year={{ year }}&month={{ month|default:'' }}" class="btn btn-success btn-sm"><i class="fas fa-file-excel"></i></a>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white"><div class="card-body text-center">
+                    <h6>إجمالي الأساسي</h6><h4>{{ total_basic|floatformat:2 }} ج.م</h4>
+                </div></div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white"><div class="card-body text-center">
+                    <h6>البدلات + الإضافي + المكافآت</h6><h4>{{ total_allowances|add:total_overtime|add:total_bonus|floatformat:2 }} ج.م</h4>
+                </div></div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white"><div class="card-body text-center">
+                    <h6>الخصومات + التأمين + الضريبة</h6><h4>{{ total_deductions|add:total_social|add:total_tax|floatformat:2 }} ج.م</h4>
+                </div></div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white"><div class="card-body text-center">
+                    <h6>صافي الرواتب</h6><h4>{{ total_net|floatformat:2 }} ج.م</h4>
+                </div></div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>الموظف</th><th>القسم</th><th>الشهر</th><th>الأساسي</th>
+                        <th>البدلات</th><th>الإضافي</th><th>المكافآت</th>
+                        <th>الخصومات</th><th>التأمين</th><th>الضريبة</th><th>الصافي</th><th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in rows %}
+                    <tr>
+                        <td>{{ r.employee.full_name }}</td>
+                        <td>{{ r.department }}</td>
+                        <td>
+                            {% for m,l in months %}{% if m == r.month %}{{ l }}{% endif %}{% endfor %}
+                            {{ r.month }}/{{ year }}
+                        </td>
+                        <td class="text-end">{{ r.basic|floatformat:2 }}</td>
+                        <td class="text-end">{{ r.allowances|floatformat:2 }}</td>
+                        <td class="text-end">{{ r.overtime|floatformat:2 }}</td>
+                        <td class="text-end">{{ r.bonus|floatformat:2 }}</td>
+                        <td class="text-end text-danger">{{ r.deductions|floatformat:2 }}</td>
+                        <td class="text-end text-danger">{{ r.social_insurance|floatformat:2 }}</td>
+                        <td class="text-end text-danger">{{ r.income_tax|floatformat:2 }}</td>
+                        <td class="text-end text-success"><strong>{{ r.net|floatformat:2 }}</strong></td>
+                        <td>{% if r.is_paid %}<span class="badge bg-success">مدفوع</span>{% else %}<span class="badge bg-warning">معلق</span>{% endif %}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="12" class="text-center text-muted">لا توجد مسيرات رواتب في {{ year }}</td></tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-primary">
+                    <tr>
+                        <th colspan="3">الإجمالي</th>
+                        <th class="text-end">{{ total_basic|floatformat:2 }}</th>
+                        <th class="text-end">{{ total_allowances|floatformat:2 }}</th>
+                        <th class="text-end">{{ total_overtime|floatformat:2 }}</th>
+                        <th class="text-end">{{ total_bonus|floatformat:2 }}</th>
+                        <th class="text-end">{{ total_deductions|floatformat:2 }}</th>
+                        <th class="text-end">{{ total_social|floatformat:2 }}</th>
+                        <th class="text-end">{{ total_tax|floatformat:2 }}</th>
+                        <th class="text-end">{{ total_net|floatformat:2 }}</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% include 'components/print_footer.html' %}
+{% endblock %}

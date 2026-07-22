@@ -1,0 +1,49 @@
+{% extends "base/base.html" %}
+
+{% block title %}{{ department.name }}{% endblock %}
+{% block page_title %}تفاصيل القسم{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-sitemap"></i> {{ department.name }}</span>
+        <div>
+            <a href="{% url 'hr:department_edit' pk=department.pk %}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> تعديل</a>
+            <form method="post" action="{% url 'hr:department_delete' pk=department.pk %}" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا القسم؟')">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> حذف</button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <p><strong>الاسم:</strong> {{ department.name }}</p>
+                <p><strong>المدير:</strong> {{ department.manager|default:"غير محدد" }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>الوصف:</strong> {{ department.description|default:"-" }}</p>
+                <p><strong>الحالة:</strong> {% if department.is_active %}<span class="badge bg-success">نشط</span>{% else %}<span class="badge bg-secondary">غير نشط</span>{% endif %}</p>
+            </div>
+        </div>
+
+        <h5><i class="fas fa-users"></i> موظفو القسم ({{ employees|length }})</h5>
+        <table class="table table-hover">
+            <thead><tr><th>رقم</th><th>الاسم</th><th>المنصب</th><th>الراتب</th><th>الحالة</th></tr></thead>
+            <tbody>
+                {% for emp in employees %}
+                <tr>
+                    <td>{{ emp.employee_number }}</td>
+                    <td><a href="{% url 'hr:employee_detail' pk=emp.pk %}">{{ emp.first_name }} {{ emp.last_name }}</a></td>
+                    <td>{{ emp.position }}</td>
+                    <td>{{ emp.salary|floatformat:2 }}</td>
+                    <td><span class="badge bg-success">نشط</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted">لا يوجد موظفين في هذا القسم</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base/base.html" %}
+
+{% block content_header %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>المدفوعات</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="{% url 'contractors:dashboard' %}">لوحة التحكم</a></li>
+          <li class="breadcrumb-item active">المدفوعات</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-header">
+      <div class="row">
+        <div class="col-md-8">
+          <form method="get" class="form-inline">
+            <div class="mr-2">
+              <select name="status" class="form-control form-control-sm">
+                <option value="">الكل</option>
+                <option value="pending" {% if status == 'pending' %}selected{% endif %}>معلقة</option>
+                <option value="paid" {% if status == 'paid' %}selected{% endif %}>مدفوعة</option>
+                <option value="cancelled" {% if status == 'cancelled' %}selected{% endif %}>ملغاة</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-info btn-sm"><i class="fas fa-filter"></i> تصفية</button>
+          </form>
+        </div>
+        <div class="col-md-4 text-left">
+          <a href="{% url 'contractors:payment_create' %}" class="btn btn-success btn-sm">
+            <i class="fas fa-plus"></i> دفعة جديدة
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="card-body table-responsive p-0">
+      <table class="table table-hover text-wrap">
+        <thead>
+          <tr>
+            <th>رقم الدفعة</th>
+            <th>العقد</th>
+            <th>المقاول</th>
+            <th>المبلغ</th>
+            <th>طريقة الدفع</th>
+            <th>التاريخ</th>
+            <th>الحالة</th>
+            <th>إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in payments %}
+          <tr>
+            <td><a href="{% url 'contractors:payment_detail' pk=p.pk %}">{{ p.payment_number }}</a></td>
+            <td>{{ p.contract.contract_number }}</td>
+            <td>{{ p.contract.contractor.name }}</td>
+            <td>{{ p.amount|floatformat:2 }}</td>
+            <td>{{ p.get_payment_method_display }}</td>
+            <td>{{ p.payment_date|date:"Y/m/d" }}</td>
+            <td>
+              <span class="badge badge-{% if p.status == 'paid' %}success{% elif p.status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                {{ p.get_status_display }}
+              </span>
+            </td>
+            <td>
+              <a href="{% url 'contractors:payment_detail' pk=p.pk %}" class="btn btn-xs btn-info">
+                <i class="fas fa-eye"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center">لا توجد مدفوعات</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

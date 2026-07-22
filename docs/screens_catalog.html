@@ -1,0 +1,2271 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كتالوج شاشات نظام المحاسبة المتكامل</title>
+<style>
+:root{--bg-primary:#0f0f14;--bg-secondary:#16161d;--bg-card:#1c1c26;--bg-sidebar:#12121a;--gold:#d4a843;--gold-dim:#b8922e;--gold-bright:#f0c95a;--text-primary:#e8e8ec;--text-secondary:#a0a0b0;--text-muted:#6a6a7a;--border:#2a2a38;--border-gold:rgba(212,168,67,0.3);--accent-green:#4caf7a;--accent-red:#cf4f4f;--accent-blue:#4a7fcf;--sidebar-width:300px;--font-ar:'Segoe UI','Tahoma','Arial',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-ar);background:var(--bg-primary);color:var(--text-primary);line-height:1.8;direction:rtl}
+.sidebar{position:fixed;top:0;right:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-left:1px solid var(--border);overflow-y:auto;z-index:1000;padding:20px 0;scrollbar-width:thin;scrollbar-color:var(--gold-dim) var(--bg-sidebar)}
+.sidebar::-webkit-scrollbar{width:6px}.sidebar::-webkit-scrollbar-track{background:var(--bg-sidebar)}.sidebar::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:3px}
+.sidebar-header{padding:15px 20px 20px;border-bottom:1px solid var(--border);margin-bottom:10px}
+.sidebar-header h2{font-size:1.1rem;color:var(--gold);margin-bottom:5px}
+.sidebar-header p{font-size:0.75rem;color:var(--text-muted)}
+.sidebar-search{padding:10px 15px;position:sticky;top:0;background:var(--bg-sidebar);z-index:1}
+.sidebar-search input{width:100%;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:var(--font-ar);font-size:0.85rem;outline:none;transition:border-color 0.3s}
+.sidebar-search input:focus{border-color:var(--gold)}
+.sidebar-search input::placeholder{color:var(--text-muted)}
+.sidebar-nav a{display:block;padding:7px 20px;color:var(--text-secondary);text-decoration:none;font-size:0.85rem;border-right:3px solid transparent;transition:all 0.2s}
+.sidebar-nav a:hover,.sidebar-nav a.active{background:rgba(212,168,67,0.08);color:var(--gold);border-right-color:var(--gold)}
+.sidebar-nav .nav-section{display:block;padding:12px 20px 5px;color:var(--gold-dim);font-size:0.75rem;font-weight:bold;letter-spacing:1px}
+.sidebar-nav .nav-sub{padding-right:35px;font-size:0.8rem}
+.main{margin-right:var(--sidebar-width);padding:40px 50px 100px;max-width:1100px}
+.page-header{text-align:center;padding:60px 0 40px;border-bottom:2px solid var(--border-gold);margin-bottom:50px}
+.page-header h1{font-size:2.2rem;color:var(--gold);margin-bottom:10px;font-weight:700}
+.page-header .subtitle{font-size:1rem;color:var(--text-secondary);margin-bottom:15px}
+.page-header .version{display:inline-block;padding:4px 14px;background:rgba(212,168,67,0.15);border:1px solid var(--border-gold);border-radius:20px;color:var(--gold);font-size:0.8rem}
+.stats-bar{display:flex;justify-content:center;gap:30px;margin-top:25px;flex-wrap:wrap}
+.stat-item{text-align:center}
+.stat-item .num{display:block;font-size:1.6rem;color:var(--gold);font-weight:700}
+.stat-item .label{font-size:0.8rem;color:var(--text-muted)}
+.module{margin-bottom:60px;padding-bottom:40px;border-bottom:1px solid var(--border)}
+.module:last-child{border-bottom:none}
+.module-header{display:flex;align-items:center;gap:15px;margin-bottom:25px;padding:20px 25px;background:linear-gradient(135deg,var(--bg-card),rgba(212,168,67,0.05));border:1px solid var(--border-gold);border-radius:12px}
+.module-number{display:flex;align-items:center;justify-content:center;width:50px;height:50px;background:rgba(212,168,67,0.15);border:2px solid var(--gold);border-radius:10px;font-size:1.3rem;font-weight:700;color:var(--gold);flex-shrink:0}
+.module-header h2{font-size:1.5rem;color:var(--text-primary);margin:0}
+.module-header .module-en{font-size:0.85rem;color:var(--text-muted);font-weight:400}
+.module-desc{background:var(--bg-card);padding:18px 22px;border-radius:8px;border-right:4px solid var(--gold);margin-bottom:25px;color:var(--text-secondary);line-height:2}
+.module-connections{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:25px}
+.module-connections .tag{padding:4px 12px;background:rgba(74,127,207,0.12);border:1px solid rgba(74,127,207,0.3);border-radius:15px;font-size:0.78rem;color:var(--accent-blue)}
+.permissions{background:var(--bg-card);padding:15px 20px;border-radius:8px;margin-bottom:25px}
+.permissions h4{color:var(--accent-green);font-size:0.9rem;margin-bottom:8px}
+.permissions ul{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.permissions ul li{padding:3px 10px;background:rgba(76,175,122,0.1);border:1px solid rgba(76,175,122,0.25);border-radius:4px;font-size:0.78rem;color:var(--accent-green)}
+.screen{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;overflow:hidden;transition:border-color 0.3s}
+.screen:hover{border-color:var(--border-gold)}
+.screen-header{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;background:rgba(212,168,67,0.05);border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+.screen-header h3{font-size:1.05rem;color:var(--gold);display:flex;align-items:center;gap:10px}
+.screen-header .screen-en{font-size:0.8rem;color:var(--text-muted);font-weight:400}
+.screen-header .toggle-icon{color:var(--text-muted);font-size:1.2rem;transition:transform 0.3s}
+.screen.collapsed .toggle-icon{transform:rotate(-90deg)}
+.screen.collapsed .screen-body{display:none}
+.screen-body{padding:20px}
+.screen-body h4{color:var(--text-primary);font-size:0.95rem;margin-bottom:10px;margin-top:18px}
+.screen-body h4:first-child{margin-top:0}
+.screen-body p{color:var(--text-secondary);margin-bottom:10px;line-height:1.9}
+.screen-body ul{padding-right:20px;margin-bottom:12px}
+.screen-body li{color:var(--text-secondary);margin-bottom:4px;font-size:0.9rem}
+.fields-table{width:100%;border-collapse:collapse;margin:10px 0 15px;font-size:0.85rem}
+.fields-table th{background:rgba(212,168,67,0.1);color:var(--gold);padding:8px 12px;text-align:right;border:1px solid var(--border);font-weight:600}
+.fields-table td{padding:7px 12px;border:1px solid var(--border);color:var(--text-secondary)}
+.fields-table tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+.screenshot-placeholder{width:100%;height:220px;background:linear-gradient(135deg,var(--bg-secondary),var(--bg-card));border:2px dashed var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:15px 0;color:var(--text-muted);font-size:0.85rem;gap:8px;transition:border-color 0.3s}
+.screenshot-placeholder:hover{border-color:var(--gold-dim)}
+.screenshot-placeholder .icon{font-size:2rem;opacity:0.4}
+.scroll-top{position:fixed;bottom:30px;left:30px;width:45px;height:45px;background:var(--gold);color:var(--bg-primary);border:none;border-radius:50%;font-size:1.3rem;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:999;box-shadow:0 4px 15px rgba(212,168,67,0.4);transition:transform 0.3s}
+.scroll-top:hover{transform:scale(1.1)}
+@media print{.sidebar{display:none}.main{margin:0;padding:20px}.screen-body{display:block!important}.module{page-break-inside:avoid}}
+@media(max-width:900px){.sidebar{width:250px}.main{margin-right:250px;padding:20px 25px}}
+@media(max-width:700px){.sidebar{display:none}.main{margin:0;padding:15px}}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-header"><h2>كتالوج الشاشات</h2><p>نظام المحاسبة المتكامل</p></div>
+<div class="sidebar-search"><input type="text" id="searchInput" placeholder="بحث عن وحدة أو شاشة..." oninput="filterSidebar(this.value)"></div>
+<nav class="sidebar-nav" id="sidebarNav">
+<span class="nav-section">النظام الأساسي</span>
+<a href="#mod1">1. الحسابات</a>
+<a href="#mod2">2. المشتريات</a>
+<a href="#mod3">3. المبيعات</a>
+<a href="#mod4">4. الخزينة</a>
+<a href="#mod5">5. الأصول الثابتة</a>
+<span class="nav-section">الموارد</span>
+<a href="#mod6">6. الموارد البشرية</a>
+<a href="#mod7">7. المخازن</a>
+<span class="nav-section">التقارير والتحليل</span>
+<a href="#mod8">8. التقارير</a>
+<a href="#mod9">9. الوثائق</a>
+<a href="#mod10">10. الشركة</a>
+<a href="#mod11">11. التحليل الذكي</a>
+<span class="nav-section">الإنتاج</span>
+<a href="#mod12">12. إنتاج الخرسانة</a>
+<a href="#mod13">13. المقاولون</a>
+<span class="nav-section">المالية والضرائب</span>
+<a href="#mod14">14. الموردون</a>
+<a href="#mod15">15. الضرائب</a>
+<a href="#mod16">16. الشيكات</a>
+<a href="#mod17">17. مرتجعات المشتريات</a>
+<a href="#mod18">18. مرتجعات المبيعات</a>
+<a href="#mod19">19. تسوية الأرصدة</a>
+<a href="#mod20">20. المقبوضات والمدفوعات</a>
+<span class="nav-section">العمليات المالية</span>
+<a href="#mod21">21. السلف</a>
+<a href="#mod22">22. طلبات عروض الأسعار</a>
+<a href="#mod23">23. الإشعارات</a>
+<a href="#mod24">24. المتكرر</a>
+<a href="#mod25">25. الميزانيات</a>
+<a href="#mod26">26. العملات</a>
+<a href="#mod27">27. التسوية البنكية</a>
+<span class="nav-section">المراجعة والأمان</span>
+<a href="#mod28">28. المراجعة</a>
+<a href="#mod29">29. المزامنة</a>
+<a href="#mod30">30. النسخ الاحتياطي</a>
+<a href="#mod31">31. التحكم في الوصول</a>
+<a href="#mod32">32. نظام المستخدمين</a>
+<a href="#mod33">33. المصادقة الثنائية</a>
+<span class="nav-section">التكامل والتوسع</span>
+<a href="#mod34">34. API</a>
+<a href="#mod35">35. لوحة المراقبة</a>
+<a href="#mod36">36. إعدادات النظام</a>
+<a href="#mod37">37. الطرفيات</a>
+</nav>
+</aside>
+
+<div class="main">
+<header class="page-header" id="top">
+<h1>كتالوج شاشات النظام</h1>
+<p class="subtitle">الدليل الشامل لجميع شاشات نظام المحاسبة المتكامل</p>
+<span class="version">الإصدار 2.0 — 2026</span>
+<div class="stats-bar">
+<div class="stat-item"><span class="num">37</span><span class="label">وحدة</span></div>
+<div class="stat-item"><span class="num">+150</span><span class="label">شاشة</span></div>
+<div class="stat-item"><span class="num">+500</span><span class="label">حقل</span></div>
+<div class="stat-item"><span class="num">+50</span><span class="label">تقرير</span></div>
+</div>
+</header>
+
+<!-- MODULE 1: الحسابات -->
+<section class="module" id="mod1">
+<div class="module-header"><div class="module-number">01</div><div><h2>الحسابات <span class="module-en">Accounts</span></h2></div></div>
+<div class="module-desc">وحدة الحسابات هي العمود الفقري للنظام. توفر دليل حسابات شامل يدعم التصنيفات الفرعية غير المحدودة، مع إمكانية إنشاء قيود يومية يدوية أو تلقائية ناتجة عن المعاملات في الوحدات الأخرى. تدعم الوحدة إغلاق السنة المالية، وإعداد القوائم المالية الثلاث (قائمة الدخل، الميزانية العمومية، التدفقات النقدية) وفقاً للمعايير المحاسبية الدولية.</div>
+<div class="module-connections"><span class="tag">المشتريات</span><span class="tag">المبيعات</span><span class="tag">الخزينة</span><span class="tag">الأصول الثابتة</span><span class="tag">الضرائب</span><span class="tag">الإنتاج</span><span class="tag">الميزانيات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_دليل_الحسابات</li><li>إضافة_حساب</li><li>تعديل_حساب</li><li>حذف_حساب</li><li>إنشاء_قيد</li><li>ترحيل_قيد</li><li>عرض_قوائم_مالية</li><li>إغلاق_سنة</li></ul></div>
+
+<div class="screen" id="s1-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>دليل الحسابات <span class="screen-en">Chart of Accounts</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>الشاشة الرئيسية لإدارة هيكليات الحسابات. تعرض شجرة الحسابات بشكل هرمي مع إمكانية التوسيع والطي. تدعم البحث الفوري والتصفية حسب التصنيف ونوع الحساب ومستوى الحساب.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الحساب</td><td>نص (15)</td><td>رقم تسلسلي فريد يعكس المستوى الهرمي (مثال: 110101)</td></tr>
+<tr><td>اسم الحساب</td><td>نص (100)</td><td>الاسم العربي للحساب</td></tr>
+<tr><td>الاسم الإنجليزي</td><td>نص (100)</td><td>الاسم الإنجليزي للحساب</td></tr>
+<tr><td>نوع الحساب</td><td>قائمة</td><td>مدين / دائن / حساب افتتاحي</td></tr>
+<tr><td>التصنيف</td><td>شجرة</td><td>الأصل / الخصم / حقوق الملكية / الإيرادات / المصروفات</td></tr>
+<tr><td>الحساب الأب</td><td>شجرة</td><td>الحساب الرئيسي الذي ينتمي إليه</td></tr>
+<tr><td>العملة</td><td>قائمة</td><td>العملة الافتراضية للحساب</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>نشط / غير نشط</td></tr>
+<tr><td>ملاحظات</td><td>نص طويل</td><td>ملاحظات داخلية على الحساب</td></tr>
+</table>
+<h4>الأزرار والعمليات</h4>
+<ul><li>إضافة حساب جديد (رئيسي أو فرعي)</li><li>تعديل بيانات حساب موجود</li><li>حذف حساب (مع التحقق من عدم وجود قيود مرتبطة)</li><li>تفعيل/تعطيل حساب</li><li>تصدير دليل الحسابات إلى Excel أو PDF</li><li>استيراد حسابات من ملف Excel</li><li>طباعة شجرة الحسابات الكاملة</li></ul>
+<h4>قواعد العمل</h4>
+<ul><li>لا يمكن حذف حساب يحتوي على قيود يومية مرتبطة</li><li>رقم الحساب فريد لا يتكرر داخل السنة المالية</li><li>لا يمكن تغيير التصنيف لحساب به أرصدة افتتاحية</li><li>عند حذف حساب فرعي يتم نقل الأرصدة للحساب الأب</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: دليل الحسابات — عرض الشجرة الهرمية مع شريط البحث والتصنيفات الجانبية]</div>
+</div></div>
+
+<div class="screen" id="s1-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>قيود اليومية <span class="screen-en">Journal Entries</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>شاشة إنشاء وعرض وتعديل القيود اليومية المحاسبية. تدعم القيود اليدوية والقيود التلقائية الناتجة عن المعاملات في الوحدات المختلفة. توفر ترحيل القيود وطباعتها بأكثر من صيغة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم القيد</td><td>تلقائي</td><td>رقم تسلسلي يتولى النظام إنشاءه</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ القيد (لا يمكن أن يكون تاريخ إغلاق مغلق)</td></tr>
+<tr><td>المرجع</td><td>نص (50)</td><td>رقم المرجع الخارجي (فاتورة، سند، إلخ)</td></tr>
+<tr><td>البيان</td><td>نص (250)</td><td>وصف تفصيلي للقيد</td></tr>
+<tr><td>البنود</td><td>جدول</td><td>الحساب / المدين / الدائن / التصنيف</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / مرحّل / ملغي</td></tr>
+<tr><td>نوع القيد</td><td>قائمة</td><td>يدوي / آلي (فاتورة بيع، فاتورة شراء، إلخ)</td></tr>
+<tr><td>المرفق</td><td>ملف</td><td>إرفاق مستند داعم</td></tr>
+<tr><td>المبلغ الإجمالي</td><td>محسوب</td><td>مجموع المدين = مجموع الدائن</td></tr>
+</table>
+<h4>الأزرار والعمليات</h4>
+<ul><li>إضافة قيد جديد يدوي</li><li>إضافة بند جديد للقيد</li><li>ترحيل القيد</li><li>إلغاء ترحيل قيد</li><li>طباعة القيد</li><li>تصدير إلى Excel / PDF</li><li>عرض السجل الكامل للتعديلات (Audit Trail)</li></ul>
+<h4>قواعد العمل</h4>
+<ul><li>مجموع المدين يجب أن يساوي مجموع الدائن دائماً</li><li>القيد بعد الترحيل لا يمكن تعديله إلا بقيض عكسي</li><li>القيود التلقائية لا يمكن حذفها يدوياً</li><li>يمكن إلغاء الترحيل فقط إذا لم تكن هناك قيود لاحقة مرتبطة</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: قيود اليومية — جدول القوائم مع أزرار الترحيل والطباعة]</div>
+</div></div>
+
+<div class="screen" id="s1-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>كشف حساب <span class="screen-en">Account Statement</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>شاشة عرض كشف حساب تفصيلي لأي حساب في دليل الحسابات. تدعم التصفية بالتاريخ وعرض الأرصدة الافتتاحية والإغلاقية.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>الحساب</td><td>بحث</td><td>اختيار الحساب من دليل الحسابات</td></tr>
+<tr><td>من تاريخ</td><td>تاريخ</td><td>تاريخ البداية</td></tr>
+<tr><td>إلى تاريخ</td><td>تاريخ</td><td>تاريخ النهاية</td></tr>
+<tr><td>البيان</td><td>جدول</td><td>التاريخ / المرجع / البيان / مدين / دائن / رصيد</td></tr>
+<tr><td>الرصيد الافتتاحي</td><td>محسوب</td><td>الرصيد قبل الفترة المحددة</td></tr>
+<tr><td>الرصيد الختامي</td><td>محسوب</td><td>الرصيد بعد تجميع الحركات</td></tr>
+</table>
+<h4>الأزرار والعمليات</h4>
+<ul><li>عرض الكشف حسب الفترة أو تراكمي</li><li>طباعة الكشف وتصديره إلى Excel / PDF</li><li>عرض تفاصيل أي قيد بالنقر عليه</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: كشف حساب — جدول الحركات مع الأرصدة التراكمية]</div>
+</div></div>
+
+<div class="screen" id="s1-4">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>ميزان المراجعة <span class="screen-en">Trial Balance</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>شاشة عرض ميزان المراجعة لأي فترة زمنية. تعرض ملخص أرصدة جميع الحسابات (المدين والدائن) مع التأكد من تساوي المجاميع.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>السنة المالية</td><td>قائمة</td><td>السنة المالية المراد عرض الميزان لها</td></tr>
+<tr><td>من وإلى تاريخ</td><td>نطاق</td><td>نطاق الفترة الزمنية</td></tr>
+<tr><td>المستوى</td><td>عداد</td><td>مستوى التجميع (1 رئيسي، 2 فرعي، إلخ)</td></tr>
+<tr><td>الجدول</td><td>جدول</td><td>رقم الحساب / اسم الحساب / مدين / دائن / صافي</td></tr>
+</table>
+<h4>الأزرار والعمليات</h4>
+<ul><li>عرض الميزان حسب المستوى</li><li>عرض ميزان مقارن لفترتين</li><li>طباعة وتصدير إلى Excel / PDF</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: ميزان المراجعة — جدول الحسابات مع أعمدة المدين والدائن]</div>
+</div></div>
+
+<div class="screen" id="s1-5">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>قائمة الدخل <span class="screen-en">Income Statement</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض قائمة الدخل بشكل تلقائي من أرصدة حسابات الإيرادات والمصروفات. تدعم المقارنة بين الفترات وعرض النسب المئوية.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>الفترة</td><td>نطاق تواريخ</td><td>بداية ونهاية الفترة المالية</td></tr>
+<tr><td>نوع العرض</td><td>قائمة</td><td>شهري / ربع سنوي / سنوي</td></tr>
+<tr><td>المقارنة</td><td>مفتاح</td><td>عرض مقارن مع الفترة السابقة</td></tr>
+<tr><td>الإيرادات</td><td>قسم</td><td>إيرادات المبيعات / إيرادات أخرى</td></tr>
+<tr><td>تكلفة البضاعة المباعة</td><td>قسم</td><td>تكلفة المنتجات المباعة</td></tr>
+<tr><td>مجمل الربح</td><td>محسوب</td><td>الإيرادات - تكلفة البضاعة المباعة</td></tr>
+<tr><td>المصروفات التشغيلية</td><td>قسم</td><td>رواتب / إيجار / مرافق</td></tr>
+<tr><td>صافي الربح/الخسارة</td><td>محسوب</td><td>مجمل الربح - المصروفات</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: قائمة الدخل — عرض هرمي للإيرادات والمصروفات مع مقارنة الفترات]</div>
+</div></div>
+
+<div class="screen" id="s1-6">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الميزانية العمومية <span class="screen-en">Balance Sheet</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض الميزانية العمومية بشكل تلقائي. تتضمن الأصول والخصوم وحقوق الملكية. تدعم التصفية والتاريخ وعرض مقارن.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الميزانية العمومية — العرض المزدوج الجانب]</div>
+</div></div>
+
+<div class="screen" id="s1-7">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>السنوات المالية <span class="screen-en">Fiscal Years</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة السنوات المالية: إنشاء سنوات جديدة، إغلاق سنوات سابقة، فتح فترات محاسبية. تتحكم في الأشهر المفتوحة والمغلقة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم السنة</td><td>نص</td><td>معرّف السنة المالية</td></tr>
+<tr><td>من وإلى تاريخ</td><td>تواريخ</td><td>نطاق السنة المالية</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مفتوحة / مغلقة / تحت الإغلاق</td></tr>
+<tr><td>الفترات</td><td>جدول</td><td>الأشهر الـ12 مع حالتها</td></tr>
+<tr><td>أرصدة افتتاحية</td><td>إجراء</td><td>ترحيل أرصدة من السنة السابقة</td></tr>
+<tr><td>أرباح مبقاة</td><td>محسوب</td><td>حساب الأرباح المبقاة عند الإغلاق</td></tr>
+</table>
+<h4>قواعد العمل</h4>
+<ul><li>لا يمكن إنشاء سنة تتداخل مع سنة موجودة</li><li>لا يمكن تعديل تواريخ سنة مغلقة</li><li>عند الإغلاق يتم ترحيل الأرباح المبقاة وفتح أرصدة السنة الجديدة</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: السنوات المالية — جدول السنوات مع أزرار الإغلاق]</div>
+</div></div>
+</section>
+
+<!-- MODULE 2: المشتريات -->
+<section class="module" id="mod2">
+<div class="module-header"><div class="module-number">02</div><div><h2>المشتريات <span class="module-en">Purchases</span></h2></div></div>
+<div class="module-desc">وحدة المشتريات تدير دورة الشراء الكاملة من طلب العرض مروراً بأمر الشراء ووصولاً إلى فاتورة الشراء وقبض البضاعة. تتصل بشكل مباشر بوحدة المخازن لتحديث المخزون، وبوحدة الحسابات لتوليد القيود المحاسبية التلقائية.</div>
+<div class="module-connections"><span class="tag">الحسابات</span><span class="tag">المخازن</span><span class="tag">الخزينة</span><span class="tag">الموردون</span><span class="tag">الضرائب</span><span class="tag">الشيكات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_المشتريات</li><li>إنشاء_فاتورة_شراء</li><li>تعديل_فاتورة_شراء</li><li>حذف_فاتورة_شراء</li><li>طباعة_فاتورة_شراء</li><li>إنشاء_أمر_شراء</li><li>إدارة_الموردين</li></ul></div>
+
+<div class="screen" id="s2-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الموردون <span class="screen-en">Suppliers</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة بيانات الموردين بشكل شامل: المعلومات الأساسية وبيانات الاتصال والحسابات البنكية والمستندات المرفقة والتصنيفات.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم المورد</td><td>تلقائي</td><td>رقم تسلسلي فريد</td></tr>
+<tr><td>اسم المورد</td><td>نص (150)</td><td>الاسم الرسمي للشركة</td></tr>
+<tr><td>الرقم الضريبي</td><td>نص (20)</td><td>الرقم التسجيلي الضريبي</td></tr>
+<tr><td>السجل التجاري</td><td>نص (20)</td><td>رقم السجل التجاري</td></tr>
+<tr><td>جهة الاتصال</td><td>نص (100)</td><td>اسم ممثل المورد</td></tr>
+<tr><td>الهاتف / البريد</td><td>نص</td><td>بيانات الاتصال</td></tr>
+<tr><td>البنك الرئيسي</td><td>قائمة</td><td>البنك الرئيسي</td></tr>
+<tr><td>رقم الحساب البنكي</td><td>نص</td><td>رقم الحساب البنكي للمورد</td></tr>
+<tr><td>حد الائتمان</td><td>رقم</td><td>الحد الأقصى للائتمان</td></tr>
+<tr><td>مدة السداد</td><td>عدد</td><td>عدد الأيام الممنوحة</td></tr>
+<tr><td>التصنيف</td><td>قائمة</td><td>مواد خام / خدمات / معدات</td></tr>
+<tr><td>المرفقات</td><td>ملفات</td><td>السجل التجاري، البطاقة الضريبية، العقود</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>نشط / غير نشط / محظور</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الموردين — بطاقات الموردين مع شريط بحث وتصنيفات جانبية]</div>
+</div></div>
+
+<div class="screen" id="s2-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>المنتجات <span class="screen-en">Products</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة المنتجات والأصناف: الفئات ووحدات القياس وأسعار الشراء المرجعية وبيانات الضريبة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الصنف</td><td>تلقائي</td><td>معرّف فريد</td></tr>
+<tr><td>اسم الصنف</td><td>نص (150)</td><td>الاسم الكامل</td></tr>
+<tr><td>الكود (SKU)</td><td>نص (30)</td><td>كود الصنف</td></tr>
+<tr><td>الفئة</td><td>شجرة</td><td>فئة الصنف الهرمية</td></tr>
+<tr><td>وحدة الشراء</td><td>قائمة</td><td>كجم / طن / قطعة / لتر / صندوق</td></tr>
+<tr><td>وحدة البيع</td><td>قائمة</td><td>قد تختلف عن وحدة الشراء</td></tr>
+<tr><td>معامل التحويل</td><td>رقم</td><td>تحويل بين الوحدتين</td></tr>
+<tr><td>الحد الأدنى</td><td>رقم</td><td>حد التنبيه</td></tr>
+<tr><td>نسبة الضريبة</td><td>نسبة</td><td>نسبة VAT على الصنف</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>نشط / غير نشط</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: المنتجات — عرض شبكي/قائمة مع تصنيفات جانبية]</div>
+</div></div>
+
+<div class="screen" id="s2-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>فواتير المشتريات <span class="screen-en">Purchase Invoices</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>شاشة إنشاء وعرض وتعديل فواتير المشتريات. تدعم الفواتير العادية والمرتجعات والذمم. تتصل تلقائياً بوحدة المخازن والحسابات.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الفاتورة</td><td>تلقائي</td><td>رقم تسلسلي فريد</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ الفاتورة من المورد</td></tr>
+<tr><td>تاريخ الاستلام</td><td>تاريخ</td><td>التاريخ الفعلي لاستلام البضاعة</td></tr>
+<tr><td>المورد</td><td>بحث</td><td>اختيار المورد</td></tr>
+<tr><td>رقم فاتورة المورد</td><td>نص</td><td>الرقم كما على فاتورة المورد</td></tr>
+<tr><td>المخزن</td><td>قائمة</td><td>المخزن المستلم للبضاعة</td></tr>
+<tr><td>بنود الفاتورة</td><td>جدول</td><td>الصنف / الكمية / السعر / الخصم / الضريبة / الإجمالي</td></tr>
+<tr><td>نسبة الضريبة</td><td>نسبة</td><td>VAT المضافة</td></tr>
+<tr><td>الإجمالي</td><td>محسوب</td><td>المبلغ النهائي المستحق</td></tr>
+<tr><td>طريقة الدفع</td><td>قائمة</td><td>نقدي / شيك / تحويل / آجل</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / تامة / مقبولة / مرفوضة</td></tr>
+<tr><td>المرفقات</td><td>ملفات</td><td>صورة الفاتورة الأصلية</td></tr>
+</table>
+<h4>القيود التلقائية</h4>
+<ul><li>مدين: حساب المخزون (المخزن المحدد)</li><li>مدين: حساب ضريبة القيمة المضافة المدينة (إن وُجدت)</li><li>دائن: حساب المورد (الذمة)</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: فواتير المشتريات — نموذج إنشاء الفاتورة مع جدول البنود]</div>
+</div></div>
+
+<div class="screen" id="s2-4">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>أوامر الشراء <span class="screen-en">Purchase Orders</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة أوامر الشراء: وثائق رسمية تُرسل إلى الموردين لطلب توريد منتجات بكميات وأسعار محددة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الأمر</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ الإصدار</td></tr>
+<tr><td>المورد</td><td>بحث</td><td>المورد المطلوب</td></tr>
+<tr><td>تاريخ التسليم المتوقع</td><td>تاريخ</td><td>موعد التسليم</td></tr>
+<tr><td>البنود</td><td>جدول</td><td>الصنف / الكمية / السعر / الإجمالي</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / مُرسل / مُغلق / مُلغي / مُستلم</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: أوامر الشراء — جدول الأوامر مع شريط الحالة]</div>
+</div></div>
+</section>
+
+<!-- MODULE 3: المبيعات -->
+<section class="module" id="mod3">
+<div class="module-header"><div class="module-number">03</div><div><h2>المبيعات <span class="module-en">Sales</span></h2></div></div>
+<div class="module-desc">وحدة المبيعات تدير دورة البيع الكاملة من عرض الأسعار مروراً بأمر البيع ووصولاً إلى فاتورة البيع ومرتجعات البيع. تتصل بوحدة الحسابات لتوليد القيود التلقائية وبوحدة المخازن لتحديث المخزون وبوحدة الضرائب لحساب VAT.</div>
+<div class="module-connections"><span class="tag">الحسابات</span><span class="tag">المخازن</span><span class="tag">الخزينة</span><span class="tag">العملاء</span><span class="tag">الضرائب</span><span class="tag">الشيكات</span><span class="tag">الانتاج</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_المبيعات</li><li>إنشاء_فاتورة_بيع</li><li>تعديل_فاتورة_بيع</li><li>حذف_فاتورة_بيع</li><li>طباعة_فاتورة_بيع</li><li>إنشاء_عرض_سعر</li><li>إدارة_العملاء</li><li>معالجة_مرتجعات</li></ul></div>
+
+<div class="screen" id="s3-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>العملاء <span class="screen-en">Customers</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة بيانات العملاء: المعلومات الأساسية وبيانات الاتصال والسجل الضريبي وتاريخ المعاملات والأرصدة الحالية.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم العميل</td><td>تلقائي</td><td>رقم تسلسلي فريد</td></tr>
+<tr><td>اسم العميل / الشركة</td><td>نص (150)</td><td>الاسم الكامل</td></tr>
+<tr><td>النوع</td><td>قائمة</td><td>فرد / شركة / حكومة</td></tr>
+<tr><td>الرقم الضريبي</td><td>نص</td><td>الرقم التسجيلي الضريبي</td></tr>
+<tr><td>جهة الاتصال</td><td>نص</td><td>الشخص المسؤول عن التواصل</td></tr>
+<tr><td>الهاتف / البريد</td><td>نص</td><td>بيانات الاتصال</td></tr>
+<tr><td>العنوان</td><td>نص طويل</td><td>العنوان الكامل</td></tr>
+<tr><td>حد الائتمان</td><td>رقم</td><td>الحد الأقصى للائتمان الآجل</td></tr>
+<tr><td>مدة السداد</td><td>عدد</td><td>عدد الأيام الممنوحة</td></tr>
+<tr><td>الرصيد الحالي</td><td>محسوب</td><td>الرصيد الحالي (مدين/دائن)</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>نشط / مجمد / محظور</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: العملاء — بطاقات العملاء مع الأرصدة والتقييمات]</div>
+</div></div>
+
+<div class="screen" id="s3-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>فواتير البيع <span class="screen-en">Sales Invoices</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>شاشة إنشاء وعرض وتعديل فواتير البيع. تدعم الفواتير العادية والمرتجعات والقيود. تتصل تلقائياً بجميع الوحدات ذات الصلة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الفاتورة</td><td>تلقائي</td><td>رقم تسلسلي فريد</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ الفاتورة</td></tr>
+<tr><td>العميل</td><td>بحث</td><td>اختيار العميل</td></tr>
+<tr><td>رقم أمر البيع</td><td>بحث</td><td>الرابط بأمر البيع (اختياري)</td></tr>
+<tr><td>المخزن</td><td>قائمة</td><td>المخزن المصدر</td></tr>
+<tr><td>بنود الفاتورة</td><td>جدول</td><td>الصنف / الكمية / السعر / الخصم / الضريبة / الإجمالي</td></tr>
+<tr><td>نسبة الضريبة</td><td>نسبة</td><td>VAT المضافة</td></tr>
+<tr><td>الإجمالي</td><td>محسوب</td><td>المبلغ النهائي</td></tr>
+<tr><td>طريقة الدفع</td><td>قائمة</td><td>نقدي / شيك / تحويل / آجل / مزيج</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / تامة / مدفوعة / جزئية / ملغاة</td></tr>
+</table>
+<h4>القيود التلقائية</h4>
+<ul><li>مدين: حساب العميل (الذمة)</li><li>دائن: حساب الإيرادات</li><li>دائن: حساب ضريبة القيمة المضافة الدائنة</li><li>مدين: حساب تكلفة البضاعة المباعة / دائن: حساب المخزون (FIFO/LIFO)</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: فواتير البيع — نموذج الفاتورة الكامل مع معاينة الطباعة]</div>
+</div></div>
+
+<div class="screen" id="s3-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>عروض الأسعار <span class="screen-en">Quotations</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إنشاء وإدارة عروض الأسعار للعملاء. تدعم التحويل المباشر لعرض السعر إلى فاتورة بيع مع الاحتفاظ بالسجل الكامل.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم العرض</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>التاريخ وصالح حتى</td><td>تواريخ</td><td>تاريخ الإصدار وانتهاء الصلاحية</td></tr>
+<tr><td>العميل</td><td>بحث</td><td>العميل المستهدف</td></tr>
+<tr><td>البنود</td><td>جدول</td><td>الصنف / الكمية / السعر / الخصم / الإجمالي</td></tr>
+<tr><td>الشروط</td><td>نص</td><td>شروط العرض والتسليم</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / مُرسل / مقبول / مرفوض</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: عروض الأسعار — عرض العرض مع أزرار التحويل لفاتورة]</div>
+</div></div>
+
+<div class="screen" id="s3-4">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>أوامر البيع <span class="screen-en">Sales Orders</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة أوامر البيع الصادرة من العملاء: ربط عرض السعر بفاتورة البيع مع تتبع حالة الطلب.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الأمر</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ الاستلام</td></tr>
+<tr><td>العميل</td><td>بحث</td><td>العميل الطالب</td></tr>
+<tr><td>عرض السعر</td><td>بحث</td><td>العرض المرجعي (اختياري)</td></tr>
+<tr><td>بنود الأمر</td><td>جدول</td><td>الصنف / الكمية / السعر / موعد التسليم</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / مؤكد / قيد التنفيذ / مكتمل / ملغي</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: أوامر البيع — جدول الأوامر مع مؤشرات التقدم]</div>
+</div></div>
+</section>
+
+<!-- MODULE 4: الخزينة -->
+<section class="module" id="mod4">
+<div class="module-header"><div class="module-number">04</div><div><h2>الخزينة <span class="module-en">Treasury</span></h2></div></div>
+<div class="module-desc">وحدة الخزينة تدير الحسابات البنكية والخزن النقدية وحركة الأموال. تتضمن المقبوضات والمدفوعات وحركات التحويل بين الخزن والحسابات البنكية. تتصل بوحدة الحسابات ووحدة الشيكات.</div>
+<div class="module-connections"><span class="tag">الحسابات</span><span class="tag">المشتريات</span><span class="tag">المبيعات</span><span class="tag">الشيكات</span><span class="tag">الضرائب</span><span class="tag">التسوية البنكية</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الخزينة</li><li>إدارة_البنوك</li><li>إدارة_الخزن</li><li>إيداع</li><li>سحب</li><li>تحويل_بين_خزن</li><li>اعتماد_سند</li></ul></div>
+
+<div class="screen" id="s4-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>البنوك <span class="screen-en">Banks</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة الحسابات البنكية للشركة: إضافة بنوك وبيانات الحسابات IBAN وSWIFT وربط كل حساب بحساب محاسبي.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>اسم البنك</td><td>نص</td><td>اسم البنك</td></tr>
+<tr><td>رقم الحساب</td><td>نص</td><td>رقم الحساب البنكي</td></tr>
+<tr><td>IBAN</td><td>نص</td><td>الرقم الدولي للمعرف البنكي</td></tr>
+<tr><td>SWIFT</td><td>نص</td><td>كود الاتصال السريع</td></tr>
+<tr><td>العملة</td><td>قائمة</td><td>عملة الحساب</td></tr>
+<tr><td>الحساب المحاسبي</td><td>بحث</td><td>الحساب المقابل في الدليل</td></tr>
+<tr><td>الرصيد الحالي</td><td>محسوب</td><td>الرصيد في النظام</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>نشط / مجمد</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: البنوك — بطاقات الحسابات البنكية مع الأرصدة]</div>
+</div></div>
+
+<div class="screen" id="s4-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الخزن <span class="screen-en">Cash Boxes</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة الخزن النقدية: خزنة الصندوق الرئيسي وخزن الفروع وخزن المصروفات الصغيرة. كل خزنة مرتبطة بحساب محاسبي.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>اسم الخزنة</td><td>نص</td><td>الاسم التعريفي</td></tr>
+<tr><td>المخزن المرتبط</td><td>قائمة</td><td>المخزن (اختياري)</td></tr>
+<tr><td>العملة</td><td>قائمة</td><td>عملة الخزنة</td></tr>
+<tr><td>الحد الأقصى</td><td>رقم</td><td>الحد المسموح في الخزنة</td></tr>
+<tr><td>المحاسب المسؤول</td><td>بحث</td><td>الموظف المسؤول</td></tr>
+<tr><td>الرصيد الحالي</td><td>محسوب</td><td>الرصيد النقدي</td></tr>
+<tr><td>الحساب المحاسبي</td><td>بحث</td><td>الحساب في الدليل</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الخزن — بطاقات الخزن مع الأرصدة]</div>
+</div></div>
+
+<div class="screen" id="s4-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>حركة البنك <span class="screen-en">Bank Transactions</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض وتسجيل حركات البنك: إيداعات وسحوبات وتحويلات بين الحسابات البنكية.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ العملية</td></tr>
+<tr><td>النوع</td><td>قائمة</td><td>إيداع / سحب / تحويل وارد / تحويل صادر</td></tr>
+<tr><td>البنك</td><td>قائمة</td><td>البنك المرجع</td></tr>
+<tr><td>المبلغ</td><td>رقم</td><td>المبلغ بالعملة المحلية</td></tr>
+<tr><td>المرجع</td><td>نص</td><td>رقم المرجع</td></tr>
+<tr><td>البيان</td><td>نص</td><td>وصف العملية</td></tr>
+<tr><td>مرجع داخلي</td><td>رابط</td><td>السند أو الفاتورة المرتبطة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: حركة البنك — جدول الحركات مع فلتر التاريخ]</div>
+</div></div>
+
+<div class="screen" id="s4-4">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>حركة الخزنة <span class="screen-en">Cash Transactions</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض وتسجيل الحركات النقدية: مقبوضات ومدفوعات من الخزن. تدعم تحويل النقد بين الخزن المختلفة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ العملية</td></tr>
+<tr><td>النوع</td><td>قائمة</td><td>قبض / صرف / تحويل وارد / صادر</td></tr>
+<tr><td>الخزنة</td><td>قائمة</td><td>الخزنة المرتبطة</td></tr>
+<tr><td>المبلغ</td><td>رقم</td><td>المبلغ المقبوض/المدفوع</td></tr>
+<tr><td>المورد/العميل</td><td>بحث</td><td>الطرف المرتبط</td></tr>
+<tr><td>المرجع</td><td>نص</td><td>رقم السند</td></tr>
+<tr><td>البيان</td><td>نص</td><td>وصف العملية</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: حركة الخزنة — جدول الحركات النقدية]</div>
+</div></div>
+</section>
+
+<!-- MODULE 5: الأصول الثابتة -->
+<section class="module" id="mod5">
+<div class="module-header"><div class="module-number">05</div><div><h2>الأصول الثابتة <span class="module-en">Fixed Assets</span></h2></div></div>
+<div class="module-desc">وحدة الأصول الثابتة تدير دورة حياة الأصول من الشراء والإضافة مروراً بالإهلاك ووصولاً إلى البيع أو الإتلاف. توفر جداول إهلاك تلقائية وفقاً لأساليب الإهلاك المختلفة.</div>
+<div class="module-connections"><span class="tag">الحسابات</span><span class="tag">المشتريات</span><span class="tag">الضرائب</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الأصول</li><li>إضافة_أصل</li><li>تعديل_أصل</li><li>إهلاك_أصل</li><li>بيع_أصل</li><li>إتلاف_أصل</li></ul></div>
+
+<div class="screen" id="s5-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الأصول <span class="screen-en">Assets</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة الأصول الثابتة: إضافة أصول جديدة، عرض كشف الأصول، إجراء الإهلاك، بيع أو إتلاف الأصول مع تسجيل الأرباح أو الخسائر.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الأصل</td><td>تلقائي</td><td>رقم تسلسلي فريد</td></tr>
+<tr><td>اسم الأصل</td><td>نص (150)</td><td>الاسم أو الوصف</td></tr>
+<tr><td>الفئة</td><td>قائمة</td><td>مبنى / معدة / سيارة / أثاث</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ الشراء</td></tr>
+<tr><td>التكلفة الأصلية</td><td>رقم</td><td>التكلفة الإجمالية</td></tr>
+<tr><td>قيمة الإطفاء</td><td>رقم</td><td>القيمة عند نهاية العمر</td></tr>
+<tr><td>العمر الإنتاجي</td><td>عدد</td><td>عدد السنوات</td></tr>
+<tr><td>أسلوب الإهلاك</td><td>قائمة</td><td>القسط المستوي / المتناقص / النسبة المئوية</td></tr>
+<tr><td>المبلغ المُهلاك</td><td>محسوب</td><td>إجمالي الإهلاك حتى الآن</td></tr>
+<tr><td>القيمة الدفترية</td><td>محسوب</td><td>التكلفة - الإهلاك المتراكم</td></tr>
+<tr><td>المخزن</td><td>قائمة</td><td>المكان أو الفرع</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>نشط / مُهلاك / مُباع / مُتلف</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الأصول — جدول الأصول مع القيم الدفترية]</div>
+</div></div>
+
+<div class="screen" id="s5-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>فئات الأصول <span class="screen-en">Asset Categories</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة فئات الأصول مع تحديد أسعار الإهلاك الافتراضية والحسابات المحاسبية المرتبطة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>اسم الفئة</td><td>نص</td><td>اسم الفئة</td></tr>
+<tr><td>أسلوب الإهلاك</td><td>قائمة</td><td>الافتراضي لهذه الفئة</td></tr>
+<tr><td>معدل الإهلاك</td><td>نسبة</td><td>النسبة الافتراضية</td></tr>
+<tr><td>العمر الإنتاجي</td><td>عدد</td><td>العمر الافتراضي</td></tr>
+<tr><td>حساب الأصل</td><td>بحث</td><td>حساب الأصول في الدليل</td></tr>
+<tr><td>حساب الإهلاك المتراكم</td><td>بحث</td><td>حساب الإهلاك في الدليل</td></tr>
+<tr><td>حساب مصروف الإهلاك</td><td>بحث</td><td>حساب المصروف في الدليل</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: فئات الأصول — جدول الفئات مع معدلات الإهلاك]</div>
+</div></div>
+
+<div class="screen" id="s5-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>جداول الإهلاك <span class="screen-en">Depreciation Schedules</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض جداول الإهلاك التفصيلية لكل أصل مع إمكانية إجراء الإهلاك الشهري/السنوي وتوليد القيود المحاسبية.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>الأصل</td><td>بحث</td><td>أصل محدد أو جميع الأصول</td></tr>
+<tr><td>الفترة</td><td>نطاق</td><td>السنة المالية أو الشهر</td></tr>
+<tr><td>الجدول</td><td>جدول</td><td>السنة / مبلغ الإهلاك / المتراكم / الدفترية</td></tr>
+</table>
+<h4>الأزرار والعمليات</h4>
+<ul><li>إجراء إهلاك شهري/سنوي</li><li>معاينة القيود قبل الترحيل</li><li>طباعة جدول الإهلاك</li><li>تصدير إلى Excel</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: جداول الإهلاك — جدول تفصيلي بالسنوات]</div>
+</div></div>
+</section>
+
+<!-- MODULE 6: الموارد البشرية -->
+<section class="module" id="mod6">
+<div class="module-header"><div class="module-number">06</div><div><h2>الموارد البشرية <span class="module-en">Human Resources</span></h2></div></div>
+<div class="module-desc">وحدة الموارد البشرية تدير شامل شؤون الموظفين من التوظيف إلى الفصل. تتضمن البيانات الشخصية والعقود والحضور والانصراف والإجازات والرواتب. تتصل بوحدة الحسابات لتوليد قيود الرواتب التلقائية.</div>
+<div class="module-connections"><span class="tag">الحسابات</span><span class="tag">الخزينة</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الموظفين</li><li>إضافة_موظف</li><li>تعديل_بيانات_موظف</li><li>إدارة_الرواتب</li><li>اعتماد_الإجازات</li><li>عرض_التقارير_البشرية</li></ul></div>
+
+<div class="screen" id="s6-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الموظفون <span class="screen-en">Employees</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة بيانات الموظفين: البطاقة الشخصية والتوظيف والعقود والراتب الأساسي والعلاوات.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الموظف</td><td>تلقائي</td><td>رقم تسلسلي فريد</td></tr>
+<tr><td>الاسم الكامل</td><td>نص</td><td>الاسم الكامل</td></tr>
+<tr><td>الرقم القومي</td><td>نص</td><td>الرقم القومي</td></tr>
+<tr><td>تاريخ الميلاد</td><td>تاريخ</td><td>تاريخ الميلاد</td></tr>
+<tr><td>الجنس</td><td>قائمة</td><td>ذكر / أنثى</td></tr>
+<tr><td>الإدارة</td><td>قائمة</td><td>الإدارة التي يعمل بها</td></tr>
+<tr><td>المسمى الوظيفي</td><td>نص</td><td>المسمى الوظيفي</td></tr>
+<tr><td>تاريخ التعيين</td><td>تاريخ</td><td>تاريخ بدء العمل</td></tr>
+<tr><td>الراتب الأساسي</td><td>رقم</td><td>الراتب الشهري</td></tr>
+<tr><td>العلاوات</td><td>جدول</td><td>نوع العلاوة / المبلغ / تاريخ السريان</td></tr>
+<tr><td>رقم الحساب البنكي</td><td>نص</td><td>للتحويل الإلكتروني</td></tr>
+<tr><td>الصورة</td><td>صورة</td><td>صورة شخصية</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>نشط / مجمد / منفصل</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الموظفين — بطاقات الموظفين مع صورهم]</div>
+</div></div>
+
+<div class="screen" id="s6-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الإدارات <span class="screen-en">Departments</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة الإدارات والأقسام: هيكل تنظيمي شجري مع تحديد المدير وعدد الموظفين.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>اسم الإدارة</td><td>نص</td><td>الاسم الرسمي</td></tr>
+<tr><td>كود الإدارة</td><td>نص</td><td>كود مختصر</td></tr>
+<tr><td>المدير</td><td>بحث</td><td>مدير الإدارة</td></tr>
+<tr><td>الإدارة الأم</td><td>شجرة</td><td>الإدارة الرئيسية</td></tr>
+<tr><td>الميزانية</td><td>رقم</td><td>الميزانية المعتمدة</td></tr>
+<tr><td>عدد الموظفين</td><td>محسوب</td><td>العدد الحالي</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الإدارات — الهيكل التنظيمي الهرمي]</div>
+</div></div>
+
+<div class="screen" id="s6-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الحضور والانصراف <span class="screen-en">Attendance</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تسجيل ومتابعة حضور وانصراف الموظفين. تدعم ربط مع أجهزة البصمة أو التسجيل اليدوي. تحسب التأخير والإضافي تلقائياً.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ الحضور</td></tr>
+<tr><td>الموظف</td><td>بحث</td><td>الموظف</td></tr>
+<tr><td>وقت الحضور</td><td>وقت</td><td>الوقت الفعلي</td></tr>
+<tr><td>وقت الانصراف</td><td>وقت</td><td>الوقت الفعلي</td></tr>
+<tr><td>ساعات العمل</td><td>محسوب</td><td>الساعات الفعلية</td></tr>
+<tr><td>التأخير</td><td>محسوب</td><td>دقائق التأخير</td></tr>
+<tr><td>الإضافي</td><td>محسوب</td><td>ساعات العمل الإضافية</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>حاضر / غائب / إجازة / مأمورية</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الحضور والانصراف — جدول يومي]</div>
+</div></div>
+
+<div class="screen" id="s6-4">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الإجازات <span class="screen-en">Leaves</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة طلبات الإجازات: تقديم واعتماد ورفض. تتبع أرصدة الإجازات المتبقية. تدعم الأنواع المختلفة (سنوية / مرضية / عزاء / تدريبية).</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>الموظف</td><td>بحث</td><td>الموظف الطالب</td></tr>
+<tr><td>نوع الإجازة</td><td>قائمة</td><td>سنوية / مرضية / عزاء / تدريبية</td></tr>
+<tr><td>من وإلى تاريخ</td><td>تواريخ</td><td>فترة الإجازة</td></tr>
+<tr><td>عدد الأيام</td><td>محسوب</td><td>عدد أيام الإجازة</td></tr>
+<tr><td>السبب</td><td>نص</td><td>سبب الإجازة</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>قيد المراجعة / مقبولة / مرفوضة / منفّذة</td></tr>
+<tr><td>المتبقي</td><td>محسوب</td><td>الأيام المتبقية من الإجازة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الإجازات — جدول الطلبات مع أرصدة المتبقية]</div>
+</div></div>
+
+<div class="screen" id="s6-5">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>المرتبات <span class="screen-en">Payroll</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إعداد ومراجعة واعتماد كشوف المرتبات الشهرية. الحساب التلقائي للراتب الصافي مع الاستقطاعات والإضافات وتأمينات اجتماعية وضريبة الدخل.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>الشهر/السنة</td><td>شهر</td><td>فترة المرتب</td></tr>
+<tr><td>الموظف</td><td>بحث</td><td>أو جميع الموظفين</td></tr>
+<tr><td>الراتب الأساسي</td><td>محسوب</td><td>من بيانات الموظف</td></tr>
+<tr><td>العلاوات</td><td>محسوب</td><td>الإضافات الدورية</td></tr>
+<tr><td>العمل الإضافي</td><td>محسوب</td><td>الإضافي × المعدل</td></tr>
+<tr><td>الخصومات</td><td>جدول</td><td>غياب / تأخير / سلف</td></tr>
+<tr><td>التأمينات</td><td>محسوب</td><td>حصة العامل وصاحب العمل</td></tr>
+<tr><td>ضريبة الدخل</td><td>محسوب</td><td>حسب الجدول الضريبي</td></tr>
+<tr><td>الراتب الصافي</td><td>محسوب</td><td>المبلغ المستحق</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / قيد المراجعة / معتمد / مدفوع</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: المرتبات — كشف المرتب الشهرية مع التفصيل]</div>
+</div></div>
+</section>
+
+<!-- MODULE 7: المخازن -->
+<section class="module" id="mod7">
+<div class="module-header"><div class="module-number">07</div><div><h2>المخازن <span class="module-en">Warehouses</span></h2></div></div>
+<div class="module-desc">وحدة المخازن تدير المخزون المادي: تعريف المخازن، تتبع كميات الأصناف، جرد المخزون، تسوية الفروقات، وحساب تكلفة المخزون باستخدام FIFO أو LIFO أو المتوسط المرجح.</div>
+<div class="module-connections"><span class="tag">المشتريات</span><span class="tag">المبيعات</span><span class="tag">الحسابات</span><span class="tag">الانتاج</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_المخازن</li><li>إدارة_المخازن</li><li>عرض_المخزون</li><li>جرد</li><li>تسوية</li><li>تحويل_بين_مخازن</li></ul></div>
+
+<div class="screen" id="s7-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>المخازن <span class="screen-en">Warehouses</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة المخازن: تعريف كل مخزن بالاسم والموقع والمساحة والمح المسؤول وربطه بحساب محاسبي.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>اسم المخزن</td><td>نص</td><td>الاسم التعريفي</td></tr>
+<tr><td>كود المخزن</td><td>نص</td><td>كود مختصر</td></tr>
+<tr><td>الموقع</td><td>نص</td><td>العنوان أو الوصف</td></tr>
+<tr><td>المساحة</td><td>رقم</td><td>بالمتر المربع</td></tr>
+<tr><td>المح المسؤول</td><td>بحث</td><td>الموظف المسؤول</td></tr>
+<tr><td>الحساب المحاسبي</td><td>بحث</td><td>حساب المخزون في الدليل</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>نشط / مغلق</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: المخازن — بطاقات المخازن مع الإحصائيات]</div>
+</div></div>
+
+<div class="screen" id="s7-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الأصناف في المخازن <span class="screen-en">Stock Items</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض كميات الأصناف في كل مخزن مع تتبع الحد الأدنى والأقصى وتنبيهات نفاد المخزون.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>المخزن</td><td>قائمة</td><td>filtrage by warehouse</td></tr>
+<tr><td>الصنف</td><td>بحث</td><td>filtrage by product</td></tr>
+<tr><td>الكمية الحالية</td><td>محسوب</td><td>الكمية في المخزن</td></tr>
+<tr><td>الحد الأدنى</td><td>من المنتج</td><td>حد التنبيه</td></tr>
+<tr><td>الحالة</td><td>مؤشر</td><td>متوفر / تحت الحد / نفد</td></tr>
+<tr><td>متوسط التكلفة</td><td>محسوب</td><td>تكلفة الوحدة (FIFO/LIFO)</td></tr>
+<tr><td>القيمة الإجمالية</td><td>محسوب</td><td>الكمية × متوسط التكلفة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الأصناف في المخازن — جدول الكميات مع مؤشرات الحالة]</div>
+</div></div>
+
+<div class="screen" id="s7-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>حركة المخزون <span class="screen-en">Stock Movements</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض سجل جميع حركات المخزون: وارد من المشتريات / صادر للمبيعات / تحويل بين مخازن / تعديل يدوي.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>التاريخ</td><td>نطاق</td><td>filtrage by date range</td></tr>
+<tr><td>المخزن</td><td>قائمة</td><td>filtrage by warehouse</td></tr>
+<tr><td>الصنف</td><td>بحث</td><td>filtrage by product</td></tr>
+<tr><td>النوع</td><td>قائمة</td><td>وارد / صادر / تحويل / جرد</td></tr>
+<tr><td>الكمية</td><td>رقم</td><td>الكمية المتحركة</td></tr>
+<tr><td>المرجع</td><td>رابط</td><td>الفاتورة أو أمر التحويل</td></tr>
+<tr><td>الرصيد بعد الحركة</td><td>محسوب</td><td>الرصيد بعد الحركة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: حركة المخزون — السجل الكامل للحركات]</div>
+</div></div>
+
+<div class="screen" id="s7-4">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>جرد المخزون <span class="screen-en">Stock Count</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إجراء جرد فعلي ومقارنته بالكميات الدفترية. توليد تقارير الفروقات وطلبات التسوية. تدعم الجرد الشامل والدوري.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الجرد</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ الجرد</td></tr>
+<tr><td>المخزن</td><td>قائمة</td><td>المخزن المُجَرَّد</td></tr>
+<tr><td>نوع الجرد</td><td>قائمة</td><td>شامل / دوري / عشوائي</td></tr>
+<tr><td>البنود</td><td>جدول</td><td>الصنف / الدفترية / الفعلية / الفرق / القيمة</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / قيد الجرد / مكتمل / مُسوّى</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: جرد المخزون — ورقة الجرد مع الفروقات]</div>
+</div></div>
+
+<div class="screen" id="s7-5">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>تسوية الأرصدة <span class="screen-en">Stock Adjustments</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تسجيل التسويات اليدوية على أرصدة المخزون مع التبرير والاعتماد. تتصل تلقائياً بوحدة الحسابات.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم التسوية</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ التسوية</td></tr>
+<tr><td>المخزن</td><td>قائمة</td><td>المخزن المُسوّى</td></tr>
+<tr><td>البنود</td><td>جدول</td><td>الصنف / قبل / بعد / الفرق / السبب</td></tr>
+<tr><td>السبب</td><td>نص</td><td>التبرير الرسمي</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / قيد المراجعة / معتمدة / مُنفّذة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: تسوية الأرصدة — نموذج التسوية مع معاينة القيود]</div>
+</div></div>
+
+<div class="screen" id="s7-6">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>تكلفة المخزون <span class="screen-en">Inventory Costing</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض وإعداد طريقة حساب تكلفة المخزون: FIFO أو LIFO أو المتوسط المرجح. تدعم مقارنة التأثير على الأرباح.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>طريقة التكلفة</td><td>قائمة</td><td>FIFO / LIFO / المتوسط المرجح</td></tr>
+<tr><td>التطبيق</td><td>قائمة</td><td>عند الشراء / البيع / سنوياً</td></tr>
+<tr><td>التأثير</td><td>محسوب</td><td>مقارنة التأثير على صافي الربح</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: تكلفة المخزون — إعدادات الطريقة مع المقارنة]</div>
+</div></div>
+</section>
+
+<!-- MODULE 8: التقارير -->
+<section class="module" id="mod8">
+<div class="module-header"><div class="module-number">08</div><div><h2>التقارير <span class="module-en">Reports</span></h2></div></div>
+<div class="module-desc">وحدة التقارير توفر أكثر من 50 تقرير مالي وتشغيلي. تدعم التصفية والتدريج والمقارنة بين الفترات والتصدير بصيغ متعددة (PDF / Excel / CSV).</div>
+<div class="module-connections"><span class="tag">الحسابات</span><span class="tag">المشتريات</span><span class="tag">المبيعات</span><span class="tag">الخزينة</span><span class="tag">المخازن</span><span class="tag">الضرائب</span><span class="tag">الموارد البشرية</span></div>
+
+<div class="screen" id="s8-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>قائمة الدخل <span class="screen-en">Income Statement Report</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تقرير قائمة الدخل التفصيلي: الإيرادات حسب التصنيف والمصروفات حسب النوع. يدعم المقارنة بين فترتين.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>الفترة</td><td>نطاق</td><td>بداية ونهاية الفترة</td></tr>
+<tr><td>المقارنة</td><td>نطاق</td><td>فترة مقارنة (اختياري)</td></tr>
+<tr><td>المستوى</td><td>عداد</td><td>عمق العرض التفصيلي</td></tr>
+<tr><td>الفرع</td><td>قائمة</td><td>filtrage by branch</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: تقرير قائمة الدخل — عرض هرمي مع أعمدة المقارنة]</div>
+</div></div>
+
+<div class="screen" id="s8-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الميزانية العمومية <span class="screen-en">Balance Sheet Report</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تقرير الميزانية العمومية: الأصول والخصوم وحقوق الملكية بشكل مزدوج الجانب.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: تقرير الميزانية العمومية — العرض المزدوج الجانب]</div>
+</div></div>
+
+<div class="screen" id="s8-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>التدفقات النقدية <span class="screen-en">Cash Flow Statement</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تقرير التدفقات النقدية: الأنشطة التشغيلية والاستثمارية والتمويلية.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>الفترة</td><td>نطاق</td><td>بداية ونهاية الفترة</td></tr>
+<tr><td>النوع</td><td>قائمة</td><td>تقديري / فعلي / مقارن</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: التدفقات النقدية — العرض حسب الأنشطة الثلاثة]</div>
+</div></div>
+
+<div class="screen" id="s8-4">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>تقارير العملاء <span class="screen-en">Customer Reports</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تقارير شاملة للعملاء: الأرصدة الذممية، كشف حساب، تقرير المبيعات لكل عميل، تقرير المرتجعات، التقييم.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: تقارير العملاء — أعمدة متعددة مع التصدير]</div>
+</div></div>
+
+<div class="screen" id="s8-5">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>تقارير الموردين <span class="screen-en">Supplier Reports</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تقارير الموردين: أرصدة الذمم المدينة، كشف حساب المورد، تقرير المشتريات، تقرير المرتجعات.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: تقارير الموردين — الأرصدة والمشتريات التفصيلية]</div>
+</div></div>
+
+<div class="screen" id="s8-6">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>تقارير المبيعات اليومية <span class="screen-en">Daily Sales Report</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>ملخص المبيعات اليومية: عدد الفواتير، الإجمالي، نسب الضريبة، طرق الدفع، أكثر الأصناف مبيعاً.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: تقرير المبيعات اليومية — لوحة ملخصة مع رسوم بيانية]</div>
+</div></div>
+
+<div class="screen" id="s8-7">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>تقارير المشتريات اليومية <span class="screen-en">Daily Purchases Report</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>ملخص المشتريات اليومية: عدد الفواتير، الإجمالي، أكثر الموردين، أكثر الأصناف المطلوبة.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: تقرير المشتريات اليومية — لوحة ملخصة]</div>
+</div></div>
+
+<div class="screen" id="s8-8">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>تقارير الأعمار <span class="screen-en">AR/AP Aging Reports</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تقارير أعمار الذمم: تقسيم أرصدة العملاء والموردين حسب مدة الاستحقاق (0-30 / 31-60 / 61-90 / أكثر من 90 يوم).</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>نوع التقرير</td><td>قائمة</td><td>AR (مدينة) / AP (دائنة)</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ التقرير</td></tr>
+<tr><td>الفئات</td><td>جدول</td><td>0-30 / 31-60 / 61-90 / 90+ يوم</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: تقارير الأعمار — جدول مقارن بالأعمدة الملونة]</div>
+</div></div>
+
+<div class="screen" id="s8-9">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>تقارير ضريبة الخصم <span class="screen-en">Withholding Tax Reports</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تقرير ضريبة الخصم عند المصدر: إجمالي المدفوعات ونسبة الضريبة والمبلغ المُخصم لكل مورد.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: تقارير ضريبة الخصم — جدول المدفوعات مع مبالغ الخصم]</div>
+</div></div>
+</section>
+
+<!-- MODULE 9: الوثائق -->
+<section class="module" id="mod9">
+<div class="module-header"><div class="module-number">09</div><div><h2>الوثائق <span class="module-en">Documents</span></h2></div></div>
+<div class="module-desc">وحدة الوثائق تدير إدارة المستندات والوثائق الرسمية. توفر نظام قوالب قابل للتعديل وتدفق وثائق رسمي مع التتبع والإعداد.</div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الوثائق</li><li>إنشاء_وثيقة</li><li>تعديل_قالب</li><li>حذف_وثيقة</li><li>اعتماد_وثيقة</li></ul></div>
+
+<div class="screen" id="s9-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>أنواع الوثائق <span class="screen-en">Document Types</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تعريف أنواع الوثائق: فواتير / عقود / مراسلات / تقارير / إشعارات. لكل نوع: قالب ورقم تسلسلي وتدفق عمل.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>اسم النوع</td><td>نص</td><td>اسم نوع الوثيقة</td></tr>
+<tr><td>البادئة</td><td>نص</td><td>بادئة الرقم التسلسلي (مثال: INV-)</td></tr>
+<tr><td>تسلسل رقمي</td><td>عداد</td><td>الرقم التالي المتاح</td></tr>
+<tr><td>القالب</td><td>ملف</td><td>قالب HTML أو DOCX</td></tr>
+<tr><td>التدفق</td><td>قائمة</td><td>مسودة → مراجعة → اعتماد → أرشيف</td></tr>
+<tr><td>المستويات</td><td>عداد</td><td>عدد مراحل الاعتماد</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: أنواع الوثائق — جدول الأنواع مع البادئات والقوالب]</div>
+</div></div>
+
+<div class="screen" id="s9-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الوثائق <span class="screen-en">Documents</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض وإدارة جميع الوثائق المرفوعة. تدعم البحث بالرقم والعنوان والتاريخ والنوع والحالة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الوثيقة</td><td>تلقائي</td><td>تسلسي حسب النوع</td></tr>
+<tr><td>النوع</td><td>قائمة</td><td>نوع الوثيقة</td></tr>
+<tr><td>العنوان</td><td>نص</td><td>عنوان الوثيقة</td></tr>
+<tr><td>المؤلف</td><td>بحث</td><td>الموظف المنشئ</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ الإنشاء</td></tr>
+<tr><td>الملف</td><td>ملف</td><td>الملف المرفق</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / قيد المراجعة / معتمدة / أرشيف</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الوثائق — جدول الوثائق مع فلترة متقدمة]</div>
+</div></div>
+
+<div class="screen" id="s9-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>القوالب <span class="screen-en">Templates</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة وتحرير قوالب الوثائق: تعديل التخطيط والبيانات الديناميكية ورموز QR والتوقيعات.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: القوالب — محرر القوالب مع معاينة]</div>
+</div></div>
+
+<div class="screen" id="s9-4">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>تدفق الوثائق <span class="screen-en">Document Workflow</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>متابعة تدفق الوثائق من الإنشاء إلى الاعتماد والأرشيف. عرض المراحل والمسؤولين عن كل مرحلة والوقت المستغرق.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: تدفق الوثائق — مخطط تدفق مرئي مع حالات المراحل]</div>
+</div></div>
+</section>
+
+<!-- MODULE 10: الشركة -->
+<section class="module" id="mod10">
+<div class="module-header"><div class="module-number">10</div><div><h2>الشركة <span class="module-en">Company</span></h2></div></div>
+<div class="module-desc">وحدة الشركة تدير البيانات الأساسية للشركة: الاسم والسجل التجاري والعنوان وال branches (الفروع) والإعدادات العامة للنظام.</div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_بيانات_الشركة</li><li>تعديل_بيانات_الشركة</li><li>إدارة_الفروع</li><li>تعديل_الإعدادات</li></ul></div>
+
+<div class="screen" id="s10-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>بيانات الشركة <span class="screen-en">Company Info</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض وتعديل البيانات الأساسية للشركة: الاسم والشعار والسجل التجاري والرقم الضريبي والعنوان وبيانات الاتصال.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>اسم الشركة</td><td>نص</td><td>الاسم الرسمي</td></tr>
+<tr><td>الاسم المختصر</td><td>نص</td><td>للعرض في التقارير</td></tr>
+<tr><td>الشعار</td><td>صورة</td><td>شعار الشركة</td></tr>
+<tr><td>السجل التجاري</td><td>نص</td><td>رقم السجل</td></tr>
+<tr><td>الرقم الضريبي</td><td>نص</td><td>رقم التسجيل الضريبي</td></tr>
+<tr><td>العنوان</td><td>نص طويل</td><td>العنوان الكامل</td></tr>
+<tr><td>الهاتف / البريد</td><td>نص</td><td>بيانات الاتصال</td></tr>
+<tr><td>الموقع الإلكتروني</td><td>رابط</td><td>Website</td></tr>
+<tr><td>العملة الافتراضية</td><td>قائمة</td><td>العملة الأساسية</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: بيانات الشركة — نموذج البيانات الأساسية مع الشعار]</div>
+</div></div>
+
+<div class="screen" id="s10-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الفروع <span class="screen-en">Branches</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة فروع الشركة المتعددة. كل فرع له بياناته المستقلة ومخازنه وموظفوه وحساباته.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>اسم الفرع</td><td>نص</td><td>اسم الفرع</td></tr>
+<tr><td>كود الفرع</td><td>نص</td><td>كود مختصر</td></tr>
+<tr><td>المدير</td><td>بحث</td><td>مدير الفرع</td></tr>
+<tr><td>العنوان</td><td>نص</td><td>عنوان الفرع</td></tr>
+<tr><td>رقم الهاتف</td><td>نص</td><td>رقم الهاتف</td></tr>
+<tr><td>الخزن</td><td>قائمة</td><td>الخزن المرتبطة بالفرع</td></tr>
+<tr><td>المخازن</td><td>قائمة</td><td>المخازن المتاحة في الفرع</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>نشط / مغلق</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الفروع — بطاقات الفروع مع بياناتها]</div>
+</div></div>
+
+<div class="screen" id="s10-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الإعدادات <span class="screen-en">Settings</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>الإعدادات العامة للنظام: إعدادات الطباعة، واجهة المستخدم، التنبيهات، العملة الافتراضية، الصيغ الرقمية.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الإعدادات — تبويبات الإعدادات المختلفة]</div>
+</div></div>
+</section>
+
+<!-- MODULE 11: التحليل الذكي -->
+<section class="module" id="mod11">
+<div class="module-header"><div class="module-number">11</div><div><h2>التحليل الذكي <span class="module-en">AI Analysis</span></h2></div></div>
+<div class="module-desc">وحدة التحليل الذكي تستخدم الذكاء الاصطناعي لتحليل البيانات المالية واكتشاف الأخطاء والشذوذات وتقديم توصيات ذكية لتحسين الأداء المالي.</div>
+<div class="module-connections"><span class="tag">الحسابات</span><span class="tag">المبيعات</span><span class="tag">المشتريات</span><span class="tag">التقارير</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_التحليل</li><li>عرض_الأخطاء</li><li>إعدادات_الذكاء_الاصطناعي</li></ul></div>
+
+<div class="screen" id="s11-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>لوحة التحليل <span class="screen-en">Analysis Dashboard</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>لوحة متكاملة تعرض تحليلات ذكية للبيانات المالية: توقعات الإيرادات، تحليل الربحية، كشف الشذوذات، توصيات التحسين.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>فترة التحليل</td><td>نطاق</td><td>الفترة المراد تحليلها</td></tr>
+<tr><td>نوع التحليل</td><td>قائمة</td><td>شامل / مبيعات / مشتريات / أرباح / تدفقات</td></tr>
+<tr><td>المؤشرات</td><td>بطاقات</td><td>KPIs الرئيسية مع المؤشرات التحذيرية</td></tr>
+<tr><td>الرسوم البيانية</td><td>رسوم</td><td>مخططات اتجاهية ومقارنة</td></tr>
+<tr><td>التوصيات</td><td>قائمة</td><td>توصيات مبنية على التحليل</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: لوحة التحليل — رسوم بيانية ومؤشرات KPIs]</div>
+</div></div>
+
+<div class="screen" id="s11-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>كشف الأخطاء <span class="screen-en">Error Detection</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>اكتشاف الأخطاء المحاسبية والبيانات المشبوهة تلقائياً: قيود غير متوازنة، مبالغ شاذة، تكرارات، فواتير بدون ترحيل.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>نوع الخطأ</td><td>قائمة</td><td>جميع الأنواع / ت_balance / مبالغ / تكرار / ترحيل</td></tr>
+<tr><td>الأولوية</td><td>قائمة</td><td>عالية / متوسطة / منخفضة</td></tr>
+<tr><td>الفترة</td><td>نطاق</td><td>الفترة المراد فحصها</td></tr>
+<tr><td>قائمة الأخطاء</td><td>جدول</td><td>التاريخ / النوع / الوصف / الحالة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: كشف الأخطاء — قائمة الأخطاء مع الأولويات]</div>
+</div></div>
+
+<div class="screen" id="s11-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>سجل الأخطاء <span class="screen-en">Error Log</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>سجل كامل بكل الأخطاء المكتشفة وحالتها (جديد / قيد المراجعة / تم الحل / متجاهل). يدعم التصدير والبحث.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: سجل الأخطاء — جدول شامل مع حالات المعالجة]</div>
+</div></div>
+</section>
+
+<!-- MODULE 12: إنتاج الخرسانة -->
+<section class="module" id="mod12">
+<div class="module-header"><div class="module-number">12</div><div><h2>إنتاج الخرسانة <span class="module-en">Concrete Production</span></h2></div></div>
+<div class="module-desc">وحدة إنتاج الخرسانة هي وحدة تخصصية لإدارة عمليات خلط وإنتاج وتسليم الخرسانة الجاهزة. تدير الخلطات والمكونات وطلبات العملاء وأوامر الإنتاج والدفعات وجداول التوصيل والشاحنات والسيLOHات والتكاليف والعيانات (اختبارات الشد والانضغاط). تتصل بوحدات المبيعات والمخازن والحسابات والمقاولين.</div>
+<div class="module-connections"><span class="tag">المبيعات</span><span class="tag">المخازن</span><span class="tag">الحسابات</span><span class="tag">المقاولون</span><span class="tag">الموردون</span><span class="tag">المشتريات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الانتاج</li><li>إدارة_الخلطات</li><li>إنشاء_أمر_انتاج</li><li>تسجيل_دفعة</li><li>إدارة_الشاحنات</li><li>إدارة_السيLOHات</li><li>تسجيل_عيانات</li><li>حساب_التكاليف</li><li>إدارة_جداول_التوصيل</li></ul></div>
+
+<div class="screen" id="s12-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>خلطات خرسانية <span class="screen-en">Mix Designs</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة أنواع الخلطات الخرسانية: مزيج الأسمنت والماء والرمل والحصى مع نسب المix. تحدد متانة الخرسانة (C15 / C20 / C25 / C30 / C40 إلخ) والخصائص الميكانيكية المطلوبة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الخلطة</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>اسم الخلطة</td><td>نص</td><td>مثال: C25 — خلطة 25 ميجاباسكال</td></tr>
+<tr><td>كود الخلطة</td><td>نص</td><td>كود مختصر للخلطة</td></tr>
+<tr><td>القوة المطلوبة</td><td>رقم</td><td>المتانة بالميجاباسكال (MPa)</td></tr>
+<tr><td>نسبة الماء/الأسمنت</td><td>رقم</td><td>نسبة واتر / سمنت</td></tr>
+<tr><td>وزن الأسمنت / م³</td><td>رقم</td><td>كيلوجرام لكل متر مكعب</td></tr>
+<tr><td>وزن الماء / م³</td><td>رقم</td><td>لتر لكل متر مكعب</td></tr>
+<tr><td>وزن الرمل / م³</td><td>رقم</td><td>كيلوجرام لكل متر مكعب</td></tr>
+<tr><td>وزن الحصى / م³</td><td>رقم</td><td>كيلوجرام لكل متر مكعب</td></tr>
+<tr><td>الإضافات</td><td>جدول</td><td>نوع الإضافة / الكمية / الغرض</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>نشط / غير نشط</td></tr>
+<tr><td>ملاحظات</td><td>نص طويل</td><td>تعليمات خاصة بالخلطة</td></tr>
+</table>
+<h4>الأزرار والعمليات</h4>
+<ul><li>إضافة خلطة جديدة</li><li>نسخ خلطة موجودة لتعديلها</li><li>حساب التكلفة التقديرية للم³</li><li>طباعة ورقة الخلطة للمختبر</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الخلطات الخرسانية — جدول الخلطات مع نسب المكونات والقوة]</div>
+</div></div>
+
+<div class="screen" id="s12-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>مكونات الخلطة <span class="screen-en">Mix Components</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة المكونات الأولية للخلطات الخرسانية: أنواع الأسمنت والماء والرمل والحصى والإضافات الكيميائية. تحديد مصادر التوريد والأسعار.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>اسم المكون</td><td>نص</td><td>الاسم التعريفي</td></tr>
+<tr><td>النوع</td><td>قائمة</td><td>أسمنت / ماء / رمل / حصى / إضافة كيميائية</td></tr>
+<tr><td>الوحدة</td><td>قائمة</td><td>كجم / لتر / طن</td></tr>
+<tr><td>المورد</td><td>بحث</td><td>المورد الافتراضي</td></tr>
+<tr><td>السعر</td><td>رقم</td><td>سعر الوحدة</td></tr>
+<tr><td>الخصائص</td><td>نص</td><td>المواصفات الفنية</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>نشط / غير نشط</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: مكونات الخلطة — جدول المكونات مع الأسعار والمواصفات]</div>
+</div></div>
+
+<div class=\"screen" id="s12-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>طلبات العملاء <span class="screen-en">Customer Orders</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>استلام وإدارة طلبات الخرسانة من العملاء: نوع الخلطة والكمية والمكان والوقت المطلوب وموعد التوصيل.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الطلب</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ استلام الطلب</td></tr>
+<tr><td>العميل</td><td>بحث</td><td>العميل الطالب</td></tr>
+<tr><td>المشروع</td><td>بحث</td><td>المشروع المرتبط</td></tr>
+<tr><td>الخلطة</td><td>قائمة</td><td>نوع الخلطة المطلوبة</td></tr>
+<tr><td>الكمية (م³)</td><td>رقم</td><td>الكمية بالمتر المكعب</td></tr>
+<tr><td>مكان التوصيل</td><td>نص</td><td>العنوان أو الموقع</td></tr>
+<tr><td>الوقت المطلوب</td><td>وقت</td><td>وقت التوصيل المطلوب</td></tr>
+<tr><td>رقم أمر البيع</td><td>رابط</td><td>الربط بأمر البيع</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / مؤكد / قيد التنفيذ / مكتمل / ملغي</td></tr>
+<tr><td>ملاحظات</td><td>نص</td><td>تعليمات خاصة (ملحوظة الموقع...)</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: طلبات العملاء — جدول الطلبات مع مواعيد التوصيل]</div>
+</div></div>
+
+<div class="screen" id="s12-4">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>أوامر الإنتاج <span class="screen-en">Production Orders</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تحويل طلبات العملاء لأوامر إنتاج فعلية: تحديد المعدات والطاقية والجدول الزمني. تتبع تقدم الإنتاج.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الأمر</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>طلب العميل</td><td>رابط</td><td>الطلب الأصلي</td></tr>
+<tr><td>المصانع</td><td>قائمة</td><td>المصنع المسؤول</td></tr>
+<tr><td>الخلطة</td><td>قائمة</td><td>نوع الخلطة</td></tr>
+<tr><td>الكمية المطلوبة</td><td>رقم</td><td>بالم³</td></tr>
+<tr><td>الكمية المنتجة</td><td>محسوب</td><td>الكمية المنتجة فعلياً</td></tr>
+<tr><td>وقت بدء الإنتاج</td><td>وقت</td><td>الوقت الفعلي</td></tr>
+<tr><td>وقت انتهاء الإنتاج</td><td>وقت</td><td>الوقت الفعلي</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مخطط / قيد الإنتاج / مكتمل / متوقف</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: أوامر الإنتاج — لوحة تتبع أوامر الإنتاج النشطة]</div>
+</div></div>
+
+<div class="screen" id="s12-5">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>دفعات الإنتاج <span class="screen-en">Production Batches</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تسجيل كل دفعة خرسانية تُنتج: الكمية الفعلية والوزن والوقت ورقم الشاحنة. تربط الدفعة بأمر الإنتاج وطلب العميل.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الدفعة</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>أمر الإنتاج</td><td>رابط</td><td>أمر الإنتاج المرتبط</td></tr>
+<tr><td>الكمية (م³)</td><td>رقم</td><td>كمية الدفعة الفعلية</td></tr>
+<tr><td>الوزن (طن)</td><td>رقم</td><td>الوزن الإجمالي</td></tr>
+<tr><td>وقت الخلط</td><td>وقت</td><td>وقت بدء الخلط</td></tr>
+<tr><td>وقت التحميل</td><td>وقت</td><td>وقت تحميل الشاحنة</td></tr>
+<tr><td>الشاحنة</td><td>قائمة</td><td>الشاحنة الناقلة</td></tr>
+<tr><td>السائق</td><td>بحث</td><td>سائق الشاحنة</td></tr>
+<tr><td>رقم الـ Slip</td><td>نص</td><td>رقم ورقة التسليم</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>قيد التحميل / في الطريق / تم التسليم / مُستلمة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: دفعات الإنتاج — جدول الدفعات مع حالات التوصيل]</div>
+</div></div>
+
+<div class="screen" id="s12-6">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>جداول التوصيل <span class="screen-en">Delivery Schedules</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة جداول التوصيل اليومية والأسبوعية: تخصيص الشاحنات والمعدات لكل طلب وحساب أوقات الوصول المتوقعة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ الجدول</td></tr>
+<tr><td>الشاحنات المتاحة</td><td>جدول</td><td>قائمة الشاحنات وحالتها</td></tr>
+<tr><td>الطلبات</td><td>جدول</td><td>الطلبات المجدولة مع الأوقات</td></tr>
+<tr><td>مسار التوصيل</td><td>نص</td><td>تفاصيل المسار</td></tr>
+<tr><td>وقت التحميل المتوقع</td><td>وقت</td><td>وقت بدء التحميل</td></tr>
+<tr><td>وقت التسليم المتوقع</td><td>وقت</td><td>وقت الوصول المتوقع</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: جداول التوصيل — عرض يومي بالشاحنات والطلبات]</div>
+</div></div>
+
+<div class="screen" id="s12-7">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الشاحنات <span class="screen-en">Trucks</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة أسطول الشاحنات الناقلة للخرسانة: البيانات الفنية وحالة الصيانة والسائقين المخصصين.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الشاحنة</td><td>نص</td><td>رقم اللوحة</td></tr>
+<tr><td>الماركة / الطراز</td><td>نص</td><td>الماركة والطراز</td></tr>
+<tr><td>السعة (م³)</td><td>رقم</td><td>السعة القصوى</td></tr>
+<tr><td>السائق</td><td>بحث</td><td>السائق المخصص</td></tr>
+<tr><td>حالة الصيانة</td><td>شارة</td><td>جارية / مجدولة / خارج الخدمة</td></tr>
+<tr><td>آخر صيانة</td><td>تاريخ</td><td>تاريخ آخر صيانة</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>متاحة / في مهمة / خارج الخدمة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الشاحنات — بطاقات الشاحنات مع حالاتها]</div>
+</div></div>
+
+<div class="screen" id="s12-8">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>السيLOHات <span class="screen-en">Silos</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة خزانات الأسمنت (Silos): تتبع كميات الأسمنت المخزنة ومستويات التعبئة وأوقات إعادة التعبئة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم السيلو</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>الاسم</td><td>نص</td><td>اسم السيلو</td></tr>
+<tr><td>المصنع</td><td>قائمة</td><td>المصنع التابع له</td></tr>
+<tr><td>السعة (طن)</td><td>رقم</td><td>السعة القصوى</td></tr>
+<tr><td>المحتوي الحالي</td><td>رقم</td><td>الكمية الحالية</td></tr>
+<tr><td>نسبة التعبئة</td><td>محسوب</td><td>النسبة المئوية</td></tr>
+<tr><td>نقطة إعادة التعبئة</td><td>رقم</td><td>الحد الأدنى لإعادة الطلب</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>ممتلئ / يحتاج تعبئة / خارج الخدمة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: السيلوهات — مؤشرات المستويات مع تنبيهات إعادة التعبئة]</div>
+</div></div>
+
+<div class="screen" id="s12-9">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>التكاليف <span class="screen-en">Costs</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>حساب تكاليف الإنتاج: تكلفة المكونات وتكلفة النقل وتكلفة العمالة والتكاليف غير المباشرة. تدعم حساب التكلفة لكل م³ ومقارنتها بسعر البيع.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>الفترة</td><td>نطاق</td><td>النطاق الزمني للتكاليف</td></tr>
+<tr><td>المصنع</td><td>قائمة</td><td>المصنع</td></tr>
+<tr><td>تكلفة المكونات</td><td>محسوب</td><td>إجمالي تكلفة المواد</td></tr>
+<tr><td>تكلفة النقل</td><td>محسوب</td><td>تكاليف الشاحنات والوقود</td></tr>
+<tr><td>تكلفة العمالة</td><td>محسوب</td><td>رواتب العمالة المباشرة</td></tr>
+<tr><td>تكاليف غير مباشرة</td><td>رقم</td><td>الكهرباء والمياه والصيانة</td></tr>
+<tr><td>التكلفة الإجمالية</td><td>محسوب</td><td>مجموع كل التكاليف</td></tr>
+<tr><td>التكلفة / م³</td><td>محسوب</td><td>التكلفة لكل متر مكعب</td></tr>
+<tr><td>هامش الربح</td><td>محسوب</td><td>السعر - التكلفة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: التكاليف — تفصيل التكاليف مع مقارنة الربحية]</div>
+</div></div>
+
+<div class="screen" id="s12-10">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>عيانات <span class="screen-en">Tests</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تسجيل نتائج اختبارات الخرسانة: اختبار الشد (Cube Test) واختبار الانضغاط في الأعمار المختلفة (7 / 14 / 28 يوم). تتبع النتائج ومقارنتها بالمواصفات المطلوبة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الاختبار</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>الدفعة</td><td>رابط</td><td>الدفعة المراد اختبارها</td></tr>
+<tr><td>الخلطة</td><td>قائمة</td><td>نوع الخلطة</td></tr>
+<tr><td>العمر (أيام)</td><td>قائمة</td><td>7 / 14 / 28 / 56 يوم</td></tr>
+<tr><td>رقم العينة</td><td>نص</td><td>رقم تسلسلي للعينة</td></tr>
+<tr><td>أبعاد العينة</td><td>أرقام</td><td>العرض × الطول × الارتفاع</td></tr>
+<tr><td>الوزن</td><td>رقم</td><td>وزن العينة</td></tr>
+<tr><td>قوة الانضغاط (MPa)</td><td>رقم</td><td>النتيجة الفعلية</td></tr>
+<tr><td>القوة المطلوبة</td><td>من الخلطة</td><td>القوة المتطلبة</td></tr>
+<tr><td>النتيجة</td><td>شارة</td><td>ناجح / راسب / قيد المراجعة</td></tr>
+<tr><td>المختبر</td><td>نص</td><td>اسم المختبر</td></tr>
+<tr><td>تاريخ الاختبار</td><td>تاريخ</td><td>التاريخ الفعلي</td></tr>
+<tr><td>التقرير</td><td>ملف</td><td>تقرير المختبر الأصلي</td></tr>
+</table>
+<h4>الأزرار والعمليات</h4>
+<ul><li>إضافة نتيجة اختبار جديدة</li><li>عرض سجل الاختبارات للخلطة</li><li>مقارنة النتائج مع المواصفات</li><li>طباعة تقرير الاختبار</li><li>تنبيه تلقائي عند رسوخ اختبار</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: العيانات — جدول نتائج الاختبارات مع رسوم بيانية للتطور]</div>
+</div></div>
+</section>
+
+<!-- MODULE 13: المقاولون -->
+<section class="module" id="mod13">
+<div class="module-header"><div class="module-number">13</div><div><h2>المقاولون <span class="module-en">Contractors</span></h2></div></div>
+<div class="module-desc">وحدة المقاولون تدير عقود المقاولات: البيانات الأساسية للمقاولين وبنود العقود والشهادات المؤقتة (Interim Certificates) والمدفوعات المرتبطة. تدعم تتبع سير العمل من توقيع العقد حتى التسوية النهائية.</div>
+<div class="module-connections"><span class="tag">الحسابات</span><span class="tag">الخزينة</span><span class="tag">المبيعات</span><span class="tag">الضرائب</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_المقاولين</li><li>إدارة_العقود</li><li>إنشاء_شهادة</li><li>اعتماد_شهادة</li><li>تسجيل_مدفوعة</li></ul></div>
+
+<div class="screen" id="s13-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>المقاولون <span class="screen-en">Contractors</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة بيانات المقاولين: المعلومات الأساسية والبيانات الفنية وتقييمات الأداء السابقة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم المقاول</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>اسم المقاول / الشركة</td><td>نص</td><td>الاسم الرسمي</td></tr>
+<tr><td>التخصص</td><td>قائمة</td><td>بناء / كهرباء / سباكة / finishes</td></tr>
+<tr><td>الرقم الضريبي</td><td>نص</td><td>رقم التسجيل الضريبي</td></tr>
+<tr><td>جهة الاتصال</td><td>نص</td><td>المدير المسؤول</td></tr>
+<tr><td>الهاتف / البريد</td><td>نص</td><td>بيانات الاتصال</td></tr>
+<tr><td>المرفقات</td><td>ملفات</td><td>السجل التجاري، التراخيص، أعمال سابقة</td></tr>
+<tr><td>التقييم</td><td>نجمات</td><td>تقييم الأداء العام (1-5)</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>نشط / غير نشط / محظور</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: المقاولون — بطاقات المقاولين مع تقييمات الأداء]</div>
+</div></div>
+
+<div class="screen" id="s13-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>العقود <span class="screen-en">Contracts</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة عقود المقاولات: الشروط والأحكام والمبالغ والجدول الزمني وشروط الدفع. تتبع تنفيذ العقد والمدفوعات.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم العقد</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>عنوان العقد</td><td>نص</td><td>وصف مختصر</td></tr>
+<tr><td>المقاول</td><td>بحث</td><td>المقاول</td></tr>
+<tr><td>العميل / المشروع</td><td>بحث</td><td>العميل أو المشروع</td></tr>
+<tr><td>قيمة العقد</td><td>رقم</td><td>القيمة الإجمالية</td></tr>
+<tr><td>نسبة الاحتفاظ</td><td>نسبة</td><td>نسبة الاحتفاظ (Retention)</td></tr>
+<tr><td>تاريخ البداية</td><td>تاريخ</td><td>تاريخ بدء التنفيذ</td></tr>
+<tr><td>تاريخ النهاية</td><td>تاريخ</td><td>الموعد النهائي</td></tr>
+<tr><td>شروط الدفع</td><td>نص</td><td>شروط الدفع الشهرية</td></tr>
+<tr><td>المدفوعات</td><td>محسوب</td><td>إجمالي المدفوعات</td></tr>
+<tr><td>المتبقي</td><td>محسوب</td><td>المبلغ المتبقي</td></tr>
+<tr><td>نسبة الإنجاز</td><td>محسوب</td><td>نسبة الإنجاز الإجمالية</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / ساري / مكتمل / مُلغى / مُسوّى</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: العقود — جدول العقود مع شريط التقدم والمدفوعات]</div>
+</div></div>
+
+<div class="screen" id="s13-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>بنود العقود <span class="screen-en">Contract Items</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تفصيل بنود العقد: كل بند له كمية وسعر وحدة وقيمة إجمالية ونسبة الإنجاز. تتبع إنجاز كل بند على حدة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم البند</td><td>تلقائي</td><td>تسلسي</td></tr>
+<tr><td>الوصف</td><td>نص</td><td>وصف البند</td></tr>
+<tr><td>الوحدة</td><td>قائمة</td><td>م² / م³ / م / كجم / قطعة</td></tr>
+<tr><td>الكمية</td><td>رقم</td><td>الكمية المطلوبة</td></tr>
+<tr><td>سعر الوحدة</td><td>رقم</td><td>سعر الوحدة</td></tr>
+<tr><td>القيمة الإجمالية</td><td>محسوب</td><td>الكمية × السعر</td></tr>
+<tr><td>الكمية المنجزة</td><td>رقم</td><td>الكمية الفعلية</td></tr>
+<tr><td>نسبة الإنجاز</td><td>محسوب</td><td>المنجز / المطلوب</td></tr>
+<tr><td>القيمة المنجزة</td><td>محسوب</td><td>القيمة المحققة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: بنود العقود — جدول البنود مع شرائط التقدم]</div>
+</div></div>
+
+<div class="screen" id="s13-4">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الشهادات المؤقتة <span class="screen-en">Interim Certificates</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إصدار شهادات الدفع المؤقتة (Interim Payment Certificates): تقييم الإنجاز الشهري وحساب المبلغ المستحق مع الاحتفاظ.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الشهادة</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>العقد</td><td>بحث</td><td>العقد المرتبط</td></tr>
+<tr><td>الفترة</td><td>شهر</td><td>شهر الشهادة</td></tr>
+<tr><td>قيمة الإنجاز</td><td>رقم</td><td>قيمة الإنجاز خلال الفترة</td></tr>
+<tr><td>الاحتفاظ</td><td>محسوب</td><td>نسبة الاحتفاظ من القيمة</td></tr>
+<tr><td>الضرائب</td><td>محسوب</td><td>الضرائب المستحقة</td></tr>
+<tr><td>المبلغ الصافي</td><td>محسوب</td><td>المبلغ المستحق للدفع</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / قيد المراجعة / معتمدة / مدفوعة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الشهادات المؤقتة — نموذج الشهادة مع حسابات الاحتفاظ]</div>
+</div></div>
+
+<div class="screen" id="s13-5">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>المدفوعات <span class="screen-en">Payments</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تسجيل المدفوعات للمقاولين: تحديد الشهادة المرتبطة وطريقة الدفع وتأكيد السداد.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم المدفوعة</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>العقد</td><td>بحث</td><td>العقد</td></tr>
+<tr><td>الشهادة</td><td>بحث</td><td>الشهادة المؤقتة</td></tr>
+<tr><td>المبلغ</td><td>رقم</td><td>المبلغ المدفوع</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ الدفع</td></tr>
+<tr><td>طريقة الدفع</td><td>قائمة</td><td>شيك / تحويل / نقد</td></tr>
+<tr><td>المرجع</td><td>نص</td><td>رقم الشيك أو التحويل</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / مُعتمدة / مُدفوعة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: المدفوعات — جدول المدفوعات مع الربط بالشهادات]</div>
+</div></div>
+</section>
+
+<!-- MODULE 14: الموردون (وحدة منفصلة) -->
+<section class="module" id="mod14">
+<div class="module-header"><div class="module-number">14</div><div><h2>الموردون <span class="module-en">Suppliers (Standalone)</span></h2></div></div>
+<div class="module-desc">وحدة الموردون كوحدة مستقلة لإدارة علاقة الموردين: ملف المورد الشامل مع تاريخ المعاملات والتقييم وتصنيف الموردين حسب الأداء والموثوقية. تختلف عن شاشة الموردين في وحدة المشتريات بأنها توفر رؤية 360 درجة.</div>
+<div class="module-connections"><span class="tag">المشتريات</span><span class="tag">الحسابات</span><span class="tag">الخزينة</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الموردين</li><li>إضافة_مورد</li><li>تعديل_بيانات_مورد</li><li>تقييم_مورد</li><li> froze مورد</li></ul></div>
+
+<div class="screen" id="s14-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>ملف المورد <span class="screen-en">Supplier Profile</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض شامل لملف المورد: البيانات الأساسية والسجل الضريبي والبنكي والعقود والمشتريات والمرتجعات والتأخيرات والتقييم.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>البيانات الأساسية</td><td>قسم</td><td>جميع بيانات المورد الأساسية</td></tr>
+<tr><td>السجل الضريبي</td><td>قسم</td><td>رقم التسجيل ونسبة الخصم وVAT</td></tr>
+<tr><td>الحساب البنكي</td><td>قسم</td><td>IBAN وSWIFT والحسابات</td></tr>
+<tr><td>تاريخ المشتريات</td><td>جدول</td><td>سجل المشتريات مع الفواتير</td></tr>
+<tr><td>المرتجعات</td><td>جدول</td><td>سجل المرتجعات</td></tr>
+<tr><td>المتأخرات</td><td>جدول</td><td>التأخيرات في التوريد</td></tr>
+<tr><td>التقييم</td><td>نجمات</td><td>تقييم الأداء العام</td></tr>
+<tr><td>المرفقات</td><td>ملفات</td><td>السجل التجاري، التراخيص، عقود</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: ملف المورد — عرض شامل 360 درجة]</div>
+</div></div>
+</section>
+
+<!-- MODULE 15: الضرائب -->
+<section class="module" id="mod15">
+<div class="module-header"><div class="module-number">15</div><div><h2>الضرائب <span class="module-en">Tax</span></h2></div></div>
+<div class="module-desc">وحدة الضرائب تدير الإقرارات الضريبية وفواتير VAT والاتصال بمصلحة الضرائب (E-Invoice). توفر حساب تلقائي لضريبة القيمة المضافة وضريبة الدخل وضرائب الخصم عند المصدر.</div>
+<div class="module-connections"><span class="tag">المشتريات</span><span class="tag">المبيعات</span><span class="tag">الحسابات</span><span class="tag">الموردون</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الضرائب</li><li>إعداد_إقرار</li><li>اعتماد_إقرار</li><li>إعدادات_الضرائب</li><li>اتصال_مصلحة_الضرائب</li></ul></div>
+
+<div class="screen" id="s15-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>فواتير ضريبية <span class="screen-en">Tax Invoices</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض وإدارة الفواتير الضريبية: فواتير VAT الصادرة والواردة مع الحساب التلقائي للمبالغ ونسب الضريبة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الفاتورة الضريبية</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>نوع الفاتورة</td><td>قائمة</td><td>صادرة (Sale) / واردة (Purchase)</td></tr>
+<tr><td>الطرف</td><td>بحث</td><td>العميل أو المورد</td></tr>
+<tr><td>المبلغ قبل الضريبة</td><td>رقم</td><td>الإجمالي قبل VAT</td></tr>
+<tr><td>نسبة VAT</td><td>نسبة</td><td>14% (النسبة القياسية)</td></tr>
+<tr><td>مبلغ VAT</td><td>محسوب</td><td>المبلغ المحسوب</td></tr>
+<tr><td>الإجمالي شامل الضريبة</td><td>محسوب</td><td>الإجمالي النهائي</td></tr>
+<tr><td>حالة الإرسال</td><td>شارة</td><td>غير مُرسل / مُرسل / مقبول / مرفوض</td></tr>
+<tr><td>رقم التأكيد</td><td>نص</td><td>رقم التأكيد من مصلحة الضرائب</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الفواتير الضريبية — جدول الفواتير مع حالات الإرسال]</div>
+</div></div>
+
+<div class="screen" id="s15-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الإعدادات <span class="screen-en">Tax Settings</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إعدادات الضرائب: النسب المطبقة وحسابات الضرائب المحاسبية وطريقة الحساب (inclusive/exclusive).</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>VAT النسبة</td><td>نسبة</td><td>نسبة ضريبة القيمة المضافة</td></tr>
+<tr><td>نسبة الخصم عند المصدر</td><td>نسبة</td><td>للمقاولات والخدمات</td></tr>
+<tr><td>ضريبة الدخل</td><td>جدول</td><td>جدول النسب التصاعدية</td></tr>
+<tr><td>طريقة الحساب</td><td>قائمة</td><td>شامل / غير شامل</td></tr>
+<tr><td>حسابات VAT</td><td>بحث</td><td>حساب VAT المدينة والدائنة</td></tr>
+<tr><td>رقم التسجيل</td><td>نص</td><td>رقم التسجيل في مصلحة الضرائب</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: إعدادات الضرائب — النسب والحسابات والاتصال]</div>
+</div></div>
+
+<div class="screen" id="s15-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الاتصال بمصلحة الضرائب <span class="screen-en">Tax Authority Connection</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إعداد الاتصال مع منظومة مصلحة الضرائب: ربط النظام بالخادم الحكومي وإرسال الفواتير واستلام التأكيدات.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الاتصال بمصلحة الضرائب — حالة الاتصال وسجل الإرسال]</div>
+</div></div>
+
+<div class="screen" id="s15-4">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الفاتورة الإلكترونية <span class="screen-en">E-Invoice</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إنشاء وإرسال الفواتير الإلكترونية وفقاً لمتطلبات مصلحة الضرائب: توليد XML/JSON وتقديمه وعرض حالة القبول.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الفاتورة الإلكترونية — معاينة الفاتورة وحالة الإرسال]</div>
+</div></div>
+</section>
+
+<!-- MODULE 16: الشيكات -->
+<section class="module" id="mod16">
+<div class="module-header"><div class="module-number">16</div><div><h2>الشيكات <span class="module-en">Cheques</span></h2></div></div>
+<div class="module-desc">وحدة الشيكات تدير الشيكات المقبوضة والمسددة: التسجيل والتحصيل والتأكد من الدفع وتسجيل الشيكات المرتجعة. تتصل بوحدة الخزينة ووحدة الحسابات.</div>
+<div class="module-connections"><span class="tag">الخزينة</span><span class="tag">الحسابات</span><span class="tag">المبيعات</span><span class="tag">المشتريات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الشيكات</li><li>تسجيل_شيك</li><li>تسديد_شيك</li><li>إعادة_شيك</li><li>إلغاء_شيك</li></ul></div>
+
+<div class="screen" id="s16-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>شيكات مقبوضة <span class="screen-en">Received Cheques</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تسجيل الشيكات المقبوضة من العملاء: رقم الشيك والبنك والعميل والمبلغ وموعد التحصيل. تتبع حالة كل شيك من القبول إلى التحصيل أو الإعادة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الشيك</td><td>نص</td><td>الرقم على الشيك</td></tr>
+<tr><td>البنك</td><td>قائمة</td><td>البنك المسحب عليه</td></tr>
+<tr><td>المبلغ</td><td>رقم</td><td>قيمة الشيك</td></tr>
+<tr><td>العميل</td><td>بحث</td><td>العميل المُعطي</td></tr>
+<tr><td>تاريخ الإصدار</td><td>تاريخ</td><td>تاريخ الشيك</td></tr>
+<tr><td>تاريخ التحصيل المتوقع</td><td>تاريخ</td><td>موعد التحصيل</td></tr>
+<tr><td>المرجع</td><td>نص</td><td>رقم الفاتورة المرتبطة</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>جديد / مُودع / مُتحصل / مُرفوض / مُعادة</td></tr>
+<tr><td>ملاحظات</td><td>نص</td><td>ملاحظات</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الشيكات المقبوضة — جدول الشيكات مع شريط الحالة الملون]</div>
+</div></div>
+
+<div class="screen" id="s16-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>شيكات مسددة <span class="screen-en">Paid Cheques</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض الشيكات الصادرة للموردين: تسجيل الشيكات المدفوعة ومواعيد السداد وحالاتها.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الشيكات المسددة — جدول الشيكات الصادرة]</div>
+</div></div>
+
+<div class="screen" id="s16-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>حالات الشيك <span class="screen-en">Cheque Status</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>متابعة حالة جميع الشيكات: تحويل الحالات وتسجيل الأسباب. تدعم التنبيهات التلقائية عند اقتراب موعد التحصيل.</p>
+<h4>الحالة المتاحة</h4>
+<ul><li>جديد — تم تسجيل الشيك</li><li>مُودع — تم إيداعه في البنك</li><li>مُتحصل — تم تحصيل المبلغ</li><li>مُرفوض — رفض البنك التحصيل</li><li>مُعادة — أُعيد للعميل</li><li>ملغي — تم إلغاء الشيك</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: حالات الشيك — مخطط تدفق الحالات مع التنبيهات]</div>
+</div></div>
+</section>
+
+<!-- MODULE 17: مرتجعات المشتريات -->
+<section class="module" id="mod17">
+<div class="module-header"><div class="module-number">17</div><div><h2>مرتجعات المشتريات <span class="module-en">Purchase Returns</span></h2></div></div>
+<div class="module-desc">وحدة مرتجعات المشتريات تدير إرجاع البضاعة التالفة أو غير المتوافقة إلى الموردين. تتصل بوحدة المشتريات ووحدة المخازن ووحدة الحسابات لتوليد القيود العكسية التلقائية.</div>
+<div class="module-connections"><span class="tag">المشتريات</span><span class="tag">المخازن</span><span class="tag">الحسابات</span><span class="tag">الموردون</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_مرتجعات_المشتريات</li><li>إنشاء_مرتجع</li><li>اعتماد_مرتجع</li><li>طباعة_سند_مرتجع</li></ul></div>
+
+<div class="screen" id="s17-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>مرتجعات المشتريات <span class="screen-en">Purchase Returns</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إنشاء وعرض واعتماد مرتجعات المشتريات: ربط بالفاتورة الأصلية واختيار الأصناف المُعادة مع الأسباب.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم المرتجع</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ المرتجع</td></tr>
+<tr><td>فاتورة الشراء</td><td>بحث</td><td>الفاتورة الأصلية</td></tr>
+<tr><td>المورد</td><td>بحث</td><td>المورد (من الفاتورة)</td></tr>
+<tr><td>المخزن</td><td>قائمة</td><td>المخزن المُعاد البضاعة منه</td></tr>
+<tr><td>الأصناف</td><td>جدول</td><td>الصنف / الكمية / السعر / السبب</td></tr>
+<tr><td>السبب</td><td>قائمة</td><td>تالف / غير مطابق / زائد / خطأ طباعة</td></tr>
+<tr><td>الإجمالي</td><td>محسوب</td><td>قيمة المرتجع</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / قيد المراجعة / معتمدة / مُنفّذة</td></tr>
+</table>
+<h4>القيود التلقائية</h4>
+<ul><li>دائن: حساب المخزون (المخزن)</li><li>مدين: حساب المورد (الذمة)</li><li>دائن: حساب ضريبة القيمة المضافة المدينة (إن وُجدت)</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: مرتجعات المشتريات — نموذج المرتجع مع الربط بالفاتورة]</div>
+</div></div>
+</section>
+
+<!-- MODULE 18: مرتجعات المبيعات -->
+<section class="module" id="mod18">
+<div class="module-header"><div class="module-number">18</div><div><h2>مرتجعات المبيعات <span class="module-en">Sales Returns</span></h2></div></div>
+<div class="module-desc">وحدة مرتجعات المبيعات تدير المرتجعات من العملاء: استلام البضاعة المرتجعة وإصدار إشعارات دائنة وتحديث المخزون والقيود المحاسبية.</div>
+<div class="module-connections"><span class="tag">المبيعات</span><span class="tag">المخازن</span><span class="tag">الحسابات</span><span class="tag">العملاء</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_مرتجعات_المبيعات</li><li>إنشاء_مرتجع</li><li>اعتماد_مرتجع</li><li>إصدار_إشعار_دائن</li></ul></div>
+
+<div class="screen" id="s18-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>مرتجعات المبيعات <span class="screen-en">Sales Returns</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إنشاء وعرض واعتماد مرتجعات المبيعات: ربط بالفاتورة الأصلية واختيار الأصناف المرتجعة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم المرتجع</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ المرتجع</td></tr>
+<tr><td>فاتورة البيع</td><td>بحث</td><td>الفاتورة الأصلية</td></tr>
+<tr><td>العميل</td><td>بحث</td><td>العميل المُعيد</td></tr>
+<tr><td>المخزن</td><td>قائمة</td><td>المخزن المُستلم للبضاعة</td></tr>
+<tr><td>الأصناف</td><td>جدول</td><td>الصنف / الكمية / السعر / السبب</td></tr>
+<tr><td>سبب المرتجع</td><td>قائمة</td><td>تالف / خطأ طلب / عدم رضا / أخرى</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / قيد المراجعة / معتمدة / مُنفّذة</td></tr>
+</table>
+<h4>القيود التلقائية</h4>
+<ul><li>مدين: حساب إيرادات المبيعات (عكس)</li><li>دائن: حساب العميل (الذمة)</li><li>مدين: حساب المخزون / دائن: حساب تكلفة البضاعة المباعة</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: مرتجعات المبيعات — نموذج المرتجع مع الإشعارات الدائنة]</div>
+</div></div>
+</section>
+
+<!-- MODULE 19: تسوية الأرصدة -->
+<section class="module" id="mod19">
+<div class="module-header"><div class="module-number">19</div><div><h2>تسوية الأرصدة <span class="module-en">Stock Adjustments</span></h2></div></div>
+<div class="module-desc">وحدة تسوية الأرصدة توفر آلية رسمية لتعديل أرصدة المخزون مع التبرير والاعتماد الكامل. تختلف عن التسوية في وحدة المخازن بأنها توفر تدفق عمل أكثر صرامة مع موافقات متعددة.</div>
+<div class="module-connections"><span class="tag">المخازن</span><span class="tag">الحسابات</span><span class="tag">المراجعة</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>إنشاء_تسوية</li><li>اعتماد_تسوية</li><li>تنفيذ_تسوية</li></ul></div>
+
+<div class="screen" id="s19-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>تسوية الأرصدة <span class="screen-en">Stock Adjustments</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>طلب وتنفيذ تسوية أرصدة المخزون: إضافة/خصم كميات مع تبرير رسمي واعتماد من المسؤول.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم التسوية</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ التسوية</td></tr>
+<tr><td>المخزن</td><td>قائمة</td><td>المخزن</td></tr>
+<tr><td>نوع التسوية</td><td>قائمة</td><td>إضافة / خصم / استبدال</td></tr>
+<tr><td>البنود</td><td>جدول</td><td>الصنف / الكمية قبل / بعد / الفرق / السبب</td></tr>
+<tr><td>التبرير</td><td>نص</td><td>التبرير المكتوب</td></tr>
+<tr><td>المرفق</td><td>ملف</td><td>مستند داعم (صورة / تقرير)</td></tr>
+<tr><td>مقدم الطلب</td><td>بحث</td><td>الموظف المُطلب</td></tr>
+<tr><td>المعتمد</td><td>بحث</td><td>المسؤول عن الاعتماد</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / قيد المراجعة / اعتماد أولي / اعتماد نهائي / مُنفّذة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: تسوية الأرصدة — نموذج مع تدفق الاعتمادات]</div>
+</div></div>
+</section>
+
+<!-- MODULE 20: المقبوضات والمدفوعات -->
+<section class="module" id="mod20">
+<div class="module-header"><div class="module-number">20</div><div><h2>المقبوضات والمدفوعات <span class="module-en">Payment Receipts</span></h2></div></div>
+<div class="module-desc">وحدة المقبوضات والمدفوعات تدير سندات القبض وسندات الصرف: تسجيل جميع الواردات والمصروفات النقدية والبنكية مع ربطها بالفواتير.</div>
+<div class="module-connections"><span class="tag">الخزينة</span><span class="tag">الحسابات</span><span class="tag">المبيعات</span><span class="tag">المشتريات</span><span class="tag">الشيكات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_المقبوضات</li><li>إنشاء_سند_قبض</li><li>إنشاء_سند_صرف</li><li>اعتماد_سند</li><li>طباعة_سند</li></ul></div>
+
+<div class="screen" id="s20-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>سندات القبض <span class="screen-en">Receipt Vouchers</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تسجيل سندات القبض: استلام المبالغ من العملاء نقداً أو تحويل بنكي أو شيك. ربط السند بالفواتير المستحقة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم السند</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ القبض</td></tr>
+<tr><td>العميل</td><td>بحث</td><td>العميل الدافع</td></tr>
+<tr><td>المبلغ</td><td>رقم</td><td>المبلغ المقبوض</td></tr>
+<tr><td>طريقة الدفع</td><td>قائمة</td><td>نقدي / شيك / تحويل</td></tr>
+<tr><td>الخزنة / البنك</td><td>قائمة</td><td>وجهة المبلغ</td></tr>
+<tr><td>الفواتير</td><td>جدول</td><td>ربط المبلغ بالفواتير المستحقة</td></tr>
+<tr><td>مرجع الدفع</td><td>نص</td><td>رقم الشيك أو التحويل</td></tr>
+<tr><td>المتبقي للعميل</td><td>محسوب</td><td>الرصيد المتبقي بعد القبض</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / مُعتمدة / مُلغيّة</td></tr>
+</table>
+<h4>القيود التلقائية</h4>
+<ul><li>مدين: الخزنة أو البنك</li><li>دائن: حساب العميل (الذمة)</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: سندات القبض — نموذج السند مع ربط الفواتير]</div>
+</div></div>
+
+<div class="screen" id="s20-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>سندات الصرف <span class="screen-en">Payment Vouchers</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تسجيل سندات الصرف: دفع المبالغ للموردين أو المصروفات العامة. ربط السند بالفواتير المستحقة أو نوع المصروف.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم السند</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ الصرف</td></tr>
+<tr><td>المورد</td><td>بحث</td><td>المورد المستلم</td></tr>
+<tr><td>المبلغ</td><td>رقم</td><td>المبلغ المدفوع</td></tr>
+<tr><td>طريقة الدفع</td><td>قائمة</td><td>نقدي / شيك / تحويل</td></tr>
+<tr><td>الخزنة / البنك</td><td>قائمة</td><td>المصدر</td></tr>
+<tr><td>الفواتير</td><td>جدول</td><td>ربط بالفواتير المستحقة</td></tr>
+<tr><td>نوع المصروف</td><td>قائمة</td><td>فاتورة / مصروف عام / سلفة</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / مُعتمدة / مُلغاة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: سندات الصرف — نموذج السند مع ربط الفواتير]</div>
+</div></div>
+</section>
+
+<!-- MODULE 21: السلف -->
+<section class="module" id="mod21">
+<div class="module-header"><div class="module-number">21</div><div><h2>السلف <span class="module-en">Requisitions / Advances</span></h2></div></div>
+<div class="module-desc">وحدة السلف تدير طلبات السلف من الموظفين والمقاولين وحساباتها: تقديم واعتماد وصرف واسترداد السلف مع خصمها من الرواتب أو المدفوعات.</div>
+<div class="module-connections"><span class="tag">الحسابات</span><span class="tag">الخزينة</span><span class="tag">الموارد البشرية</span><span class="tag">المقاولون</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_السلف</li><li>إنشاء_طلب_سلفة</li><li>اعتماد_سلفة</li><li>صرف_سلفة</li><li>استرداد_سلفة</li></ul></div>
+
+<div class="screen" id="s21-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>طلبات السلف <span class="screen-en">Advance Requests</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تقديم واعتماد طلبات السلف: تحديد المبلغ والغرض والطريقة المستردة وربطها بالموظف أو المقاول.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الطلب</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ الطلب</td></tr>
+<tr><td>نوعBeneficiary</td><td>قائمة</td><td>موظف / مقاول</td></tr>
+<tr><td>الاسم</td><td>بحث</td><td>الموظف أو المقاول</td></tr>
+<tr><td>المبلغ</td><td>رقم</td><td>مبلغ السلفة</td></tr>
+<tr><td>الغرض</td><td>نص</td><td>غرض السلفة</td></tr>
+<tr><td>طريقة الاسترداد</td><td>قائمة</td><td>دفعة واحدة / أقساط / خصم من الرواتب</td></tr>
+<tr><td>عدد الأقساط</td><td>عدد</td><td>عدد أقساط الاسترداد</td></tr>
+<tr><td>المبلغ المسترد</td><td>محسوب</td><td>إجمالي المسترد حتى الآن</td></tr>
+<tr><td>المتبقي</td><td>محسوب</td><td>المبلغ المتبقي</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / قيد المراجعة / معتمدة / مُستردة / مُلغاة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: طلبات السلف — جدول الطلبات مع شريط التقدم]</div>
+</div></div>
+</section>
+
+<!-- MODULE 22: طلبات عروض الأسعار -->
+<section class="module" id="mod22">
+<div class="module-header"><div class="module-number">22</div><div><h2>طلبات عروض الأسعار <span class="module-en">RFQ</span></h2></div></div>
+<div class="module-desc">وحدة طلبات عروض الأسعار (Request for Quotation) تدير عملية طلب العروض من الموردين لمنتجات أو خدمات معينة ومقارنة العروض المستلمة.</div>
+<div class="module-connections"><span class="tag">المشتريات</span><span class="tag">الموردون</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>إنشاء_طلب_عرض</li><li>إرسال_للموردين</li><li>مقارنة_العروض</li><li>اعتماد_عرض</li></ul></div>
+
+<div class="screen" id="s22-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>طلبات عروض الأسعار <span class="screen-en">Request for Quotation</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إنشاء طلب عرض سعر وإرساله لموردين متعددين ثم عرض ومقارنة العروض المستلمة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم الطلب</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>التاريخ</td><td>تاريخ</td><td>تاريخ الإصدار</td></tr>
+<tr><td>الموردون</td><td>بحث متعدد</td><td>الموردون المُرسل لهم</td></tr>
+<tr><td>الأصناف</td><td>جدول</td><td>الصنف / الكمية / المواصفات</td></tr>
+<tr><td>موعد التسليم</td><td>تاريخ</td><td>التاريخ المطلوب</td></tr>
+<tr><td>العروض المستلمة</td><td>جدول</td><td>المورد / السعر / مدة التسليم / الشروط</td></tr>
+<tr><td>العرض المختار</td><td>بحث</td><td>عرض الفوز</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / مُرسل / عروض مستلمة / مُقارن / مُختار / مُغلق</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: طلبات عروض الأسعار — جدول مقارنة العروض]</div>
+</div></div>
+</section>
+
+<!-- MODULE 23: الإشعارات -->
+<section class="module" id="mod23">
+<div class="module-header"><div class="module-number">23</div><div><h2>الإشعارات <span class="module-en">Notifications</span></h2></div></div>
+<div class="module-desc">نظام الإشعارات يُبقي المستخدمين على اطلاع بالأحداث المهمة: تنبيهات المخزون، فواتير مستحقة، مواعيد تسليم، أخطاء النظام، اعتمادات مطلوبة.</div>
+<div class="module-connections"><span class="tag">جميع الوحدات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الإشعارات</li><li>إعدادات_الإشعارات</li></ul></div>
+
+<div class="screen" id="s23-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الإشعارات <span class="screen-en">Notifications</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض جميع الإشعارات: القيد والجديدة مع إمكانية التصفية حسب النوع والوقت. تدعم الإشعارات الفورية (Push) والبريد الإلكتروني.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>النوع</td><td>قائمة</td><td>تنبيه / تذكير / طلب اعتماد / خطأ</td></tr>
+<tr><td>العنوان</td><td>نص</td><td>عنوان الإشعار</td></tr>
+<tr><td>المحتوى</td><td>نص</td><td>تفاصيل الإشعار</td></tr>
+<tr><td>المرجع</td><td>رابط</td><td>الشاشة أو المعاملة المرتبطة</td></tr>
+<tr><td>الوقت</td><td>تاريخ</td><td>وقت الإشعار</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>جديد / مقروء / مؤجل / منفّذ</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الإشعارات — جدول الإشعارات مع التصفية]</div>
+</div></div>
+</section>
+
+<!-- MODULE 24: المتكرر -->
+<section class="module" id="mod24">
+<div class="module-header"><div class="module-number">24</div><div><h2>المتكرر <span class="module-en">Recurring Transactions</span></h2></div></div>
+<div class="module-desc">نظام المعاملات المتكررة يُنشئ تلقائياً القيود والمدفوعات والمقبوضات الدورية (شهرياً / ربع سنوياً / سنوياً).</div>
+<div class="module-connections"><span class="tag">الحسابات</span><span class="tag">الخزينة</span><span class="tag">المشتريات</span><span class="tag">المبيعات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_المتكرر</li><li>إنشاء_عملية_متكررة</li><li>تعديل_عملية_متكررة</li><li>إلغاء_عملية_متكررة</li></ul></div>
+
+<div class="screen" id="s24-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>المعاملات المتكررة <span class="screen-en">Recurring Transactions</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة المعاملات الدورية: إيجار شهري / فواتير اتصالات / رواتب / أقساط. يُنشئ النظام المعاملة تلقائياً في الموعد المحدد.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم العملية</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>النوع</td><td>قائمة</td><td>قيد / فاتورة / سند قبض / سند صرف</td></tr>
+<tr><td>البيان</td><td>نص</td><td>وصف العملية المتكررة</td></tr>
+<tr><td>المبلغ</td><td>رقم</td><td>المبلغ الثابت أو المتغير</td></tr>
+<tr><td>التكرار</td><td>قائمة</td><td>أسبوعي / شهري / ربع سنوي / سنوي</td></tr>
+<tr><td>التاريخ التالي</td><td>تاريخ</td><td>التاريخ التالي للتنفيذ</td></tr>
+<tr><td>التاريخ النهائي</td><td>تاريخ</td><td>تاريخ انتهاء التكرار</td></tr>
+<tr><td>آخر تنفيذ</td><td>تاريخ</td><td>تاريخ آخر معاملة تم إنشاؤها</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>نشط / متوقف / منتهي</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: المعاملات المتكررة — جدول العمليات مع مواعيد التنفيذ]</div>
+</div></div>
+</section>
+
+<!-- MODULE 25: الميزانيات -->
+<section class="module" id="mod25">
+<div class="module-header"><div class="module-number">25</div><div><h2>الميزانيات <span class="module-en">Budget</span></h2></div></div>
+<div class="module-desc">وحدة الميزانيات تدير الميزانيات التخطيطية لكل إدارة أو نشاط: وضع الميزانية ومتابعة التنفيذ الفعلي مقارنة بالمخطط مع حساب الانحرافات.</div>
+<div class="module-connections"><span class="tag">الحسابات</span><span class="tag">المصاريف</span><span class="tag">التقارير</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الميزانيات</li><li>إعداد_ميزانية</li><li>تعديل_ميزانية</li><li>اعتماد_ميزانية</li><li>متابعة_التنفيذ</li></ul></div>
+
+<div class="screen" id="s25-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الميزانيات <span class="screen-en">Budget</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إعداد وعرض الميزانيات التخطيطية: ميزانية كل إدارة شهرياً مع المتابعة الفعلية وحساب نسبة التنفيذ والانحراف.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>السنة المالية</td><td>قائمة</td><td>السنة المالية</td></tr>
+<tr><td>الإدارة</td><td>قائمة</td><td>الإدارة</td></tr>
+<tr><td>الحساب</td><td>بحث</td><td>الحساب المحاسبي</td></tr>
+<tr><td>المبلغ المخطط</td><td>رقم</td><td>الميزانية المعتمدة</td></tr>
+<tr><td>المبلغ الفعلي</td><td>محسوب</td><td>المنفّذ فعلياً</td></tr>
+<tr><td>نسبة التنفيذ</td><td>محسوب</td><td>الفعلي / المخطط</td></tr>
+<tr><td>الانحراف</td><td>محسوب</td><td>الفرق بين المخطط والفعلي</td></tr>
+<tr><td>المتبقي</td><td>محسوب</td><td>الميزانية المتبقية</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الميزانيات — جدول الميزانيات مع شرائط التنفيذ والانحرافات]</div>
+</div></div>
+</section>
+
+<!-- MODULE 26: العملات -->
+<section class="module" id="mod26">
+<div class="module-header"><div class="module-number">26</div><div><h2>العملات <span class="module-en">Currency</span></h2></div></div>
+<div class="module-desc">وحدة العملات تدير العملات الأجنبية وأسعار الصرف: تعريف العملات وحفظ أسعار الصرف التاريخية وتحويل العملات في المعاملات.</div>
+<div class="module-connections"><span class="tag">الحسابات</span><span class="tag">المشتريات</span><span class="tag">المبيعات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_العملات</li><li>إدارة_العملات</li><li>تحديث_أسعار_الصرف</li></ul></div>
+
+<div class="screen" id="s26-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>العملات <span class="screen-en">Currencies</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة العملات和支持ها: تعريف العملات وأسعار الصرف التاريخية وتحويل العملات في المعاملات.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>كود العملة</td><td>نص (3)</td><td>ISO Code (USD / EUR / SAR)</td></tr>
+<tr><td>اسم العملة</td><td>نص</td><td>الاسم الكامل</td></tr>
+<tr><td>العملة المحلية</td><td>مفتاح</td><td>هل هي العملة الأساسية؟</td></tr>
+<tr><td>الرمز</td><td>نص</td><td>الرمز ($ / € / £)</td></tr>
+<tr><td>سعر الصرف الحالي</td><td>رقم</td><td>السعر مقابل العملة المحلية</td></tr>
+<tr><td>سعر الصرف التاريخي</td><td>جدول</td><td>سجل الأسعار التاريخية</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>نشطة / غير نشطة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: العملات — جدول العملات مع أسعار الصرف]</div>
+</div></div>
+</section>
+
+<!-- MODULE 27: التسوية البنكية -->
+<section class="module" id="mod27">
+<div class="module-header"><div class="module-number">27</div><div><h2>التسوية البنكية <span class="module-en">Bank Reconciliation</span></h2></div></div>
+<div class="module-desc">وحدة التسوية البنكية تقارن بين حركات البنك في النظام وبيانات كشف الحساب البنكي لتحديد الفروقات وتسجيلها.</div>
+<div class="module-connections"><span class="tag">الخزينة</span><span class="tag">الحسابات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_التسوية</li><li>إجراء_تسوية</li><li>اعتماد_تسوية</li></ul></div>
+
+<div class="screen" id="s27-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>التسوية البنكية <span class="screen-en">Bank Reconciliation</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إجراء التسوية البنكية: عرض حركات النظام غير المسوّاة وحركات البنك غير المطابقة مع إمكانية التسوي_PAIR.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>البنك</td><td>قائمة</td><td>الحساب البنكي</td></tr>
+<tr><td>الفترة</td><td>نطاق</td><td>شهر أو نطاق مخصص</td></tr>
+<tr><td>الرصيد في النظام</td><td>محسوب</td><td>الرصيد الدفتري</td></tr>
+<tr><td>الرصيد في البنك</td><td>رقم</td><td>من كشف الحساب</td></tr>
+<tr><td>حركات النظام</td><td>جدول</td><td>الحركات غير المسوّاة</td></tr>
+<tr><td>حركات البنك</td><td>جدول</td><td>الحركات غير المطابقة</td></tr>
+<tr><td>فروقات التسوية</td><td>جدول</td><td>البنود غير المطابقة</td></tr>
+<tr><td>حالة التسوية</td><td>شارة</td><td>قيد المراجعة / مُسوّاة / مُعتمدة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: التسوية البنكية — عرض مزدوج للحركات مع أزرار التسوية]</div>
+</div></div>
+</section>
+
+<!-- MODULE 28: المراجعة -->
+<section class="module" id="mod28">
+<div class="module-header"><div class="module-number">28</div><div><h2>المراجعة <span class="module-en">Audit</span></h2></div></div>
+<div class="module-desc">وحدة المراجعة توفر أدوات المراجعة المحاسبية الشاملة: سجل التعديلات (Audit Trail) ومقارنة الفترات وتتبع التغييرات على جميع المعاملات.</div>
+<div class="module-connections"><span class="tag">الحسابات</span><span class="tag">جميع_الوحدات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_سجل_المراجعة</li><li>تتبع_التعديلات</li><li>مراجعة_القيود</li></ul></div>
+
+<div class="screen" id="s28-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>سجل المراجعة <span class="screen-en">Audit Trail</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض شامل لكل التعديلات على النظام: من أجرى التعديل ومتى وماذا تغير. تتبع كل إضافة وتعديل وحذف على جميع الوحدات.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>التاريخ</td><td>نطاق</td><td>نطاق البحث</td></tr>
+<tr><td>المستخدم</td><td>بحث</td><td>المستخدم الذي أجرى التعديل</td></tr>
+<tr><td>الوحدة</td><td>قائمة</td><td>الوحدة المراد مراجعتها</td></tr>
+<tr><td>نوع العملية</td><td>قائمة</td><td>إضافة / تعديل / حذف / عرض</td></tr>
+<tr><td>السجل</td><td>جدول</td><td>التاريخ / المستخدم / الوحدة / العملية / التفاصيل</td></tr>
+<tr><td>التفاصيل</td><td>عرض</td><td>القيمة القديمة والقيمة الجديدة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: سجل المراجعة — جدول شامل مع تفاصيل التعديلات]</div>
+</div></div>
+</section>
+
+<!-- MODULE 29: المزامنة -->
+<section class="module" id="mod29">
+<div class="module-header"><div class="module-number">29</div><div><h2>المزامنة <span class="module-en">Sync</span></h2></div></div>
+<div class="module-desc">نظام المزامنة يدير تزامن البيانات بين الأجهزة والخادم: المزامنة الفورية أو الدورية، إدارة حالة الاتصال، حل التعارضات.</div>
+<div class="module-connections"><span class="tag">جميع_الوحدات</span><span class="tag">النسخ_الاحتياطي</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_حالة_المزامنة</li><li>تشغيل_مزامنة</li><li>حل_تعارضات</li></ul></div>
+
+<div class="screen" id="s29-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>المزامنة <span class="screen-en">Data Sync</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>عرض حالة المزامنة وتشغيل مزامنة يدوية وعرض سجل المزامنات السابقة مع حل أي تعارضات.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>حالة الاتصال</td><td>مؤشر</td><td>متصل / غير متصل / مزامنة</td></tr>
+<tr><td>آخر مزامنة</td><td>تاريخ</td><td>وقت آخر مزامنة ناجحة</td></tr>
+<tr><td>البيانات المعلقة</td><td>عداد</td><td>عدد السجلات غير المُزامَنة</td></tr>
+<tr><td>سجل المزامنة</td><td>جدول</td><td>التاريخ / الحالة / عدد السجلات / المدة</td></tr>
+<tr><td>تعارضات</td><td>جدول</td><td>البيانات المتعارضة مع خيارات الحل</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: المزامنة — حالة الاتصال وسجل المزامنات]</div>
+</div></div>
+</section>
+
+<!-- MODULE 30: النسخ الاحتياطي -->
+<section class="module" id="mod30">
+<div class="module-header"><div class="module-number">30</div><div><h2>النسخ الاحتياطي <span class="module-en">Backups</span></h2></div></div>
+<div class="module-desc">نظام النسخ الاحتياطي يدير النسخ التلقائية واليدوية لقاعدة البيانات: جدولة النسخ وتخزينها واستعادتها.</div>
+<div class="module-connections"><span class="tag">المزامنة</span><span class="tag">إعدادات_النظام</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_النسخ</li><li>إنشاء_نسخة</li><li>استعادة_نسخة</li><li>حذف_نسخة</li><li>إعدادات_النسخ</li></ul></div>
+
+<div class="screen" id="s30-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>النسخ الاحتياطي <span class="screen-en">Backup Management</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة النسخ الاحتياطية: إنشاء نسخة يدوية أو تلقائية، عرض النسخ المتوفرة، استعادة نسخة سابقة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>النسخ المتوفرة</td><td>جدول</td><td>التاريخ / الحجم / النوع / الحالة</td></tr>
+<tr><td>التكرار</td><td>قائمة</td><td>يومي / أسبوعي / شهري</td></tr>
+<tr><td>مكان التخزين</td><td>قائمة</td><td>محلي / سحابي / كلاهما</td></tr>
+<tr><td>الحالة</td><td>مؤشر</td><td>ناجح / فاشل / قيد التنفيذ</td></tr>
+<tr><td>الحجم</td><td>محسوب</td><td>حجم ملف النسخة</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: النسخ الاحتياطي — جدول النسخ مع أزرار الاستعادة]</div>
+</div></div>
+</section>
+
+<!-- MODULE 31: التحكم في الوصول -->
+<section class="module" id="mod31">
+<div class="module-header"><div class="module-number">31</div><div><h2>التحكم في الوصول <span class="module-en">Access Control</span></h2></div></div>
+<div class="module-desc">نظام التحكم في الوصول يدير الصلاحيات والأدوار: تعريف الأدوار وتحديد صلاحياتها وربط المستخدمين بالأدوار مع التحقق من الصلاحيات.</div>
+<div class="module-connections"><span class="tag">نظام_المستخدمين</span><span class="tag">المصادقة_الثنائية</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الأدوار</li><li>إنشاء_دور</li><li>تعديل_صلاحيات_دور</li><li>حذف_دور</li><li>ربط_مستخدم_بدور</li></ul></div>
+
+<div class="screen" id="s31-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الأدوار والصلاحيات <span class="screen-en">Roles & Permissions</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تعريف الأدوار (مدير / محاسب / موظف مبيعات / مخزني...) وتحديد صلاحيات كل دور بالتفصيل: عرض / إضافة / تعديل / حذف / طباعة / اعتماد لكل شاشة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>اسم الدور</td><td>نص</td><td>الاسم التعريفي</td></tr>
+<tr><td>الوصف</td><td>نص</td><td>وصف الدور وصلاحياته</td></tr>
+<tr><td>الصلاحيات</td><td>جدول</td><td>كل وحدة / شاشة × الصلاحيات (عرض/إضافة/تعديل/حذف)</td></tr>
+<tr><td>المستخدمون</td><td>بحث متعدد</td><td>المستخدمون المرتبطون بالدور</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>نشط / غير نشط</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الأدوار والصلاحيات — جدول الصلاحيات التفصيلي]</div>
+</div></div>
+</section>
+
+<!-- MODULE 32: نظام المستخدمين -->
+<section class="module" id="mod32">
+<div class="module-header"><div class="module-number">32</div><div><h2>نظام المستخدمين <span class="module-en">User Management</span></h2></div></div>
+<div class="module-desc">نظام إدارة المستخدمين: إنشاء حسابات المستخدمين وتعديل بياناتهم وتحديد الأدوار ومراقبة الجلسات النشطة.</div>
+<div class="module-connections"><span class="tag">التحكم_في_الوصول</span><span class="tag">المصادقة_الثنائية</span><span class="tag">المراجعة</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_المستخدمين</li><li>إضافة_مستخدم</li><li>تعديل_مستخدم</li><li>حذف_مستخدم</li><li>إعادة_تعيين_كلمة_المرور</li><li>تجميد_حساب</li></ul></div>
+
+<div class="screen" id="s32-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>المستخدمون <span class="screen-en">Users</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة حسابات المستخدمين: الإنشاء والتعديل والتجميد وإعادة تعيين كلمة المرور وعرض سجل الدخول الأخير.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>اسم المستخدم</td><td>نص</td><td>المعرّف الفريد</td></tr>
+<tr><td>الاسم الكامل</td><td>نص</td><td>الاسم الحقيقي</td></tr>
+<tr><td>البريد الإلكتروني</td><td>بريد</td><td>للتسجيل والمصادقة</td></tr>
+<tr><td>كلمة المرور</td><td>كلمة سر</td><td>كلمة المرور (مشفرة)</td></tr>
+<tr><td>الدور</td><td>قائمة</td><td>الدور المُعيّن</td></tr>
+<tr><td>الفرع</td><td>قائمة</td><td>الفرع المرتبط</td></tr>
+<tr><td>آخر دخول</td><td>تاريخ</td><td>وقت آخر تسجيل دخول</td></tr>
+<tr><td>الجلسات النشطة</td><td>عداد</td><td>عدد الجلسات الحالية</td></tr>
+<tr><td>المصادقة الثنائية</td><td>مفتاح</td><td>مفعّلة / غير مفعّلة</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>نشط / مجمد / محظور</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: المستخدمون — جدول المستخدمين مع معلومات الجلسة]</div>
+</div></div>
+</section>
+
+<!-- MODULE 33: المصادقة الثنائية -->
+<section class="module" id="mod33">
+<div class="module-header"><div class=\"module-number\">33</div><div><h2>المصادقة الثنائية <span class=\"module-en\">2FA</span></h2></div></div>
+<div class="module-desc">نظام المصادقة الثنائية (Two-Factor Authentication) يوفر طبقة أمان إضافية للمستخدمين عبر تطبيق Google Authenticator أو الرسائل النصية OTP.</div>
+<div class="module-connections"><span class="tag">نظام_المستخدمين</span><span class="tag">التحكم_في_الوصول</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>تفعيل_2FA</li><li>إلغاء_2FA</li><li>عرض_حالة_2FA</li></ul></div>
+
+<div class="screen" id="s33-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>المصادقة الثنائية <span class="screen-en">Two-Factor Authentication</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إعداد وإدارة المصادقة الثنائية لكل مستخدم: تفعيل عبر QR Code للتطبيقات أو عبر OTP SMS. عرض حالة التفعيل لجميع المستخدمين.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>المستخدم</td><td>بحث</td><td>المستخدم</td></tr>
+<tr><td>الطريقة</td><td>قائمة</td><td>Google Authenticator / OTP SMS</td></tr>
+<tr><td>QR Code</td><td>صورة</td><td>لمسح بالتطبيق</td></tr>
+<tr><td>رقم التأكيد</td><td>نص</td><td>للتحقق من الإعداد</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مفعّل / غير مفعّل / قيد الإعداد</td></tr>
+<tr><td>الاسترداد</td><td>كود</td><td>أكواد الاسترداد في حالة فقدان الجهاز</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: المصادقة الثنائية — إعداد QR Code مع أكواد الاسترداد]</div>
+</div></div>
+</section>
+
+<!-- MODULE 34: API -->
+<section class="module" id="mod34">
+<div class="module-header"><div class="module-number">34</div><div><h2>API <span class="module-en">API Management</span></h2></div></div>
+<div class="module-desc">وحدة API توفر واجهة برمجة تطبيقات مفتوحة للتكامل مع الأنظمة الخارجية: ERP / CRM / منصات التجارة الإلكترونية / تطبيقات الجوال.</div>
+<div class="module-connections"><span class="tag">جميع_الوحدات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الـ_API</li><li>إنشاء_مفتاح</li><li>إلغاء_مفتاح</li><li>إعدادات_API</li></ul></div>
+
+<div class="screen" id="s34-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>إدارة API <span class="screen-en">API Keys</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة مفاتيح API: إنشاء مفاتيح جديدة وتحديد الصلاحيات (قراءة / كتابة) ومراقبة الاستخدام وعرض سجل الطلبات.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>اسم المفتاح</td><td>نص</td><td>الاسم التعريفي</td></tr>
+<tr><td>المفتاح</td><td>نص</td><td>المفتاح السري (يظهر مرة واحدة)</td></tr>
+<tr><td>الصلاحيات</td><td>قائمة</td><td>قراءة / كتابة / كاملة</td></tr>
+<tr><td>الوحدات</td><td>قائمة</td><td>الوحدات المسموح بها</td></tr>
+<tr><td>معدل الطلبات</td><td>عداد</td><td>عدد الطلبات المسموح بها في الدقيقة</td></tr>
+<tr><td>آخر استخدام</td><td>تاريخ</td><td>آخر طلب API</td></tr>
+<tr><td>عدد الطلبات</td><td>عداد</td><td>إجمالي الطلبات</td></tr>
+<tr><td>الحالة</td><td>مفتاح</td><td>نشط / مُجمّد</td></tr>
+</table>
+<h4>Endpoints المتوفرة</h4>
+<ul><li>/api/v1/accounts — الحسابات</li><li>/api/v1/journal — القيود اليومية</li><li>/api/v1/invoices — الفواتير</li><li>/api/v1/customers — العملاء</li><li>/api/v1/suppliers — الموردون</li><li>/api/v1/products — المنتجات</li><li>/api/v1/stock — المخزون</li><li>/api/v1/reports — التقارير</li></ul>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: إدارة API — جدول المفاتيح مع سجل الطلبات]</div>
+</div></div>
+</section>
+
+<!-- MODULE 35: لوحة المراقبة -->
+<section class="module" id="mod35">
+<div class="module-header"><div class="module-number">35</div><div><h2>لوحة المراقبة <span class="module-en">Monitoring Dashboard</span></h2></div></div>
+<div class="module-desc">لوحة المراقبة توفر نظرة شاملة على حالة النظام: الأداء والموارد المستخدمة والمستخدمون النشطون وسجل الأخطاء وحالة الاتصال بالخدمات الخارجية.</div>
+<div class="module-connections"><span class="tag">جميع_الوحدات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_لوحة_المراقبة</li><li>مراقبة_الأداء</li></ul></div>
+
+<div class="screen" id="s35-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>لوحة المراقبة <span class="screen-en">Monitoring Dashboard</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>لوحة مراقبة شاملة: حالة الخادم، الاستخدام، المستخدمون النشطون، الاتصالات الخارجية، سجل الأخطاء، مراقبة الأداء.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>حالة الخادم</td><td>مؤشر</td><td>يعمل / متوقف / تدهور</td></tr>
+<tr><td>استخدام المعالج</td><td>شريط</td><td>النسبة المئوية</td></tr>
+<tr><td>استخدام الذاكرة</td><td>شريط</td><td>النسبة المئوية</td></tr>
+<tr><td>مساحة القرص</td><td>شريط</td><td>الاستخدام / المتاح</td></tr>
+<tr><td>المستخدمون النشطون</td><td>عداد</td><td>عدد الجلسات الحالية</td></tr>
+<tr><td>سجل الأخطاء</td><td>جدول</td><td>آخر الأخطاء مع الأولويات</td></tr>
+<tr><td>الاتصالات الخارجية</td><td>جدول</td><td>حالة API / مصلحة الضرائب / السحابة</td></tr>
+<tr><td>أداء الطلبات</td><td>رسوم</td><td>زمن الاستجابة المتوسط</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: لوحة المراقبة — لوحة متكاملة مع المؤشرات والرسوم]</div>
+</div></div>
+</section>
+
+<!-- MODULE 36: إعدادات النظام -->
+<section class="module" id="mod36">
+<div class="module-header"><div class="module-number">36</div><div><h2>إعدادات النظام <span class="module-en">System Settings</span></h2></div></div>
+<div class="module-desc">وحدة إعدادات النظام توفر التحكم الكامل في سلوك النظام: الإعدادات العامة والإعدادات المالية وإعدادات الطباعة وإعدادات الأمان والاتصالات الخارجية.</div>
+<div class="module-connections"><span class="tag">جميع_الوحدات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الإعدادات</li><li>تعديل_الإعدادات</li><li>إعادة_تعيين</li></ul></div>
+
+<div class="screen" id="s36-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الإعدادات العامة <span class="screen-en">General Settings</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>الإعدادات الأساسية للنظام: اللغة والمنطقة والعملة والتنسيق الرقمي والتاريخ والوقت.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>لغة النظام</td><td>قائمة</td><td>العربية / الإنجليزية / ثنائي اللغة</td></tr>
+<tr><td>المنطقة الزمنية</td><td>قائمة</td><td>التوقيت المحلي</td></tr>
+<tr><td>تنسيق التاريخ</td><td>قائمة</td><td>DD/MM/YYYY / YYYY-MM-DD</td></tr>
+<tr><td>العملة</td><td>قائمة</td><td>العملة الافتراضية</td></tr>
+<tr><td>الفاصل Thousand</td><td>نص</td><td>الفواصل للأرقام</td></tr>
+<tr><td>الفصل العشري</td><td>نص</td><td>نقطة أو فاصلة</td></tr>
+<tr><td>الشعار</td><td>صورة</td><td>شعار النظام</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الإعدادات العامة — نموذج الإعدادات مع المعاينة]</div>
+</div></div>
+
+<div class="screen" id="s36-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>الإعدادات المالية <span class="screen-en">Financial Settings</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>الإعدادات المالية: تكوين طريقة حساب المخزون وVAT وطرق الإهلاك والقيود التلقائية.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: الإعدادات المالية — تبويبات الإعدادات المالية]</div>
+</div></div>
+
+<div class="screen" id="s36-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>إعدادات الطباعة <span class="screen-en">Print Settings</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إعدادات الطباعة: حجم الورق والتخطيط والبيانات الظاهرة على الفواتير والتقارير والقوالب المخصصة.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: إعدادات الطباعة — معاينة الفاتورة مع الإعدادات]</div>
+</div></div>
+
+<div class="screen" id="s36-4">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>إعدادات الأمان <span class="screen-en">Security Settings</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إعدادات الأمان: سياسة كلمة المرور ومهلة انتهاء الجلسة وقائمة IP المسموحة وسجل محاولات الدخول.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>الحد الأدنى لكلمة المرور</td><td>عداد</td><td>عدد الأحرف</td></tr>
+<tr><td>تعقيد كلمة المرور</td><td>مفتاح</td><td>أرقام + أحرف + رموز</td></tr>
+<tr><td>مهلة الجلسة</td><td>عداد</td><td>دقائق عدم النشاط</td></tr>
+<tr><td>محاولات الدخول</td><td>عداد</td><td>الحد الأقصى قبل التجميد</td></tr>
+<tr><td>IP Whitelist</td><td>نص</td><td>عناوين IP المسموحة</td></tr>
+<tr><td>2FA إلزامي</td><td>مفتاح</td><td>فرض 2FA على جميع المستخدمين</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: إعدادات الأمان — الإعدادات مع تنبيهات]</div>
+</div></div>
+</section>
+
+<!-- MODULE 37: الطرفيات -->
+<section class="module" id="mod37">
+<div class="module-header"><div class="module-number">37</div><div><h2>الطرفيات <span class="module-en">Terminals / POS / GRN</span></h2></div></div>
+<div class="module-desc">وحدة الطرفيات تدير نقاط البيع (POS) وسندات استلام البضاعة (GRN) وأوامر البيع والشراء: واجهات مبسطة للعمل في المخازن ونقاط البيع مع ربط مباشر بالوحدات الأساسية.</div>
+<div class="module-connections"><span class="tag">المبيعات</span><span class="tag">المشتريات</span><span class="tag">المخازن</span><span class="tag">الخزينة</span><span class="tag">الحسابات</span></div>
+<div class="permissions"><h4>الصلاحيات المطلوبة</h4><ul><li>عرض_الطرفيات</li><li>بيع_POS</li><li>شراء_GRN</li><li>إدارة_الأوامر</li><li>إغلاق_وردية</li></ul></div>
+
+<div class="screen" id="s37-1">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>نقاط البيع <span class="screen-en">POS Terminal</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>واجهة نقاط البيع المبسطة: اختيار المنتجات بالبحث أو المسح الضوئي، إدخال الكميات، الدفع (نقدي/شيك/تحويل)، طباعة الفاتورة.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>الوردية</td><td>قائمة</td><td>الوردية النشطة</td></tr>
+<tr><td>ال销品</td><td>بحث/مسح</td><td>اختيار المنتج بالكود أو البحث</td></tr>
+<tr><td>السلة</td><td>جدول</td><td>المنتجات المختارة مع الكميات والأسعار</td></tr>
+<tr><td>العميل</td><td>بحث</td><td>العميل (اختياري)</td></tr>
+<tr><td>الإجمالي</td><td>محسوب</td><td>المبلغ الإجمالي</td></tr>
+<tr><td>الخصم</td><td>نسبة/رقم</td><td>خصم على الفاتورة أو الصنف</td></tr>
+<tr><td>طريقة الدفع</td><td>قائمة</td><td>نقدي / شيك / تحويل</td></tr>
+<tr><td>المبلغ المدفوع</td><td>رقم</td><td>المبلغ المستلم من العميل</td></tr>
+<tr><td>الباقي</td><td>محسوب</td><td>المبلغ المتبقي للعميل</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: نقطة البيع — واجهة سريعة مع سلة المشتريات]</div>
+</div></div>
+
+<div class="screen" id="s37-2">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>سندات استلام البضاعة <span class="screen-en">Goods Received Note</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>تسجيل استلام البضاعة من الموردين: فحص الكميات والجودة وتوثيق أي فروقات مع الملفات الأصلية.</p>
+<h4>الحقول الرئيسية</h4>
+<table class="fields-table"><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr>
+<tr><td>رقم GRN</td><td>تلقائي</td><td>رقم تسلسلي</td></tr>
+<tr><td>أمر الشراء</td><td>بحث</td><td>أمر الشراء المرتبط</td></tr>
+<tr><td>المورد</td><td>بحث</td><td>المورد</td></tr>
+<tr><td>المخزن</td><td>قائمة</td><td>المخزن المستلم</td></tr>
+<tr><td>بنود الاستلام</td><td>جدول</td><td>الصنف / المطلوب / المستلم / الفرق / الحالة</td></tr>
+<tr><td>فحص الجودة</td><td>قائمة</td><td>مقبول / مرفوض / جزئي</td></tr>
+<tr><td>ملاحظات</td><td>نص</td><td>ملاحظات الاستلام</td></tr>
+<tr><td>المرفق</td><td>ملف</td><td>صورة سند التسليم</td></tr>
+<tr><td>الحالة</td><td>شارة</td><td>مسودة / قيد الفحص / مكتمل / مرفوض</td></tr>
+</table>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: سندات استلام البضاعة — نموذج الاستلام مع الفحص]</div>
+</div></div>
+
+<div class="screen" id="s37-3">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>أوامر البيع <span class="screen-en">Sales Terminals</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة أوامر البيع من الطرفيات: تتبع حالة كل أمر من الاستلام إلى التجهيز إلى التسليم. واجهة مبسطة لموظفي المبيعات.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: أوامر البيع — لوحة تتبع الأوامر من الطرفيات]</div>
+</div></div>
+
+<div class="screen" id="s37-4">
+<div class="screen-header" onclick="toggleScreen(this)"><h3>أوامر الشراء <span class="screen-en">Purchase Terminals</span></h3><span class="toggle-icon">▼</span></div>
+<div class="screen-body">
+<h4>وصف الشاشة</h4>
+<p>إدارة أوامر الشراء من الطرفيات: واجهة مبسطة للمخازن لطلب المنتجات من الموردين مع تتبع الحالة.</p>
+<div class="screenshot-placeholder"><span class="icon">📷</span>[لقطة شاشة: أوامر الشراء — واجهة طلب الشراء من الطرفيات]</div>
+</div></div>
+</section>
+
+<!-- Footer -->
+<footer style="text-align:center;padding:40px 0 20px;border-top:2px solid var(--border-gold);margin-top:60px;">
+<p style="color:var(--gold);font-size:1.1rem;font-weight:600;">كتالوج شاشات نظام المحاسبة المتكامل</p>
+<p style="color:var(--text-muted);font-size:0.85rem;margin-top:8px;">الإصدار 2.0 — 2026 — جميع الحقوق محفوظة</p>
+<p style="color:var(--text-muted);font-size:0.8rem;margin-top:5px;">37 وحدة | +150 شاشة | +500 حقل | +50 تقرير</p>
+</footer>
+
+</div><!-- end .main -->
+
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">▲</button>
+
+<script>
+function toggleScreen(header) {
+  var screen = header.closest('.screen');
+  screen.classList.toggle('collapsed');
+}
+
+function filterSidebar(value) {
+  var links = document.querySelectorAll('.sidebar-nav a');
+  var sections = document.querySelectorAll('.sidebar-nav .nav-section');
+  var v = value.trim().toLowerCase();
+  
+  if (!v) {
+    links.forEach(function(a) { a.style.display = 'block'; });
+    sections.forEach(function(s) { s.style.display = 'block'; });
+    return;
+  }
+  
+  links.forEach(function(a) {
+    var text = a.textContent.toLowerCase();
+    a.style.display = text.includes(v) ? 'block' : 'none';
+  });
+  sections.forEach(function(s) {
+    var next = s.nextElementSibling;
+    var hasVisible = false;
+    while (next && !next.classList.contains('nav-section')) {
+      if (next.tagName === 'A' && next.style.display !== 'none') hasVisible = true;
+      next = next.nextElementSibling;
+    }
+    s.style.display = hasVisible ? 'block' : 'none';
+  });
+}
+
+// Scroll to top button
+window.addEventListener('scroll', function() {
+  var btn = document.getElementById('scrollTop');
+  btn.style.display = window.scrollY > 500 ? 'flex' : 'none';
+});
+
+// Active nav highlight on scroll
+window.addEventListener('scroll', function() {
+  var sections = document.querySelectorAll('.module');
+  var links = document.querySelectorAll('.sidebar-nav a');
+  var current = '';
+  sections.forEach(function(sec) {
+    if (window.scrollY >= sec.offsetTop - 100) current = sec.id;
+  });
+  links.forEach(function(a) {
+    a.classList.remove('active');
+    if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+  });
+});
+
+// Expand all on Ctrl+E
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 'e') {
+    document.querySelectorAll('.screen.collapsed').forEach(function(s) {
+      s.classList.remove('collapsed');
+    });
+    e.preventDefault();
+  }
+});
+</script>
+</body>
+</html>

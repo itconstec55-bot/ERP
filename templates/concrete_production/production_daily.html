@@ -1,0 +1,100 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}متابعة الإنتاج اليومي{% endblock %}
+{% block page_title %}<i class="fas fa-calendar-day me-2"></i>متابعة أوامر الإنتاج اليومية{% endblock %}
+
+{% block extra_css %}
+<style>
+    .daily-card { border-radius: 16px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .stat-box { background: linear-gradient(135deg, #f8f9fa, #fff); border-radius: 12px; padding: 1.2rem; text-align: center; border: 1px solid #f0f0f0; }
+    .stat-box h3 { margin: 0; font-weight: 700; }
+    .date-picker-wrap { background:#fff; border-radius:12px; padding:0.6rem 1rem; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+    .order-row { border-right: 5px solid #0984e3; background:#fff; border-radius:12px; padding:1rem 1.2rem; margin-bottom:1rem; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+    .order-row.completed { border-right-color:#00b894; }
+    .order-row.in_progress { border-right-color:#ff8c00; }
+    .order-row.pending { border-right-color:#6c5ce7; }
+    .progress { height: 10px; border-radius: 5px; }
+    .badge-dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-left:5px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <form method="get" class="date-picker-wrap d-flex align-items-center gap-2">
+        <label class="mb-0 fw-bold"><i class="fas fa-calendar me-1"></i>التاريخ:</label>
+        <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}" class="form-control form-control-sm" style="width:auto;" onchange="this.form.submit()">
+        <a href="{% url 'concrete_production:production_daily' %}" class="btn btn-sm btn-outline-secondary">اليوم</a>
+    </form>
+    <a href="{% url 'concrete_production:production_order_list' %}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-clipboard-list me-1"></i>كل الأوامر
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-box"><small class="text-muted d-block">أوامر مجدولة</small><h3 class="text-primary">{{ total_orders }}</h3></div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-box"><small class="text-muted d-block">الكمية المخططة (م³)</small><h3 class="text-info">{{ total_quantity|floatformat:1|intcomma }}</h3></div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-box"><small class="text-muted d-block">المنتج فعلياً (م³)</small><h3 class="text-success">{{ produced_quantity|floatformat:1|intcomma }}</h3></div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-box"><small class="text-muted d-block">المتبقي (م³)</small><h3 class="text-warning">{{ remaining_quantity|floatformat:1|intcomma }}</h3></div>
+    </div>
+</div>
+
+{% for item in orders %}
+<div class="order-row {{ item.status_label }}">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+        <div>
+            <h6 class="fw-bold mb-1">
+                {{ item.order.order_number }}
+                <span class="badge bg-light text-dark ms-1">{{ item.order.mix_design.code }}</span>
+            </h6>
+            <small class="text-muted">
+                <i class="fas fa-user me-1"></i>{{ item.order.customer_request.customer.name }}
+                {% if item.order.scheduled_time_from %}| <i class="fas fa-clock me-1"></i>{{ item.order.scheduled_time_from|time:"H:i" }}{% endif %}
+                {% if item.order.scheduled_time_to %}- {{ item.order.scheduled_time_to|time:"H:i" }}{% endif %}
+            </small>
+        </div>
+        <div class="text-end">
+            {% if item.status_label == 'completed' %}
+                <span class="badge bg-success">مكتمل</span>
+            {% elif item.status_label == 'in_progress' %}
+                <span class="badge bg-warning text-dark">قيد التنفيذ</span>
+            {% else %}
+                <span class="badge bg-secondary">بالانتظار</span>
+            {% endif %}
+            <div class="mt-1"><small class="text-muted">{{ item.order.quantity_m3|intcomma }} م³</small></div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        <small class="text-muted">التقدم: {{ item.produced|floatformat:1 }} / {{ item.order.quantity_m3|intcomma }} م³</small>
+        <small class="fw-bold">{{ item.progress|floatformat:0 }}%</small>
+    </div>
+    <div class="progress">
+        <div class="progress-bar {% if item.status_label == 'completed' %}bg-success{% elif item.status_label == 'in_progress' %}bg-warning{% else %}bg-primary{% endif %}"
+             style="width:{{ item.progress }}%"></div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-2">
+        <small class="text-muted">
+            <i class="fas fa-industry me-1"></i>{{ item.batch_count }} دفعة
+            ({{ item.completed_count }} مكتملة)
+        </small>
+        <a href="{% url 'concrete_production:production_order_detail' pk=item.order.pk %}" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-eye me-1"></i>التفاصيل
+        </a>
+    </div>
+</div>
+{% empty %}
+<div class="card daily-card p-5 text-center">
+    <i class="fas fa-calendar-day fa-3x text-muted mb-3"></i>
+    <h5 class="text-muted">لا توجد أوامر إنتاج مجدولة في هذا التاريخ</h5>
+</div>
+{% endfor %}
+{% endblock %}

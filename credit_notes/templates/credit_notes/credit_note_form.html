@@ -1,0 +1,71 @@
+{% extends 'base/base.html' %}
+
+{% block title %}إشعار جديد{% endblock %}
+{% block page_title %}إنشاء إشعار مدين/دائن{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-plus"></i> بيانات الإشعار</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-6"><label class="form-label">نوع الإشعار</label>
+                            <select name="note_type" class="form-select" required id="noteType" onchange="toggleParties()">
+                                <option value="credit_note">إشعار دائن (مرتجع مبيعات)</option>
+                                <option value="debit_note">إشعار مدين (مرتجع مشتريات)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6"><label class="form-label">رقم الإشعار</label><input type="text" name="note_number" class="form-control" required></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6"><label class="form-label">التاريخ</label><input type="date" name="date" class="form-control" required></div>
+                        <div class="col-md-6"><label class="form-label">رقم الفاتورة الأصلية</label><input type="text" name="original_invoice_number" class="form-control"></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6 sales-invoice-field"><label class="form-label">فاتورة المبيعات الأصلية</label>
+                            <select name="original_sales_invoice" class="form-select" id="salesInvoiceSelect">
+                                <option value="">--</option>{% for inv in sales_invoices %}<option value="{{ inv.pk }}">{{ inv.invoice_number }} - {{ inv.customer.name }}</option>{% endfor %}</select>
+                        </div>
+                        <div class="col-md-6 purchase-invoice-field" style="display:none;"><label class="form-label">فاتورة المشتريات الأصلية</label>
+                            <select name="original_purchase_invoice" class="form-select" id="purchaseInvoiceSelect">
+                                <option value="">--</option>{% for inv in purchase_invoices %}<option value="{{ inv.pk }}">{{ inv.invoice_number }} - {{ inv.supplier.name }}</option>{% endfor %}</select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6 customer-field"><label class="form-label">العميل</label>
+                            <select name="customer" class="form-select"><option value="">--</option>{% for c in customers %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}</select>
+                        </div>
+                        <div class="col-md-6 supplier-field" style="display:none;"><label class="form-label">المورد</label>
+                            <select name="supplier" class="form-select"><option value="">--</option>{% for s in suppliers %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}</select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4"><label class="form-label">المبلغ</label><input type="number" name="subtotal" class="form-control" step="0.01" required></div>
+                        <div class="col-md-4"><label class="form-label">الضريبة</label><input type="number" name="vat_amount" class="form-control" step="0.01" value="0"></div>
+                    </div>
+                    <div class="mb-3"><label class="form-label">السبب</label><textarea name="reason" class="form-control" rows="3"></textarea></div>
+                    <div class="mb-3"><label class="form-label">ملاحظات</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+                    <a href="{% url 'credit_notes:credit_note_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleParties() {
+    var t = document.getElementById('noteType').value;
+    document.querySelector('.customer-field').style.display = t === 'credit_note' ? '' : 'none';
+    document.querySelector('.supplier-field').style.display = t === 'debit_note' ? '' : 'none';
+    document.querySelector('.sales-invoice-field').style.display = t === 'credit_note' ? '' : 'none';
+    document.querySelector('.purchase-invoice-field').style.display = t === 'debit_note' ? '' : 'none';
+}
+toggleParties();
+</script>
+{% endblock %}

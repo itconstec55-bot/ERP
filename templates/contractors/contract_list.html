@@ -1,0 +1,99 @@
+{% extends "base/base.html" %}
+
+{% block content_header %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>قائمة العقود</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="{% url 'contractors:dashboard' %}">لوحة التحكم</a></li>
+          <li class="breadcrumb-item active">العقود</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-header">
+      <div class="row">
+        <div class="col-md-8">
+          <form method="get" class="form-inline">
+            <div class="mr-2">
+              {{ filter_form.status }}
+            </div>
+            <div class="mr-2">
+              {{ filter_form.contractor }}
+            </div>
+            <button type="submit" class="btn btn-info btn-sm"><i class="fas fa-filter"></i> تصفية</button>
+          </form>
+        </div>
+        <div class="col-md-4 text-left">
+          <a href="{% url 'contractors:contract_create' %}" class="btn btn-success btn-sm">
+            <i class="fas fa-plus"></i> عقد جديد
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="card-body table-responsive p-0">
+      <table class="table table-hover text-wrap">
+        <thead>
+          <tr>
+            <th>رقم العقد</th>
+            <th>العنوان</th>
+            <th>المقاول</th>
+            <th>النوع</th>
+            <th>المبلغ</th>
+            <th>تاريخ البداية</th>
+            <th>النسبة</th>
+            <th>الحالة</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in contracts %}
+          <tr>
+            <td><a href="{% url 'contractors:contract_detail' pk=c.pk %}">{{ c.contract_number }}</a></td>
+            <td>{{ c.title }}</td>
+            <td>{{ c.contractor.name }}</td>
+            <td>{{ c.get_contract_type_display }}</td>
+            <td>{{ c.contract_amount|floatformat:2 }}</td>
+            <td>{{ c.start_date|date:"Y/m/d" }}</td>
+            <td>{{ c.completion_percentage|floatformat:1 }}%</td>
+            <td>
+              <span class="badge badge-{% if c.status == 'active' %}success{% elif c.status == 'draft' %}secondary{% elif c.status == 'closed' %}dark{% else %}warning{% endif %}">
+                {{ c.get_status_display }}
+              </span>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center">لا توجد عقود</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if contracts.has_other_pages %}
+    <div class="card-footer clearfix">
+      <ul class="pagination pagination-sm m-0 float-right">
+        {% if contracts.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ contracts.previous_page_number }}">&laquo;</a></li>
+        {% endif %}
+        {% for num in contracts.paginator.page_range %}
+        <li class="page-item {% if contracts.number == num %}active{% endif %}">
+          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+        {% endfor %}
+        {% if contracts.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ contracts.next_page_number }}">&raquo;</a></li>
+        {% endif %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

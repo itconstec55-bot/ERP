@@ -1,0 +1,271 @@
+{% extends 'base/base.html' %}
+
+{% block title %}صلاحيات {{ target.username }}{% endblock %}
+{% block page_title %}الصلاحيات الفعّالة: {{ target.username }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'access_control:dashboard' %}" class="btn btn-outline-secondary mb-3">
+    <i class="fas fa-arrow-right"></i> رجوع
+</a>
+
+{% if perms.is_superuser %}
+<div class="alert alert-warning">هذا المستخدم <strong>مشرف نظام</strong> ويتجاوز كل الصلاحيات.</div>
+{% endif %}
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">الملف وإعدادات النطاق</div>
+            <div class="card-body">
+                <p class="mb-2"><strong>نوع الحساب:</strong> {{ profile.get_account_type_display|default:"—" }}</p>
+                <form method="post" action="{% url 'access_control:user_update_scope_flags' target.pk %}">
+                    {% csrf_token %}
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="vab" name="view_all_branches" {% if perms.view_all_branches %}checked{% endif %}>
+                        <label class="form-check-label" for="vab">الوصول لكل الفروع</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="vaw" name="view_all_warehouses" {% if perms.view_all_warehouses %}checked{% endif %}>
+                        <label class="form-check-label" for="vaw">الوصول لكل المخازن</label>
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                        <input type="checkbox" class="form-check-input" id="cvp" name="can_view_prices" {% if perms.can_view_prices %}checked{% endif %}>
+                        <label class="form-check-label" for="cvp">مشاهدة الأسعار</label>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-save"></i> حفظ الإعدادات</button>
+                </form>
+                <small class="text-muted d-block mt-2">تفعيل «كل الفروع/المخازن» يتجاوز قوائم الإسناد أدناه.</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>المجموعات المُسنَدة</span>
+            </div>
+            <div class="card-body">
+                {% if perms.is_superuser %}
+                <div class="alert alert-warning mb-2 py-2">المشرف يتجاوز المجموعات؛ الإسناد هنا لا يؤثر على وصوله.</div>
+                {% endif %}
+                <ul class="list-group list-group-flush mb-3">
+                    {% for a in assignments %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span><span class="badge bg-info">{{ a.role.name }}</span> <small class="text-muted">{{ a.role.code }}</small></span>
+                        <form method="post" action="{% url 'access_control:user_remove_role' target.pk a.pk %}" onsubmit="return confirm('إزالة هذه المجموعة؟');" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-times"></i></button>
+                        </form>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-muted px-0">لا توجد مجموعات مُسنَدة</li>
+                    {% endfor %}
+                </ul>
+                <form method="post" action="{% url 'access_control:user_assign_role' target.pk %}" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <select name="role" class="form-select form-select-sm" required>
+                        <option value="">— اختر مجموعة لإسنادها —</option>
+                        {% for r in available_roles %}<option value="{{ r.pk }}">{{ r.name }}</option>{% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-success text-nowrap"><i class="fas fa-plus"></i> إسناد</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">الفروع المخوّلة</div>
+            <ul class="list-group list-group-flush">
+                {% for b in branches %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ b.branch.name }}{% if b.is_default %} <span class="badge bg-primary">افتراضي</span>{% endif %}</span>
+                    <form method="post" action="{% url 'access_control:user_remove_branch' target.pk b.pk %}" class="m-0">
+                        {% csrf_token %}<button class="btn btn-sm btn-outline-danger"><i class="fas fa-times"></i></button>
+                    </form>
+                </li>
+                {% empty %}<li class="list-group-item text-muted">لا يوجد</li>{% endfor %}
+            </ul>
+            <div class="card-body">
+                <form method="post" action="{% url 'access_control:user_add_branch' target.pk %}">
+                    {% csrf_token %}
+                    <select name="branch" class="form-select form-select-sm mb-2" required>
+                        <option value="">— اختر فرعاً —</option>
+                        {% for br in available_branches %}<option value="{{ br.pk }}">{{ br.name }}</option>{% endfor %}
+                    </select>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" class="form-check-input" id="bdef" name="is_default">
+                        <label class="form-check-label" for="bdef">افتراضي</label>
+                    </div>
+                    <button class="btn btn-sm btn-success w-100"><i class="fas fa-plus"></i> إسناد فرع</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">المخازن المخوّلة</div>
+            <ul class="list-group list-group-flush">
+                {% for w in warehouses %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ w.warehouse.name }}
+                        <small class="text-muted d-block">
+                            {% if w.can_receive %}استلام {% endif %}{% if w.can_issue %}صرف {% endif %}{% if w.can_count %}جرد {% endif %}{% if w.can_transfer %}تحويل{% endif %}
+                        </small></span>
+                    <form method="post" action="{% url 'access_control:user_remove_warehouse' target.pk w.pk %}" class="m-0">
+                        {% csrf_token %}<button class="btn btn-sm btn-outline-danger"><i class="fas fa-times"></i></button>
+                    </form>
+                </li>
+                {% empty %}<li class="list-group-item text-muted">لا يوجد</li>{% endfor %}
+            </ul>
+            <div class="card-body">
+                <form method="post" action="{% url 'access_control:user_add_warehouse' target.pk %}">
+                    {% csrf_token %}
+                    <select name="warehouse" class="form-select form-select-sm mb-2" required>
+                        <option value="">— اختر مخزناً —</option>
+                        {% for wh in available_warehouses %}<option value="{{ wh.pk }}">{{ wh.name }}</option>{% endfor %}
+                    </select>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <div class="form-check"><input type="checkbox" class="form-check-input" id="wr" name="can_receive" checked><label class="form-check-label" for="wr">استلام</label></div>
+                        <div class="form-check"><input type="checkbox" class="form-check-input" id="wi" name="can_issue"><label class="form-check-label" for="wi">صرف</label></div>
+                        <div class="form-check"><input type="checkbox" class="form-check-input" id="wc" name="can_count"><label class="form-check-label" for="wc">جرد</label></div>
+                        <div class="form-check"><input type="checkbox" class="form-check-input" id="wt" name="can_transfer"><label class="form-check-label" for="wt">تحويل</label></div>
+                    </div>
+                    <button class="btn btn-sm btn-success w-100"><i class="fas fa-plus"></i> إسناد مخزن</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">أنواع الحسابات المخوّلة</div>
+            <ul class="list-group list-group-flush">
+                {% for a in account_types %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ a.account_type.name }}
+                        <small class="text-muted d-block">{% if a.can_view %}مشاهدة {% endif %}{% if a.can_transact %}حركات{% endif %}</small></span>
+                    <form method="post" action="{% url 'access_control:user_remove_account_type' target.pk a.pk %}" class="m-0">
+                        {% csrf_token %}<button class="btn btn-sm btn-outline-danger"><i class="fas fa-times"></i></button>
+                    </form>
+                </li>
+                {% empty %}<li class="list-group-item text-muted">لا يوجد</li>{% endfor %}
+            </ul>
+            <div class="card-body">
+                <form method="post" action="{% url 'access_control:user_add_account_type' target.pk %}">
+                    {% csrf_token %}
+                    <select name="account_type" class="form-select form-select-sm mb-2" required>
+                        <option value="">— اختر نوع حساب —</option>
+                        {% for at in available_account_types %}<option value="{{ at.pk }}">{{ at.name }}</option>{% endfor %}
+                    </select>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <div class="form-check"><input type="checkbox" class="form-check-input" id="atv" name="can_view" checked><label class="form-check-label" for="atv">مشاهدة</label></div>
+                        <div class="form-check"><input type="checkbox" class="form-check-input" id="att" name="can_transact"><label class="form-check-label" for="att">حركات</label></div>
+                    </div>
+                    <button class="btn btn-sm btn-success w-100"><i class="fas fa-plus"></i> إسناد نوع حساب</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">صلاحيات الشاشات الفعّالة</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered mb-0 text-center">
+                <thead>
+                    <tr>
+                        <th class="text-end">الشاشة</th>
+                        {% for lvl in levels %}<th>{{ lvl }}</th>{% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in screen_rows %}
+                    <tr>
+                        <td class="text-end">{{ row.screen.name }} <small class="text-muted">{{ row.screen.code }}</small></td>
+                        {% for cell in row.cells %}
+                        <td>
+                            {% if cell %}<span class="text-success">&#10003;</span>
+                            {% else %}<span class="text-muted">&times;</span>{% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-muted">لا توجد شاشات معرّفة بعد</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header bg-warning">
+        <i class="fas fa-user-lock"></i> استثناءات على مستوى المستخدم
+        <small class="d-block text-muted">تتغلّب على صلاحيات المجموعات؛ الحرمان الصريح له الأولوية دائماً.</small>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered mb-0 text-center align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-end">الشاشة</th>
+                        <th>النوع</th>
+                        {% for lh in level_headers %}<th>{{ lh.1 }}</th>{% endfor %}
+                        <th>حذف</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in exception_rows %}
+                    <tr class="{% if row.perm.grant_type == 'deny' %}table-danger{% else %}table-success{% endif %}">
+                        <td class="text-end">{{ row.perm.screen.name }} <small class="text-muted">{{ row.perm.screen.code }}</small></td>
+                        <td>{% if row.perm.grant_type == 'deny' %}<span class="badge bg-danger">حرمان</span>{% else %}<span class="badge bg-success">سماح</span>{% endif %}</td>
+                        {% for cell in row.cells %}
+                        <td>{% if cell.checked %}<span class="text-dark">&#10003;</span>{% else %}<span class="text-muted">&times;</span>{% endif %}</td>
+                        {% endfor %}
+                        <td>
+                            <form method="post" action="{% url 'access_control:user_remove_screen_exception' target.pk row.perm.pk %}" class="m-0">
+                                {% csrf_token %}<button class="btn btn-sm btn-outline-danger"><i class="fas fa-times"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="{{ level_headers|length|add:3 }}" class="text-muted">لا توجد استثناءات</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-body border-top">
+        <form method="post" action="{% url 'access_control:user_set_screen_exception' target.pk %}" class="row g-2 align-items-end">
+            {% csrf_token %}
+            <div class="col-md-4">
+                <label class="form-label mb-1">الشاشة</label>
+                <select name="screen" class="form-select form-select-sm" required>
+                    <option value="">— اختر شاشة —</option>
+                    {% for s in all_screens %}<option value="{{ s.pk }}">{{ s.module }} — {{ s.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label mb-1">النوع</label>
+                <select name="grant_type" class="form-select form-select-sm">
+                    <option value="allow">سماح</option>
+                    <option value="deny">حرمان</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label mb-1">المستويات</label>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for lh in level_headers %}
+                    <div class="form-check"><input type="checkbox" class="form-check-input" id="ex_{{ lh.0 }}" name="{{ lh.0 }}"><label class="form-check-label" for="ex_{{ lh.0 }}">{{ lh.1 }}</label></div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-12">
+                <button class="btn btn-sm btn-warning"><i class="fas fa-plus"></i> حفظ استثناء</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

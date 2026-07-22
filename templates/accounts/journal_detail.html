@@ -1,0 +1,90 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل القيد{% endblock %}
+{% block page_title %}القيد: {{ entry.entry_number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span><i class="fas fa-journal-whills"></i> بنود القيد</span>
+                {% if not entry.is_posted %}
+                <a href="{% url 'accounts:journal_edit' pk=entry.pk %}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-edit"></i> تعديل
+                </a>
+                <a href="{% url 'accounts:journal_post' pk=entry.pk %}" class="btn btn-success btn-sm"
+                   onclick="return confirm('هل تريد ترحيل هذا القيد؟')">
+                    <i class="fas fa-check"></i> ترحيل
+                </a>
+                <form method="post" action="{% url 'accounts:journal_delete' pk=entry.pk %}" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا القيد؟')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> حذف</button>
+                </form>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>الحساب</th>
+                            <th>مدين</th>
+                            <th>دائن</th>
+                            <th>البيان</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>{{ line.account.code }} - {{ line.account.name }}</td>
+                            <td class="text-danger">{{ line.debit|floatformat:2 }}</td>
+                            <td class="text-success">{{ line.credit|floatformat:2 }}</td>
+                            <td>{{ line.description }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-dark">
+                            <th>الإجمالي</th>
+                            <th class="text-danger">{{ entry.total_debit|floatformat:2 }}</th>
+                            <th class="text-success">{{ entry.total_credit|floatformat:2 }}</th>
+                            <th>
+                                {% if entry.is_balanced %}
+                                <span class="badge bg-success">متوازن</span>
+                                {% else %}
+                                <span class="badge bg-danger">غير متوازن</span>
+                                {% endif %}
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-info-circle"></i> بيانات القيد
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>رقم القيد:</th><td>{{ entry.entry_number }}</td></tr>
+                    <tr><th>التاريخ:</th><td>{{ entry.date|date:"d/m/Y" }}</td></tr>
+                    <tr><th>النوع:</th><td>{{ entry.get_entry_type_display }}</td></tr>
+                    <tr><th>المرجع:</th><td>{{ entry.reference|default:"-" }}</td></tr>
+                    <tr><th>الحالة:</th>
+                        <td>
+                            {% if entry.is_posted %}
+                            <span class="badge bg-success">مرحل</span>
+                            {% else %}
+                            <span class="badge bg-secondary">مسودة</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr><th>أنشئ بواسطة:</th><td>{{ entry.created_by|default:"-" }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base/base.html" %}
+
+{% block title %}تحليل خطأ محاسبي{% endblock %}
+{% block page_title %}تحليل خطأ محاسبي بالذكاء الاصطناعي{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-robot"></i> نموذج تحليل الخطأ
+            </div>
+            <div class="card-body">
+                {% if message %}
+                <div class="alert alert-warning">
+                    {{ message }}
+                </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.error_type.label }}</label>
+                            {{ form.error_type }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.reference_number.label }}</label>
+                            {{ form.reference_number }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.date_from.label }}</label>
+                            {{ form.date_from }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.date_to.label }}</label>
+                            {{ form.date_to }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.account_code.label }}</label>
+                            {{ form.account_code }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.amount.label }}</label>
+                            {{ form.amount }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.description.label }}</label>
+                        {{ form.description }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> تحليل
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> إرشادات
+            </div>
+            <div class="card-body">
+                <h6>كيفية استخدام النظام:</h6>
+                <ol>
+                    <li>حدد نوع الخطأ أو اختر "كشف تلقائي"</li>
+                    <li>أدخلṼرق المرجع إن وجد</li>
+                    <li>اكتب وصفاً واضحاً للخطأ</li>
+                    <li>اضغط "تحليل" لبدء التشخيص</li>
+                </ol>
+
+                <h6 class="mt-3">أنواع الأخطاء:</h6>
+                <ul>
+                    <li><strong>قيد غير متوازن:</strong> المدين لا يساوي الدائن</li>
+                    <li><strong>قيد مكرر:</strong> تم تسجيل القيد مرتين</li>
+                    <li><strong>فرق تسوية:</strong> رصيد البنك لا يتطابق</li>
+                    <li><strong>خطأ في الحساب:</strong> حساب غير صحيح</li>
+                    <li><strong>خطأ في المبلغ:</strong> مبلغ غير صحيح</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

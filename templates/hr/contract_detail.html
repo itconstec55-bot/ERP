@@ -1,0 +1,46 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل العقد{% endblock %}
+{% block page_title %}تفاصيل العقد{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-file-contract"></i> عقد {{ contract.contract_number }}</span>
+        <div>
+            <a href="{% url 'hr:contract_edit' pk=contract.pk %}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> تعديل</a>
+            <form method="post" action="{% url 'hr:contract_delete' pk=contract.pk %}" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا العقد؟')">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> حذف</button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>البيانات الأساسية</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>الموظف</strong></td><td><a href="{% url 'hr:employee_detail' pk=contract.employee.pk %}">{{ contract.employee.full_name }}</a></td></tr>
+                    <tr><td><strong>رقم العقد</strong></td><td>{{ contract.contract_number }}</td></tr>
+                    <tr><td><strong>نوع العقد</strong></td><td>{{ contract.get_contract_type_display }}</td></tr>
+                    <tr><td><strong>من تاريخ</strong></td><td>{{ contract.start_date|date:"d/m/Y" }}</td></tr>
+                    <tr><td><strong>إلى تاريخ</strong></td><td>{{ contract.end_date|date:"d/m/Y"|default:"-" }}</td></tr>
+                    <tr><td><strong>الحالة</strong></td><td>{% if contract.is_active %}<span class="badge bg-success">نشط</span>{% else %}<span class="badge bg-secondary">{{ contract.get_status_display }}</span>{% endif %}</td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6>التفاصيل</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>الراتب</strong></td><td class="text-primary">{{ contract.salary|floatformat:2 }}</td></tr>
+                    <tr><td><strong>فترة التجربة</strong></td><td>{{ contract.probation_period_months }} أشهر</td></tr>
+                    <tr><td><strong>أيام الإجازة السنوية</strong></td><td>{{ contract.annual_leave_days }} يوم</td></tr>
+                    <tr><td><strong>فترة الإشعار</strong></td><td>{{ contract.notice_period_days }} يوم</td></tr>
+                </table>
+            </div>
+        </div>
+        {% if contract.notes %}
+        <p><strong>ملاحظات:</strong> {{ contract.notes }}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

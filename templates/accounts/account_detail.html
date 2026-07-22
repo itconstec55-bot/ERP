@@ -1,0 +1,69 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل الحساب{% endblock %}
+{% block page_title %}{{ account.code }} - {{ account.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-info-circle"></i> بيانات الحساب
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>الكود:</th><td>{{ account.code }}</td></tr>
+                    <tr><th>الاسم:</th><td>{{ account.name }}</td></tr>
+                    <tr><th>النوع:</th><td>{{ account.account_type }}</td></tr>
+                    <tr><th>الحساب الأب:</th><td>{{ account.parent|default:"-" }}</td></tr>
+                    <tr><th>الرصيد الحالي:</th>
+                        <td class="{% if account.current_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            <strong>{{ account.current_balance|floatformat:2 }} ج.م</strong>
+                        </td>
+                    </tr>
+                    <tr><th>الرصيد الافتتاحي:</th><td>{{ account.opening_balance|floatformat:2 }} ج.م</td></tr>
+                </table>
+                <a href="{% url 'accounts:account_edit' pk=account.pk %}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-edit"></i> تعديل
+                </a>
+                <a href="{% url 'accounts:account_statement' pk=account.pk %}" class="btn btn-info btn-sm">
+                    <i class="fas fa-file-invoice"></i> كشف حساب
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-history"></i> حركات الحساب
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>رقم القيد</th>
+                            <th>التاريخ</th>
+                            <th>البيان</th>
+                            <th>مدين</th>
+                            <th>دائن</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in entries %}
+                        <tr>
+                            <td>{{ entry.journal_entry.entry_number }}</td>
+                            <td>{{ entry.journal_entry.date|date:"d/m/Y" }}</td>
+                            <td>{{ entry.description|default:entry.journal_entry.description }}</td>
+                            <td class="text-danger">{{ entry.debit|floatformat:2 }}</td>
+                            <td class="text-success">{{ entry.credit|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted">لا توجد حركات</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

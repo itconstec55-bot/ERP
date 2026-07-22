@@ -1,0 +1,155 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}سندات القبض والدفع{% endblock %}
+{% block page_title %}سندات القبض والدفع{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <div class="text-success fs-2 fw-bold">{{ total_receipts|default:"0" }}</div>
+                <div class="text-muted">سند قبض</div>
+                <div class="text-success fw-bold">{{ total_receipt_amount|default:"0"|floatformat:2|intcomma }} ج.م</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <div class="text-danger fs-2 fw-bold">{{ total_payments|default:"0" }}</div>
+                <div class="text-muted">سند دفع</div>
+                <div class="text-danger fw-bold">{{ total_payment_amount|default:"0"|floatformat:2|intcomma }} ج.م</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-info">
+            <div class="card-body text-center">
+                <div class="text-info fs-2 fw-bold">{{ total_count|default:"0" }}</div>
+                <div class="text-muted">إجمالي السندات</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <div class="text-warning fs-2 fw-bold">{{ unposted_count|default:"0" }}</div>
+                <div class="text-muted">سندات مسودة (غير مرحل)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <a href="{% url 'payment_receipts:create' %}?type=receipt" class="btn btn-success"><i class="fas fa-plus"></i> سند قبض جديد</a>
+    <a href="{% url 'payment_receipts:create' %}?type=payment" class="btn btn-danger"><i class="fas fa-plus"></i> سند دفع جديد</a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-auto">
+                <select name="type" class="form-select form-select-sm">
+                    <option value="">الكل</option>
+                    <option value="receipt" {% if request.GET.type == 'receipt' %}selected{% endif %}>سندات القبض</option>
+                    <option value="payment" {% if request.GET.type == 'payment' %}selected{% endif %}>سندات الدفع</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">الحالة: الكل</option>
+                    <option value="posted" {% if request.GET.status == 'posted' %}selected{% endif %}>مرحل</option>
+                    <option value="draft" {% if request.GET.status == 'draft' %}selected{% endif %}>مسودة</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <select name="method" class="form-select form-select-sm">
+                    <option value="">طريقة الدفع: الكل</option>
+                    <option value="cash" {% if request.GET.method == 'cash' %}selected{% endif %}>نقداً</option>
+                    <option value="bank_transfer" {% if request.GET.method == 'bank_transfer' %}selected{% endif %}>تحويل بنكي</option>
+                    <option value="cheque" {% if request.GET.method == 'cheque' %}selected{% endif %}>شيك</option>
+                    <option value="visa" {% if request.GET.method == 'visa' %}selected{% endif %}>فيزا/ماستر كارد</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <input type="date" name="date_from" class="form-control form-control-sm" placeholder="من تاريخ" value="{{ request.GET.date_from }}">
+            </div>
+            <div class="col-auto">
+                <input type="date" name="date_to" class="form-control form-control-sm" placeholder="إلى تاريخ" value="{{ request.GET.date_to }}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-search"></i> بحث</button>
+                {% if request.GET.type or request.GET.status or request.GET.method or request.GET.date_from or request.GET.date_to %}
+                <a href="{% url 'payment_receipts:list' %}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-times"></i> مسح الفلتر</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>رقم السند</th>
+                    <th>التاريخ</th>
+                    <th>النوع</th>
+                    <th>العميل/المورد</th>
+                    <th>المبلغ</th>
+                    <th>طريقة الدفع</th>
+                    <th>البنك/الخزينة</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in receipts %}
+                <tr>
+                    <td><a href="{% url 'payment_receipts:detail' pk=r.pk %}" class="fw-bold">{{ r.receipt_number }}</a></td>
+                    <td>{{ r.date|date:"d/m/Y" }}</td>
+                    <td><span class="badge bg-{% if r.receipt_type == 'receipt' %}success{% else %}danger{% endif %}">{{ r.get_receipt_type_display }}</span></td>
+                    <td>{% if r.customer %}{{ r.customer.name }}{% elif r.supplier %}{{ r.supplier.name }}{% else %}-{% endif %}</td>
+                    <td class="{% if r.receipt_type == 'receipt' %}text-success{% else %}text-danger{% endif %} fw-bold">{{ r.amount|floatformat:2|intcomma }}</td>
+                    <td>{{ r.get_payment_method_display }}</td>
+                    <td>{% if r.bank %}{{ r.bank.name }}{% elif r.safe %}{{ r.safe.name }}{% else %}-{% endif %}</td>
+                    <td><span class="badge bg-{% if r.is_posted %}success{% else %}warning{% endif %}">{% if r.is_posted %}مرحل{% else %}مسودة{% endif %}</span></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'payment_receipts:detail' pk=r.pk %}" class="btn btn-outline-primary" title="عرض"><i class="fas fa-eye"></i></a>
+                            {% if not r.is_posted %}
+                            <form method="post" action="{% url 'payment_receipts:post' pk=r.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-success" title="ترحيل" onclick="return confirm('هل أنت متأكد من ترحيل هذا السند؟')"><i class="fas fa-check"></i></button>
+                            </form>
+                            <form method="post" action="{% url 'payment_receipts:delete' pk=r.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger" title="حذف" onclick="return confirm('هل أنت متأكد من حذف هذا السند؟')"><i class="fas fa-trash"></i></button>
+                            </form>
+                            {% endif %}
+                            <a href="{% url 'payment_receipts:print' pk=r.pk %}" class="btn btn-outline-secondary" title="طباعة" target="_blank"><i class="fas fa-print"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center text-muted py-5">
+                    <i class="fas fa-file-invoice fa-3x mb-3 d-block opacity-25"></i>
+                    لا توجد سندات{% if request.GET.type or request.GET.status or request.GET.method or request.GET.date_from or request.GET.date_to %} تطابق معايير البحث{% endif %}
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if receipts.has_other_pages %}
+    <nav class="mt-3"><ul class="pagination justify-content-center">
+        {% if receipts.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ receipts.previous_page_number }}&type={{ request.GET.type }}&status={{ request.GET.status }}&method={{ request.GET.method }}&date_from={{ request.GET.date_from }}&date_to={{ request.GET.date_to }}">السابق</a></li>{% endif %}
+        {% for num in receipts.paginator.page_range %}
+        <li class="page-item {% if receipts.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}&type={{ request.GET.type }}&status={{ request.GET.status }}&method={{ request.GET.method }}&date_from={{ request.GET.date_from }}&date_to={{ request.GET.date_to }}">{{ num }}</a></li>
+        {% endfor %}
+        {% if receipts.has_next %}<li class="page-item"><a class="page-link" href="?page={{ receipts.next_page_number }}&type={{ request.GET.type }}&status={{ request.GET.status }}&method={{ request.GET.method }}&date_from={{ request.GET.date_from }}&date_to={{ request.GET.date_to }}">التالي</a></li>{% endif %}
+    </ul></nav>
+    {% endif %}
+</div>
+{% endblock %}

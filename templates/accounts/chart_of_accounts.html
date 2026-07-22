@@ -1,0 +1,53 @@
+{% extends "base/base.html" %}
+
+{% block title %}شجرة الحسابات{% endblock %}
+{% block page_title %}شجرة الحسابات{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-sitemap"></i> شجرة الحسابات</span>
+        <a href="{% url 'accounts:account_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> إضافة حساب
+        </a>
+    </div>
+    <div class="card-body">
+        {% for account_type in account_types %}
+        <div class="mb-4">
+            <h5 class="text-primary">
+                <i class="fas fa-folder"></i>
+                {{ account_type.get_account_type_display }} - {{ account_type.name }}
+            </h5>
+            <div class="ms-4">
+                {% for account in account_type.accounts.all %}
+                {% if not account.parent %}
+                <div class="mb-2">
+                    <strong>{{ account.code }}</strong> - {{ account.name }}
+                    <span class="badge {% if account.current_balance >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                        {{ account.current_balance|floatformat:2 }}
+                    </span>
+                    {% for child in account.children.all %}
+                    <div class="ms-4 mt-1">
+                        <span>{{ child.code }}</span> - {{ child.name }}
+                        <span class="badge {% if child.current_balance >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ child.current_balance|floatformat:2 }}
+                        </span>
+                        {% for grandchild in child.children.all %}
+                        <div class="ms-4 mt-1">
+                            <span class="text-muted">{{ grandchild.code }}</span> - {{ grandchild.name }}
+                            <span class="badge {% if grandchild.current_balance >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ grandchild.current_balance|floatformat:2 }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

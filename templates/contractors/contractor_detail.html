@@ -1,0 +1,160 @@
+{% extends "base/base.html" %}
+
+{% block content_header %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>بيانات المقاول — {{ contractor.name }}</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="{% url 'contractors:dashboard' %}">لوحة التحكم</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'contractors:contractor_list' %}">المقاولون</a></li>
+          <li class="breadcrumb-item active">{{ contractor.name }}</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card card-primary card-outline">
+        <div class="card-body box-profile">
+          <div class="text-center">
+            <i class="fas fa-hard-hat fa-4x text-muted"></i>
+          </div>
+          <h3 class="profile-username text-center">{{ contractor.name }}</h3>
+          <p class="text-muted text-center">{{ contractor.code }}</p>
+
+          <ul class="list-group list-group-unbordered mb-3">
+            <li class="list-group-item">
+              <b>النوع</b> <a class="float-right">{{ contractor.get_contractor_type_display }}</a>
+            </li>
+            <li class="list-group-item">
+              <b>التخصص</b> <a class="float-right">{{ contractor.speciality|default:"—" }}</a>
+            </li>
+            <li class="list-group-item">
+              <b>الرصيد الحالي</b> <a class="float-right">{{ contractor.current_balance|floatformat:2 }}</a>
+            </li>
+            <li class="list-group-item">
+              <b>الحالة</b>
+              <span class="badge badge-{% if contractor.status == 'active' %}success{% elif contractor.status == 'suspended' %}danger{% else %}warning{% endif %} float-right">
+                {{ contractor.get_status_display }}
+              </span>
+            </li>
+          </ul>
+
+          <a href="{% url 'contractors:contractor_edit' pk=contractor.pk %}" class="btn btn-primary btn-block">
+            <i class="fas fa-edit"></i> تعديل البيانات
+          </a>
+        </div>
+      </div>
+
+      <div class="card card-secondary">
+        <div class="card-header">
+          <h3 class="card-title">معلومات الاتصال</h3>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <i class="fas fa-phone"></i> {{ contractor.phone|default:"—" }}
+            </li>
+            <li class="list-group-item">
+              <i class="fas fa-envelope"></i> {{ contractor.email|default:"—" }}
+            </li>
+            <li class="list-group-item">
+              <i class="fas fa-map-marker-alt"></i> {{ contractor.address|default:"—" }}
+            </li>
+            <li class="list-group-item">
+              <i class="fas fa-id-card"></i> الرقم الضريبي: {{ contractor.tax_number|default:"—" }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">العقود</h3>
+        </div>
+        <div class="card-body table-responsive p-0">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>رقم العقد</th>
+                <th>العنوان</th>
+                <th>المبلغ</th>
+                <th>الحالة</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in contracts %}
+              <tr>
+                <td><a href="{% url 'contractors:contract_detail' pk=c.pk %}">{{ c.contract_number }}</a></td>
+                <td>{{ c.title }}</td>
+                <td>{{ c.contract_amount|floatformat:2 }}</td>
+                <td>
+                  <span class="badge badge-{% if c.status == 'active' %}success{% elif c.status == 'draft' %}secondary{% else %}dark{% endif %}">
+                    {{ c.get_status_display }}
+                  </span>
+                </td>
+                <td>
+                  <a href="{% url 'contractors:contract_detail' pk=c.pk %}" class="btn btn-xs btn-info">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" class="text-center">لا توجد عقود</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">آخر المدفوعات</h3>
+        </div>
+        <div class="card-body table-responsive p-0">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>رقم الدفعة</th>
+                <th>العقد</th>
+                <th>المبلغ</th>
+                <th>التاريخ</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in payments %}
+              <tr>
+                <td><a href="{% url 'contractors:payment_detail' pk=p.pk %}">{{ p.payment_number }}</a></td>
+                <td>{{ p.contract.contract_number }}</td>
+                <td>{{ p.amount|floatformat:2 }}</td>
+                <td>{{ p.payment_date|date:"Y/m/d" }}</td>
+                <td>
+                  <span class="badge badge-{% if p.status == 'paid' %}success{% elif p.status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                    {{ p.get_status_display }}
+                  </span>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" class="text-center">لا توجد مدفوعات</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

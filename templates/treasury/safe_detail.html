@@ -1,0 +1,55 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل الخزينة{% endblock %}
+{% block page_title %}
+{{ safe.name }}
+<a href="{% url 'treasury:safe_edit' pk=safe.pk %}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> تعديل</a>
+<form method="post" action="{% url 'treasury:safe_delete' pk=safe.pk %}" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذه الخزينة؟')">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> حذف</button>
+</form>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white"><i class="fas fa-info-circle"></i> بيانات الخزينة</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>الاسم:</th><td>{{ safe.name }}</td></tr>
+                    <tr><th>المسئول:</th><td>{{ safe.responsible_person|default:"-" }}</td></tr>
+                    <tr><th>الرصيد:</th><td class="text-success"><strong>{{ safe.current_balance|floatformat:2 }} ج.م</strong></td></tr>
+                    <tr><th>الحد الأقصى:</th><td>{{ safe.maximum_limit|floatformat:2 }} ج.م</td></tr>
+                </table>
+            </div>
+        </div>
+        <a href="{% url 'treasury:safe_transaction_create' safe_id=safe.pk %}" class="btn btn-success mt-2 w-100">
+            <i class="fas fa-plus"></i> معاملة جديدة
+        </a>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-money-bill-wave"></i> المعاملات</div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead><tr><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>الرصيد بعد</th><th>البيان</th></tr></thead>
+                    <tbody>
+                        {% for trans in transactions %}
+                        <tr>
+                            <td>{{ trans.date|date:"d/m/Y" }}</td>
+                            <td><span class="badge bg-{% if trans.transaction_type == 'deposit' %}success{% else %}danger{% endif %}">{{ trans.get_transaction_type_display }}</span></td>
+                            <td class="{% if trans.transaction_type == 'deposit' %}text-success{% else %}text-danger{% endif %}">{{ trans.amount|floatformat:2 }}</td>
+                            <td>{{ trans.balance_after|floatformat:2 }}</td>
+                            <td>{{ trans.description }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted">لا توجد معاملات</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

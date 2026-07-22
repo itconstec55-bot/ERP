@@ -1,0 +1,30 @@
+{% extends "base/base.html" %}
+
+{% block title %}الحضور والانصراف{% endblock %}
+{% block page_title %}الحضور والانصراف{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-calendar-check"></i> سجلات الحضور</span>
+        <a href="{% url 'hr:attendance_create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> تسجيل حضور</a>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead><tr><th>الموظف</th><th>التاريخ</th><th>الحضور</th><th>الانصراف</th><th>الحالة</th><th>إضافي</th></tr></thead>
+            <tbody>
+                {% for att in attendances %}
+                <tr>
+                    <td><a href="{% url 'hr:attendance_detail' pk=att.pk %}">{{ att.employee.full_name }}</a></td>
+                    <td>{{ att.date|date:"d/m/Y" }}</td>
+                    <td>{{ att.check_in|time:"H:i" }}</td>
+                    <td>{{ att.check_out|time:"H:i" }}</td>
+                    <td><span class="badge bg-{% if att.status == 'present' %}success{% elif att.status == 'absent' %}danger{% elif att.status == 'late' %}warning{% else %}info{% endif %}">{{ att.get_status_display }}</span></td>
+                    <td>{{ att.overtime_hours }} ساعة</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base/base.html" %}
+
+{% block title %}{{ center.code }} - {{ center.name }}{% endblock %}
+{% block page_title %}مركز التكلفة{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-project-diagram"></i> {{ center.code }} - {{ center.name }}</span>
+        <div>
+            <a href="{% url 'budget:cost_center_edit' pk=center.pk %}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> تعديل</a>
+            <form method="post" action="{% url 'budget:cost_center_delete' pk=center.pk %}" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف مركز التكلفة؟')">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> حذف</button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>الكود:</strong> {{ center.code }}</p>
+                <p><strong>الاسم:</strong> {{ center.name }}</p>
+                <p><strong>المدير:</strong> {{ center.manager|default:"غير محدد" }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>المركز الأب:</strong> {{ center.parent|default:"-" }}</p>
+                <p><strong>الوصف:</strong> {{ center.description|default:"-" }}</p>
+                <p><strong>الحالة:</strong> {% if center.is_active %}<span class="badge bg-success">نشط</span>{% else %}<span class="badge bg-secondary">غير نشط</span>{% endif %}</p>
+            </div>
+        </div>
+
+        {% if budgets %}
+        <h5 class="mt-3"><i class="fas fa-chart-bar"></i> الموازنة المرتبطة ({{ budgets|length }})</h5>
+        <table class="table table-hover">
+            <thead><tr><th>الاسم</th><th>الحساب</th><th>المخطط</th><th>الفعلي</th><th>النسبة</th></tr></thead>
+            <tbody>
+                {% for b in budgets %}
+                <tr>
+                    <td><a href="{% url 'budget:budget_detail' pk=b.pk %}">{{ b.name }}</a></td>
+                    <td>{{ b.account }}</td>
+                    <td>{{ b.budgeted_amount|floatformat:2 }}</td>
+                    <td>{{ b.actual_amount|floatformat:2 }}</td>
+                    <td>
+                        {% if b.budgeted_amount %}
+                        {% widthratio b.actual_amount 1 b.budgeted_amount as pct %}
+                        <div class="progress" style="height:20px">
+                            <div class="progress-bar {% if b.actual_amount > b.budgeted_amount %}bg-danger{% else %}bg-success{% endif %}" style="width:{{ pct }}%">{{ b.actual_amount|floatformat:0 }}/{{ b.budgeted_amount|floatformat:0 }}</div>
+                        </div>
+                        {% else %}-{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">لا توجد موازنة مرتبطة بهذا المركز</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

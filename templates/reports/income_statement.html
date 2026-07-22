@@ -1,0 +1,71 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}قائمة الدخل{% endblock %}
+{% block page_title %}قائمة الدخل{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/print.css' %}" rel="stylesheet">
+<style>
+    @media screen { .print-header-wrapper, .print-footer-wrapper { display: none; } }
+    @media print { .print-header-wrapper, .print-footer-wrapper { display: block !important; } }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'components/print_header.html' with doc_title='قائمة الدخل' doc_date=date_to %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-file-invoice-dollar"></i> قائمة الدخل</span>
+        <form method="get" class="d-flex gap-2">
+            <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <table class="table table-bordered">
+                    <thead class="table-dark">
+                        <tr><th colspan="2">قائمة الدخل</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-light"><td colspan="2"><strong>الإيرادات</strong></td></tr>
+                        <tr><td>إيرادات المبيعات</td><td class="text-end">{{ sales_revenue|floatformat:2 }} ج.م</td></tr>
+                        <tr class="table-info"><td><strong>إجمالي الإيرادات</strong></td><td class="text-end"><strong>{{ sales_revenue|floatformat:2 }} ج.م</strong></td></tr>
+
+                        <tr class="table-light"><td colspan="2"><strong>تكلفة البضاعة المباعة</strong></td></tr>
+                        <tr><td>المشتريات</td><td class="text-end text-danger">({{ cogs|floatformat:2 }}) ج.م</td></tr>
+                        <tr class="table-danger"><td><strong>إجمالي التكلفة</strong></td><td class="text-end"><strong>({{ cogs|floatformat:2 }}) ج.م</strong></td></tr>
+
+                        <tr class="table-success"><td><strong>الربح الإجمالي</strong></td><td class="text-end"><strong>{{ gross_profit|floatformat:2 }} ج.م</strong></td></tr>
+
+                        <tr class="table-light"><td colspan="2"><strong>المصروفات التشغيلية</strong></td></tr>
+                        {% for exp in expenses_detail %}
+                        <tr><td>{{ exp.name }}</td><td class="text-end text-danger">({{ exp.amount|floatformat:2 }}) ج.م</td></tr>
+                        {% endfor %}
+                        <tr class="table-warning"><td><strong>إجمالي المصروفات</strong></td><td class="text-end"><strong>({{ total_expenses|floatformat:2 }}) ج.م</strong></td></tr>
+
+                        <tr class="table-primary"><td><strong>صافي الربح التشغيلي</strong></td><td class="text-end"><strong>{{ operating_profit|floatformat:2 }} ج.م</strong></td></tr>
+
+                        <tr class="table-light"><td colspan="2"><strong>إيرادات ومصروفات أخرى</strong></td></tr>
+                        <tr><td>إيرادات أخرى</td><td class="text-end">{{ other_income|floatformat:2 }} ج.م</td></tr>
+                        <tr><td>مصروفات أخرى</td><td class="text-end text-danger">({{ other_expenses|floatformat:2 }}) ج.م</td></tr>
+
+                        <tr class="table-success"><td><strong>الربح قبل الضرائب</strong></td><td class="text-end"><strong>{{ net_profit|floatformat:2 }} ج.م</strong></td></tr>
+
+                        <tr class="table-light"><td colspan="2"><strong>الضرائب</strong></td></tr>
+                        <tr><td>ضريبة القيمة المضافة المستحقة</td><td class="text-end text-danger">({{ vat_payable|floatformat:2 }}) ج.م</td></tr>
+                        <tr><td>ضريبة الخصم والتحصيل</td><td class="text-end text-danger">({{ withholding_tax|floatformat:2 }}) ج.م</td></tr>
+                        <tr class="table-warning"><td><strong>إجمالي الضرائب</strong></td><td class="text-end"><strong>({{ total_taxes|floatformat:2 }}) ج.م</strong></td></tr>
+
+                        <tr class="table-dark"><td><h5>صافي الربح بعد الضرائب</h5></td><td class="text-end"><h5 class="{% if net_after_tax >= 0 %}text-success{% else %}text-danger{% endif %}">{{ net_after_tax|floatformat:2 }} ج.م</h5></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'components/print_footer.html' %}
+{% endblock %}

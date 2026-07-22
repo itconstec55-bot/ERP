@@ -1,0 +1,32 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل سجل الحضور{% endblock %}
+{% block page_title %}تفاصيل سجل الحضور{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fas fa-user-clock"></i> سجل حضور — {{ attendance.employee.full_name }}
+    </div>
+    <div class="card-body">
+        <table class="table table-sm">
+            <tr><td><strong>الموظف</strong></td><td><a href="{% url 'hr:employee_detail' pk=attendance.employee.pk %}">{{ attendance.employee.full_name }}</a></td></tr>
+            <tr><td><strong>التاريخ</strong></td><td>{{ attendance.date|date:"d/m/Y" }}</td></tr>
+            <tr><td><strong>وقت الحضور</strong></td><td>{{ attendance.check_in|time:"H:i"|default:"-" }}</td></tr>
+            <tr><td><strong>وقت الانصراف</strong></td><td>{{ attendance.check_out|time:"H:i"|default:"-" }}</td></tr>
+            <tr><td><strong>الحالة</strong></td><td>
+                {% if attendance.status == 'present' %}<span class="badge bg-success">حاضر</span>
+                {% elif attendance.status == 'absent' %}<span class="badge bg-danger">غائب</span>
+                {% elif attendance.status == 'late' %}<span class="badge bg-warning">متأخر</span>
+                {% elif attendance.status == 'leave' %}<span class="badge bg-info">إجازة</span>
+                {% elif attendance.status == 'sick' %}<span class="badge bg-secondary">مرضي</span>
+                {% endif %}
+            </td></tr>
+            <tr><td><strong>ساعات العمل الإضافي</strong></td><td>{{ attendance.overtime_hours }}</td></tr>
+            {% if attendance.notes %}
+            <tr><td><strong>ملاحظات</strong></td><td>{{ attendance.notes }}</td></tr>
+            {% endif %}
+        </table>
+    </div>
+</div>
+{% endblock %}

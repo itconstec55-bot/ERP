@@ -1,0 +1,55 @@
+<!-- Print Header - هيدر الطباعة الموحد -->
+{% load humanize %}
+
+<div class="print-header-wrapper" {% if color_class %}style="border-bottom-color: var(--print-primary)"{% endif %}>
+    <div class="print-header">
+        {# ── Company Info (Right) ── #}
+        <div class="print-header__company">
+            {% if company.logo %}
+            <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="print-header__logo">
+            {% endif %}
+            <h2 class="print-header__name">{{ company.name|default:"شركة تواريدات للتجارة" }}</h2>
+            {% if company.name_en %}
+            <p class="print-header__name-en">{{ company.name_en }}</p>
+            {% endif %}
+            <div class="print-header__details">
+                {% if company.address %}
+                <span><i class="fas fa-map-marker-alt"></i> {{ company.address }}{% if company.city %}، {{ company.city }}{% endif %}{% if company.country %}، {{ company.country }}{% endif %}</span>
+                {% endif %}
+                <br>
+                {% if company.phone %}<span><i class="fas fa-phone"></i> {{ company.phone }}</span>{% endif %}
+                {% if company.mobile %}<span><i class="fas fa-mobile-alt"></i> {{ company.mobile }}</span>{% endif %}
+                {% if company.fax %}<span><i class="fas fa-fax"></i> {{ company.fax }}</span>{% endif %}
+                {% if company.email %}<span><i class="fas fa-envelope"></i> {{ company.email }}</span>{% endif %}
+                {% if company.tax_number %}
+                <br>
+                <span><i class="fas fa-file-invoice"></i> الرقم الضريبي: <strong>{{ company.tax_number }}</strong></span>
+                {% endif %}
+                {% if company.commercial_register %}
+                <span><i class="fas fa-briefcase"></i> سجل تجاري: {{ company.commercial_register }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ── Document Info (Left) ── #}
+        <div class="print-header__document">
+            {% if doc_title %}
+            <div class="print-header__doc-title">{{ doc_title }}</div>
+            {% endif %}
+            <div class="print-header__doc-info">
+                {% if doc_number %}
+                <div><strong>رقم:</strong> {{ doc_number }}</div>
+                {% endif %}
+                {% if doc_date %}
+                <div><strong>التاريخ:</strong> {{ doc_date|date:"d/m/Y" }}</div>
+                {% endif %}
+                {% if doc_due_date %}
+                <div><strong>الاستحقاق:</strong> {{ doc_due_date|date:"d/m/Y" }}</div>
+                {% endif %}
+                {% if extra_info %}
+                <div>{{ extra_info }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

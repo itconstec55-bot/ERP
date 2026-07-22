@@ -1,0 +1,98 @@
+{% extends "base/base.html" %}
+{% load access_tags %}
+
+{% block title %}سجل الأخطاء{% endblock %}
+{% block page_title %}سجل الأخطاء المحاسبية{% endblock %}
+
+{% block content %}
+{% can_screen 'ai_analysis.errorlog' 'add' as ai_can_add %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-history"></i> سجل الأخطاء</span>
+        {% if ai_can_add %}
+        <a href="{% url 'ai_analysis:auto_detect' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-search"></i> كشف جديد
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <form method="get" class="row mb-4">
+            <div class="col-md-3">
+                {{ form.severity }}
+            </div>
+            <div class="col-md-3">
+                {{ form.status }}
+            </div>
+            <div class="col-md-3">
+                {{ form.error_type }}
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-filter"></i> تصفية
+                </button>
+            </div>
+        </form>
+
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>العنوان</th>
+                    <th>النوع</th>
+                    <th>الشدة</th>
+                    <th>الحالة</th>
+                    <th>المبلغ</th>
+                    <th>التاريخ</th>
+                    <th>إجراء</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for error in errors %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <a href="{% url 'ai_analysis:error_detail' pk=error.pk %}">
+                            {{ error.title }}
+                        </a>
+                    </td>
+                    <td>{{ error.error_type }}</td>
+                    <td>
+                        {% if error.severity == 'critical' %}
+                            <span class="badge bg-danger">حرج</span>
+                        {% elif error.severity == 'high' %}
+                            <span class="badge bg-warning">عالي</span>
+                        {% elif error.severity == 'medium' %}
+                            <span class="badge bg-info">متوسط</span>
+                        {% else %}
+                            <span class="badge bg-secondary">منخفض</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if error.status == 'resolved' %}
+                            <span class="badge bg-success">تم الحل</span>
+                        {% elif error.status == 'detected' %}
+                            <span class="badge bg-warning">تم الكشف</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ error.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ error.amount|floatformat:2 }}</td>
+                    <td>{{ error.created_at|date:"d/m/Y" }}</td>
+                    <td>
+                        <a href="{% url 'ai_analysis:error_detail' pk=error.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted">
+                        لا توجد سجلات أخطاء
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

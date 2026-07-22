@@ -1,0 +1,974 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}إعدادات النظام{% endblock %}
+
+{% block page_title %}إعدادات النظام{% endblock %}
+
+{% block extra_head %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+    .settings-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .settings-header h4 { margin: 0; font-weight: 600; }
+    .settings-header .section-icon {
+        width: 48px; height: 48px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.25rem;
+    }
+    .settings-body { padding: 24px; }
+    
+    .table-responsive { overflow-x: auto; }
+    .settings-table { width: 100%; border-collapse: collapse; }
+    .settings-table th {
+        background: #f8f9fa;
+        color: var(--primary-color);
+        font-weight: 600;
+        padding: 12px 16px;
+        border-bottom: 2px solid #e9ecef;
+        white-space: nowrap;
+    }
+    .settings-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+    }
+    .settings-table tbody tr:hover { background: #f8f9fa; }
+    .settings-table tbody tr.editing-row { background: #e8f0fe; }
+    
+    .editable-cell { position: relative; }
+    .cell-view { display: block; }
+    .cell-edit { display: none; }
+    .editing-row .cell-view { display: none; }
+    .editing-row .cell-edit { display: block; }
+    
+    .form-control-sm { padding: 6px 10px; font-size: 0.875rem; }
+    .form-check-input { width: 1.1em; height: 1.1em; }
+    
+    .action-buttons { display: flex; gap: 6px; white-space: nowrap; }
+    .btn-action {
+        padding: 6px 10px; font-size: 0.8rem;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 6px; transition: all 0.2s;
+    }
+    .btn-action i { margin-right: 4px; }
+    
+    .btn-add-row {
+        background: #e8f0fe; color: var(--primary-color);
+        border: 1px solid #c5d7fd;
+    }
+    .btn-add-row:hover { background: #d2e3fc; }
+    
+    .empty-state { text-align: center; padding: 40px 20px; color: #6c757d; }
+    .empty-state i { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
+    
+    .badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; }
+    .badge-active { background: #d4edda; color: #155724; }
+    .badge-inactive { background: #f8d7da; color: #721c24; }
+    
+    .spinner-sm { width: 14px; height: 14px; border-width: 2px; }
+    
+    .toast-container { position: fixed; top: 20px; left: 20px; z-index: 9999; }
+    .toast { min-width: 280px; }
+    
+    @media (max-width: 768px) {
+        .settings-header { flex-direction: column; align-items: flex-start; }
+        .action-buttons { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-cogs me-2"></i>إعدادات النظام</h2>
+            <p class="text-muted mb-0">إدارة أنواع الحسابات، المنتجات، التصنيفات، ووحدات القياس</p>
+        </div>
+    </div>
+
+    <!-- Toast Container for Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Account Types Section -->
+    <div class="settings-section" id="accountTypesSection">
+        <div class="settings-header">
+            <div class="d-flex align-items-center gap-3">
+                <div class="section-icon"><i class="fas fa-sitemap"></i></div>
+                <div>
+                    <h4>أنواع الحسابات</h4>
+                    <small class="opacity-75">تصنيف الحسابات في شجرة الحسابات</small>
+                </div>
+            </div>
+            <button type="button" class="btn btn-light btn-add-row" onclick="openCreateModal('accountType')">
+                <i class="fas fa-plus me-1"></i> إضافة نوع جديد
+            </button>
+        </div>
+        <div class="settings-body">
+            <div class="table-responsive">
+                <table class="settings-table" id="accountTypesTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">الكود</th>
+                            <th>الاسم</th>
+                            <th style="width: 150px;">النوع</th>
+                            <th>الوصف</th>
+                            <th style="width: 100px;">الحالة</th>
+                            <th style="width: 160px;">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for at in account_types %}
+                        <tr data-id="{{ at.id }}" data-type="accountType">
+                            <td>
+                                <span class="cell-view fw-bold text-primary">{{ at.code }}</span>
+                                <input type="text" class="form-control form-control-sm cell-edit" name="code" value="{{ at.code }}" maxlength="20">
+                            </td>
+                            <td>
+                                <span class="cell-view">{{ at.name }}</span>
+                                <input type="text" class="form-control form-control-sm cell-edit" name="name" value="{{ at.name }}" maxlength="100">
+                            </td>
+                            <td>
+                                <span class="cell-view">
+                                    <span class="badge bg-info">{{ at.get_account_type_display }}</span>
+                                </span>
+                                <select class="form-select form-select-sm cell-edit" name="account_type">
+                                    <option value="asset" {% if at.account_type == 'asset' %}selected{% endif %}>أصول</option>
+                                    <option value="liability" {% if at.account_type == 'liability' %}selected{% endif %}>خصوم</option>
+                                    <option value="equity" {% if at.account_type == 'equity' %}selected{% endif %}>حقوق الملكية</option>
+                                    <option value="revenue" {% if at.account_type == 'revenue' %}selected{% endif %}>إيرادات</option>
+                                    <option value="expense" {% if at.account_type == 'expense' %}selected{% endif %}>مصروفات</option>
+                                </select>
+                            </td>
+                            <td>
+                                <span class="cell-view text-muted">{{ at.description|default:"—" }}</span>
+                                <textarea class="form-control form-control-sm cell-edit" name="description" rows="2">{{ at.description|default:"" }}</textarea>
+                            </td>
+                            <td>
+                                <span class="cell-view">
+                                    <span class="badge-status {% if at.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+                                        {% if at.is_active %}<i class="fas fa-check-circle me-1"></i>نشط{% else %}<i class="fas fa-times-circle me-1"></i>غير نشط{% endif %}
+                                    </span>
+                                </span>
+                                <div class="form-check form-switch cell-edit">
+                                    <input class="form-check-input" type="checkbox" name="is_active" {% if at.is_active %}checked{% endif %}>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button type="button" class="btn-action btn-outline-primary btn-edit" onclick="toggleEdit(this)" title="تعديل">
+                                        <i class="fas fa-edit"></i> تعديل
+                                    </button>
+                                    <button type="button" class="btn-action btn-outline-success btn-save d-none" onclick="saveRow(this)" title="حفظ">
+                                        <i class="fas fa-save"></i> حفظ
+                                    </button>
+                                    <button type="button" class="btn-action btn-outline-secondary btn-cancel d-none" onclick="cancelEdit(this)" title="إلغاء">
+                                        <i class="fas fa-times"></i> إلغاء
+                                    </button>
+                                    <button type="button" class="btn-action btn-outline-danger btn-delete" onclick="deleteRow(this)" title="حذف">
+                                        <i class="fas fa-trash"></i> حذف
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <i class="fas fa-sitemap"></i>
+                                <p>لا توجد أنواع حسابات معرفة</p>
+                                <button type="button" class="btn btn-primary btn-sm mt-2" onclick="openCreateModal('accountType')">
+                                    <i class="fas fa-plus me-1"></i> إضافة أول نوع
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Items Section -->
+    <div class="settings-section" id="productsSection">
+        <div class="settings-header">
+            <div class="d-flex align-items-center gap-3">
+                <div class="section-icon"><i class="fas fa-boxes"></i></div>
+                <div>
+                    <h4>بنود المنتجات</h4>
+                    <small class="opacity-75">إدارة المنتجات والخدمات</small>
+                </div>
+            </div>
+            <button type="button" class="btn btn-light btn-add-row" onclick="openCreateModal('product')">
+                <i class="fas fa-plus me-1"></i> إضافة منتج جديد
+            </button>
+        </div>
+        <div class="settings-body">
+            <div class="table-responsive">
+                <table class="settings-table" id="productsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">الكود</th>
+                            <th>اسم المنتج</th>
+                            <th style="width: 150px;">التصنيف</th>
+                            <th style="width: 100px;">الوحدة</th>
+                            <th style="width: 120px;">سعر الشراء</th>
+                            <th style="width: 120px;">سعر البيع</th>
+                            <th style="width: 100px;">المخزون</th>
+                            <th style="width: 100px;">الحالة</th>
+                            <th style="width: 160px;">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in products %}
+                        <tr data-id="{{ p.id }}" data-type="product">
+                            <td>
+                                <span class="cell-view fw-bold text-primary">{{ p.code }}</span>
+                                <input type="text" class="form-control form-control-sm cell-edit" name="code" value="{{ p.code }}" maxlength="20">
+                            </td>
+                            <td>
+                                <span class="cell-view">{{ p.name }}</span>
+                                <input type="text" class="form-control form-control-sm cell-edit" name="name" value="{{ p.name }}" maxlength="200">
+                            </td>
+                            <td>
+                                <span class="cell-view text-muted">{{ p.category.name|default:"—" }}</span>
+                                <select class="form-select form-select-sm cell-edit" name="category_id">
+                                    <option value="">— اختر تصنيف —</option>
+                                    {% for cat in categories %}
+                                    <option value="{{ cat.id }}" {% if p.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <span class="cell-view text-muted">{{ p.unit|default:"—" }}</span>
+                                <select class="form-select form-select-sm cell-edit" name="unit_id">
+                                    <option value="">— اختر وحدة —</option>
+                                    {% for u in units %}
+                                    <option value="{{ u.id }}" {% if p.unit_of_measure_id == u.id %}selected{% endif %}>{{ u.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <span class="cell-view">{{ p.purchase_price|floatformat:2 }}</span>
+                                <input type="number" class="form-control form-control-sm cell-edit" name="purchase_price" value="{{ p.purchase_price }}" step="0.01" min="0">
+                            </td>
+                            <td>
+                                <span class="cell-view">{{ p.selling_price|floatformat:2 }}</span>
+                                <input type="number" class="form-control form-control-sm cell-edit" name="selling_price" value="{{ p.selling_price }}" step="0.01" min="0">
+                            </td>
+                            <td>
+                                <span class="cell-view">{{ p.current_stock|floatformat:2 }}</span>
+                                <input type="number" class="form-control form-control-sm cell-edit" name="current_stock" value="{{ p.current_stock }}" step="0.01">
+                            </td>
+                            <td>
+                                <span class="cell-view">
+                                    <span class="badge-status {% if p.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+                                        {% if p.is_active %}<i class="fas fa-check-circle me-1"></i>نشط{% else %}<i class="fas fa-times-circle me-1"></i>غير نشط{% endif %}
+                                    </span>
+                                </span>
+                                <div class="form-check form-switch cell-edit">
+                                    <input class="form-check-input" type="checkbox" name="is_active" {% if p.is_active %}checked{% endif %}>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button type="button" class="btn-action btn-outline-primary btn-edit" onclick="toggleEdit(this)" title="تعديل">
+                                        <i class="fas fa-edit"></i> تعديل
+                                    </button>
+                                    <button type="button" class="btn-action btn-outline-success btn-save d-none" onclick="saveRow(this)" title="حفظ">
+                                        <i class="fas fa-save"></i> حفظ
+                                    </button>
+                                    <button type="button" class="btn-action btn-outline-secondary btn-cancel d-none" onclick="cancelEdit(this)" title="إلغاء">
+                                        <i class="fas fa-times"></i> إلغاء
+                                    </button>
+                                    <button type="button" class="btn-action btn-outline-danger btn-delete" onclick="deleteRow(this)" title="حذف">
+                                        <i class="fas fa-trash"></i> حذف
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="empty-state">
+                                <i class="fas fa-boxes"></i>
+                                <p>لا توجد منتجات معرفة</p>
+                                <button type="button" class="btn btn-primary btn-sm mt-2" onclick="openCreateModal('product')">
+                                    <i class="fas fa-plus me-1"></i> إضافة أول منتج
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories Section -->
+    <div class="settings-section" id="categoriesSection">
+        <div class="settings-header">
+            <div class="d-flex align-items-center gap-3">
+                <div class="section-icon"><i class="fas fa-tags"></i></div>
+                <div>
+                    <h4>تصنيفات المنتجات</h4>
+                    <small class="opacity-75">تنظيم المنتجات في مجموعات</small>
+                </div>
+            </div>
+            <button type="button" class="btn btn-light btn-add-row" onclick="openCreateModal('category')">
+                <i class="fas fa-plus me-1"></i> إضافة تصنيف جديد
+            </button>
+        </div>
+        <div class="settings-body">
+            <div class="table-responsive">
+                <table class="settings-table" id="categoriesTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">الكود</th>
+                            <th>الاسم</th>
+                            <th>الوصف</th>
+                            <th style="width: 100px;">الحالة</th>
+                            <th style="width: 160px;">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cat in categories %}
+                        <tr data-id="{{ cat.id }}" data-type="category">
+                            <td>
+                                <span class="cell-view fw-bold text-primary">{{ cat.code }}</span>
+                                <input type="text" class="form-control form-control-sm cell-edit" name="code" value="{{ cat.code }}" maxlength="20">
+                            </td>
+                            <td>
+                                <span class="cell-view">{{ cat.name }}</span>
+                                <input type="text" class="form-control form-control-sm cell-edit" name="name" value="{{ cat.name }}" maxlength="200">
+                            </td>
+                            <td>
+                                <span class="cell-view text-muted">{{ cat.description|default:"—" }}</span>
+                                <textarea class="form-control form-control-sm cell-edit" name="description" rows="2">{{ cat.description|default:"" }}</textarea>
+                            </td>
+                            <td>
+                                <span class="cell-view">
+                                    <span class="badge-status {% if cat.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+                                        {% if cat.is_active %}نشط{% else %}غير نشط{% endif %}
+                                    </span>
+                                </span>
+                                <div class="form-check form-switch cell-edit">
+                                    <input class="form-check-input" type="checkbox" name="is_active" {% if cat.is_active %}checked{% endif %}>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button type="button" class="btn-action btn-outline-primary btn-edit" onclick="toggleEdit(this)" title="تعديل"><i class="fas fa-edit"></i> تعديل</button>
+                                    <button type="button" class="btn-action btn-outline-success btn-save d-none" onclick="saveRow(this)" title="حفظ"><i class="fas fa-save"></i> حفظ</button>
+                                    <button type="button" class="btn-action btn-outline-secondary btn-cancel d-none" onclick="cancelEdit(this)" title="إلغاء"><i class="fas fa-times"></i> إلغاء</button>
+                                    <button type="button" class="btn-action btn-outline-danger btn-delete" onclick="deleteRow(this)" title="حذف"><i class="fas fa-trash"></i> حذف</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="empty-state"><i class="fas fa-tags"></i><p>لا توجد تصنيفات</p><button class="btn btn-primary btn-sm mt-2" onclick="openCreateModal('category')"><i class="fas fa-plus me-1"></i> إضافة أول تصنيف</button></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Units of Measure Section -->
+    <div class="settings-section" id="unitsSection">
+        <div class="settings-header">
+            <div class="d-flex align-items-center gap-3">
+                <div class="section-icon"><i class="fas fa-ruler-combined"></i></div>
+                <div>
+                    <h4>وحدات القياس</h4>
+                    <small class="opacity-75">وحدات قياس المنتجات</small>
+                </div>
+            </div>
+            <button type="button" class="btn btn-light btn-add-row" onclick="openCreateModal('unit')">
+                <i class="fas fa-plus me-1"></i> إضافة وحدة جديدة
+            </button>
+        </div>
+        <div class="settings-body">
+            <div class="table-responsive">
+                <table class="settings-table" id="unitsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">الكود</th>
+                            <th>الاسم</th>
+                            <th style="width: 100px;">الرمز</th>
+                            <th style="width: 100px;">الحالة</th>
+                            <th style="width: 160px;">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in units %}
+                        <tr data-id="{{ u.id }}" data-type="unit">
+                            <td>
+                                <span class="cell-view fw-bold text-primary">{{ u.code }}</span>
+                                <input type="text" class="form-control form-control-sm cell-edit" name="code" value="{{ u.code }}" maxlength="20">
+                            </td>
+                            <td>
+                                <span class="cell-view">{{ u.name }}</span>
+                                <input type="text" class="form-control form-control-sm cell-edit" name="name" value="{{ u.name }}" maxlength="200">
+                            </td>
+                            <td>
+                                <span class="cell-view text-muted">{{ u.symbol|default:"—" }}</span>
+                                <input type="text" class="form-control form-control-sm cell-edit" name="symbol" value="{{ u.symbol }}" maxlength="20">
+                            </td>
+                            <td>
+                                <span class="cell-view">
+                                    <span class="badge-status {% if u.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+                                        {% if u.is_active %}نشط{% else %}غير نشط{% endif %}
+                                    </span>
+                                </span>
+                                <div class="form-check form-switch cell-edit">
+                                    <input class="form-check-input" type="checkbox" name="is_active" {% if u.is_active %}checked{% endif %}>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button type="button" class="btn-action btn-outline-primary btn-edit" onclick="toggleEdit(this)" title="تعديل"><i class="fas fa-edit"></i> تعديل</button>
+                                    <button type="button" class="btn-action btn-outline-success btn-save d-none" onclick="saveRow(this)" title="حفظ"><i class="fas fa-save"></i> حفظ</button>
+                                    <button type="button" class="btn-action btn-outline-secondary btn-cancel d-none" onclick="cancelEdit(this)" title="إلغاء"><i class="fas fa-times"></i> إلغاء</button>
+                                    <button type="button" class="btn-action btn-outline-danger btn-delete" onclick="deleteRow(this)" title="حذف"><i class="fas fa-trash"></i> حذف</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="empty-state"><i class="fas fa-ruler-combined"></i><p>لا توجد وحدات قياس</p><button class="btn btn-primary btn-sm mt-2" onclick="openCreateModal('unit')"><i class="fas fa-plus me-1"></i> إضافة أول وحدة</button></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle"><i class="fas fa-plus me-2"></i>إضافة جديد</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createForm">
+                <div class="modal-body" id="modalBody">
+                    <!-- Dynamic form fields will be injected here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" id="modalSubmitBtn">
+                        <i class="fas fa-save me-1"></i> حفظ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+    
+    // Configuration
+    const API_BASE = '/company/admin/settings/';
+    const csrftoken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    let currentEditingRow = null;
+    let originalRowData = null;
+    
+    // Toast notification
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        container.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
+        bsToast.show();
+        toast.addEventListener('hidden.bs.toast', () => toast.remove());
+    }
+    
+    // Get row data
+    function getRowData(row) {
+        const data = {};
+        const inputs = row.querySelectorAll('.cell-edit input, .cell-edit select, .cell-edit textarea');
+        inputs.forEach(input => {
+            if (input.type === 'checkbox') {
+                data[input.name] = input.checked;
+            } else {
+                data[input.name] = input.value;
+            }
+        });
+        return data;
+    }
+    
+    // Set row to view mode with data
+    function setRowViewMode(row, data) {
+        row.classList.remove('editing-row');
+        const views = row.querySelectorAll('.cell-view');
+        views.forEach(view => {
+            const name = view.closest('td').querySelector('.cell-edit input, .cell-edit select, .cell-edit textarea')?.name;
+            if (name && data[name] !== undefined) {
+                if (view.querySelector('.form-check-input')) {
+                    // Boolean badge
+                    view.innerHTML = data[name] 
+                        ? '<span class="badge-status badge-active"><i class="fas fa-check-circle me-1"></i>نشط</span>'
+                        : '<span class="badge-status badge-inactive"><i class="fas fa-times-circle me-1"></i>غير نشط</span>';
+                } else if (view.querySelector('select')) {
+                    // Select display
+                    const select = view.closest('td').querySelector('.cell-edit select');
+                    const opt = select?.querySelector(`option[value="${data[name]}"]`);
+                    view.innerHTML = opt ? `<span class="badge bg-info">${opt.text}</span>` : data[name];
+                } else {
+                    view.textContent = data[name] || '—';
+                }
+            }
+        });
+    }
+    
+    // Toggle edit mode
+    window.toggleEdit = function(btn) {
+        const row = btn.closest('tr');
+        if (currentEditingRow && currentEditingRow !== row) {
+            cancelEdit(currentEditingRow.querySelector('.btn-cancel'));
+        }
+        currentEditingRow = row;
+        originalRowData = getRowData(row); // Save current values for cancel
+        row.classList.add('editing-row');
+        row.querySelector('.btn-edit').classList.add('d-none');
+        row.querySelector('.btn-delete').classList.add('d-none');
+        row.querySelector('.btn-save').classList.remove('d-none');
+        row.querySelector('.btn-cancel').classList.remove('d-none');
+        
+        // Focus first input
+        const firstInput = row.querySelector('.cell-edit input, .cell-edit select, .cell-edit textarea');
+        if (firstInput) firstInput.focus();
+    };
+    
+    // Cancel edit
+    window.cancelEdit = function(btn) {
+        const row = btn.closest('tr');
+        row.classList.remove('editing-row');
+        row.querySelector('.btn-edit').classList.remove('d-none');
+        row.querySelector('.btn-delete').classList.remove('d-none');
+        row.querySelector('.btn-save').classList.add('d-none');
+        row.querySelector('.btn-cancel').classList.add('d-none');
+        
+        // Restore original values
+        if (originalRowData) {
+            const inputs = row.querySelectorAll('.cell-edit input, .cell-edit select, .cell-edit textarea');
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    input.checked = originalRowData[input.name] ?? false;
+                } else {
+                    input.value = originalRowData[input.name] ?? '';
+                }
+            });
+        }
+        currentEditingRow = null;
+        originalRowData = null;
+    };
+    
+    // Save row
+    window.saveRow = async function(btn) {
+        const row = btn.closest('tr');
+        const id = row.dataset.id;
+        const type = row.dataset.type;
+        
+        const data = getRowData(row);
+        
+        // Validate required fields
+        if (!data.code?.trim() || !data.name?.trim()) {
+            showToast('الكود والاسم حقول مطلوبة', 'danger');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-sm me-1"></span> جاري الحفظ...';
+        
+        try {
+            const slug = apiEndpoints[type] || (type + 's');
+            let url, method;
+            if (id === 'new' || !id) {
+                // Create new
+                url = API_BASE + slug + '/create/';
+                method = 'POST';
+            } else {
+                // Update existing
+                url = API_BASE + slug + '/' + id + '/update/';
+                method = 'POST';
+            }
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showToast(result.message || 'تم الحفظ بنجاح');
+                
+                // Update row with server data
+                if (result.data) {
+                    setRowViewMode(row, result.data);
+                    row.dataset.id = result.data.id;
+                } else {
+                    setRowViewMode(row, data);
+                }
+                
+                // Exit edit mode
+                row.classList.remove('editing-row');
+                row.querySelector('.btn-edit').classList.remove('d-none');
+                row.querySelector('.btn-delete').classList.remove('d-none');
+                row.querySelector('.btn-save').classList.add('d-none');
+                row.querySelector('.btn-cancel').classList.add('d-none');
+                currentEditingRow = null;
+                originalRowData = null;
+            } else {
+                showToast(result.message || 'حدث خطأ أثناء الحفظ', 'danger');
+            }
+        } catch (error) {
+            showToast('خطأ في الاتصال: ' + error.message, 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save me-1"></i> حفظ';
+        }
+    };
+    
+    // Delete row
+    window.deleteRow = async function(btn) {
+        if (!confirm('هل أنت متأكد من الحذف؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+        
+        const row = btn.closest('tr');
+        const id = row.dataset.id;
+        const type = row.dataset.type;
+        
+        if (!id || id === 'new') {
+            row.remove();
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-sm me-1"></span> جاري الحذف...';
+        
+        try {
+            const slug = apiEndpoints[type] || (type + 's');
+            const response = await fetch(API_BASE + slug + '/' + id + '/delete/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken },
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                showToast(result.message || 'تم الحذف بنجاح');
+                row.remove();
+            } else {
+                showToast(result.message || 'لا يمكن الحذف', 'danger');
+            }
+        } catch (error) {
+            showToast('خطأ في الاتصال: ' + error.message, 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-trash me-1"></i> حذف';
+        }
+    };
+    
+    // Modal handling for new records
+    const modalFormFields = {
+        accountType: `
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">الكود <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="code" maxlength="20" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الاسم <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="name" maxlength="100" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">نوع الحساب <span class="text-danger">*</span></label>
+                    <select class="form-select" name="account_type" required>
+                        <option value="asset">أصول</option>
+                        <option value="liability">خصوم</option>
+                        <option value="equity">حقوق الملكية</option>
+                        <option value="revenue">إيرادات</option>
+                        <option value="expense">مصروفات</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الحالة</label>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" name="is_active" checked>
+                        <label class="form-check-label">نشط</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">الوصف</label>
+                    <textarea class="form-control" name="description" rows="3"></textarea>
+                </div>
+            </div>
+        `,
+        product: `
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">الكود <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="code" maxlength="20" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">اسم المنتج <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="name" maxlength="200" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">التصنيف</label>
+                    <select class="form-select" name="category_id">
+                        <option value="">— اختر تصنيف —</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">وحدة القياس</label>
+                    <select class="form-select" name="unit_id">
+                        <option value="">— اختر وحدة —</option>
+                        {% for u in units %}
+                        <option value="{{ u.id }}">{{ u.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">سعر الشراء</label>
+                    <input type="number" class="form-control" name="purchase_price" step="0.01" min="0" value="0">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">سعر البيع</label>
+                    <input type="number" class="form-control" name="selling_price" step="0.01" min="0" value="0">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">المخزون الحالي</label>
+                    <input type="number" class="form-control" name="current_stock" step="0.01" value="0">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الحد الأدنى للمخزون</label>
+                    <input type="number" class="form-control" name="minimum_stock" step="0.01" value="0">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">نسبة VAT %</label>
+                    <input type="number" class="form-control" name="vat_rate" step="0.01" value="14">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الحالة</label>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" name="is_active" checked>
+                        <label class="form-check-label">نشط</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">الوصف</label>
+                    <textarea class="form-control" name="description" rows="2"></textarea>
+                </div>
+            </div>
+        `,
+        category: `
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">الكود <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="code" maxlength="20" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الاسم <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="name" maxlength="200" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">الوصف</label>
+                    <textarea class="form-control" name="description" rows="3"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الحالة</label>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" name="is_active" checked>
+                        <label class="form-check-label">نشط</label>
+                    </div>
+                </div>
+            </div>
+        `,
+        unit: `
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">الكود <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="code" maxlength="20" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الاسم <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="name" maxlength="200" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الرمز</label>
+                    <input type="text" class="form-control" name="symbol" maxlength="20" placeholder="مثال: كغ، م، لتر">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الحالة</label>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" name="is_active" checked>
+                        <label class="form-check-label">نشط</label>
+                    </div>
+                </div>
+            </div>
+        `
+    };
+    
+    const modalTitles = {
+        accountType: 'إضافة نوع حساب جديد',
+        product: 'إضافة منتج جديد',
+        category: 'إضافة تصنيف جديد',
+        unit: 'إضافة وحدة قياس جديدة'
+    };
+    
+    const apiEndpoints = {
+        accountType: 'account-types',
+        product: 'products',
+        category: 'categories',
+        unit: 'units'
+    };
+    
+    window.openCreateModal = function(type) {
+        const modal = document.getElementById('createModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const form = document.getElementById('createForm');
+        
+        modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>' + modalTitles[type];
+        modalBody.innerHTML = modalFormFields[type];
+        form.dataset.type = type;
+        form.dataset.id = '';
+        
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    };
+    
+    // Handle modal form submission
+    document.getElementById('createForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const type = form.dataset.type;
+        const submitBtn = document.getElementById('modalSubmitBtn');
+        
+        const formData = new FormData(form);
+        const data = {};
+        formData.forEach((value, key) => {
+            if (key === 'is_active') {
+                data[key] = value === 'on';
+            } else if (['purchase_price', 'selling_price', 'current_stock', 'minimum_stock', 'vat_rate'].includes(key)) {
+                data[key] = parseFloat(value) || 0;
+            } else {
+                data[key] = value;
+            }
+        });
+        
+        if (!data.code?.trim() || !data.name?.trim()) {
+            showToast('الكود والاسم حقول مطلوبة', 'danger');
+            return;
+        }
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-sm me-1"></span> جاري الحفظ...';
+        
+        try {
+            const response = await fetch(API_BASE + apiEndpoints[type] + '/create/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showToast(result.message || 'تم الإنشاء بنجاح');
+                bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
+                
+                // Add new row to table
+                addRowToTable(type, result.data);
+            } else {
+                showToast(result.message || 'حدث خطأ', 'danger');
+            }
+        } catch (error) {
+            showToast('خطأ في الاتصال: ' + error.message, 'danger');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save me-1"></i> حفظ';
+        }
+    });
+    
+    function addRowToTable(type, data) {
+        const tableId = type + 'sTable';
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        
+        const tbody = table.querySelector('tbody');
+        const emptyRow = tbody.querySelector('.empty-state')?.closest('tr');
+        if (emptyRow) emptyRow.remove();
+        
+        // This is a simplified version - in production, use a template
+        // For now, just reload the page to show the new row
+        setTimeout(() => window.location.reload(), 500);
+    }
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && currentEditingRow) {
+            cancelEdit(currentEditingRow.querySelector('.btn-cancel'));
+        }
+        if (e.key === 'Enter' && currentEditingRow && e.target.closest('.cell-edit')) {
+            e.preventDefault();
+            saveRow(currentEditingRow.querySelector('.btn-save'));
+        }
+    });
+    
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        tooltipTriggerList.forEach(function(el) {
+            new bootstrap.Tooltip(el);
+        });
+    });
+    
+})();
+</script>
+{% endblock %}

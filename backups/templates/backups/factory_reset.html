@@ -1,0 +1,139 @@
+{% extends 'base/base.html' %}
+{% load access_tags %}
+
+{% block title %}استعادة ضبط المصنع{% endblock %}
+{% block page_title %}استعادة ضبط المصنع{% endblock %}
+
+{% block content %}
+{% can_screen 'system.factory_reset' 'add' as can_request %}
+{% can_screen 'system.factory_reset' 'edit' as can_review %}
+{% can_screen 'system.factory_reset' 'delete' as can_execute %}
+
+<div class="alert alert-danger d-flex align-items-center">
+    <i class="fas fa-triangle-exclamation fa-2x me-3"></i>
+    <div>
+        <strong>عملية حساسة وغير قابلة للتراجع.</strong>
+        تخضع لنظام اعتماد مزدوج: طلب من مستخدم، اعتماد من جهة مخوّلة مختلفة، ثم تنفيذ من مدير النظام
+        برمز تنفيذ لمرة واحدة + عبارة تأكيد + كلمة المرور. تُنشأ نسخة أمان تلقائياً قبل المسح.
+    </div>
+</div>
+
+{% if active_request %}
+<div class="card border-warning mb-4">
+    <div class="card-header bg-warning"><i class="fas fa-hourglass-half"></i> طلب نشط</div>
+    <div class="card-body">
+        <table class="table table-sm table-borderless mb-3">
+            <tr><th style="width:180px">الحالة:</th><td><span class="badge bg-secondary">{{ active_request.get_status_display }}</span></td></tr>
+            <tr><th>النطاق:</th><td>{{ active_request.get_reset_scope_display }}</td></tr>
+            <tr><th>المبرر:</th><td>{{ active_request.reason }}</td></tr>
+            <tr><th>الطالب:</th><td>{{ active_request.requested_by|default:"—" }} — {{ active_request.requested_at|date:"Y-m-d H:i" }} (IP {{ active_request.requester_ip|default:"?" }})</td></tr>
+            {% if active_request.reviewed_by %}
+            <tr><th>المعتمِد:</th><td>{{ active_request.reviewed_by }} — {{ active_request.reviewed_at|date:"Y-m-d H:i" }}</td></tr>
+            <tr><th>ينتهي الاعتماد:</th><td>{{ active_request.approval_expires_at|date:"Y-m-d H:i" }}</td></tr>
+            {% endif %}
+        </table>
+
+        <div class="d-flex flex-wrap gap-2">
+            {% if active_request.status == 'pending_approval' and can_review %}
+            <form method="post" action="{% url 'backups:factory_reset_approve' active_request.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button class="btn btn-success" onclick="return confirm('اعتماد هذا الطلب؟ سيصدر رمز تنفيذ لمرة واحدة.')">
+                    <i class="fas fa-check"></i> اعتماد
+                </button>
+            </form>
+            <button class="btn btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#rejectBox"><i class="fas fa-times"></i> رفض</button>
+            {% endif %}
+            {% if can_request %}
+            <form method="post" action="{% url 'backups:factory_reset_cancel' active_request.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button class="btn btn-outline-secondary" onclick="return confirm('إلغاء هذا الطلب؟')"><i class="fas fa-ban"></i> إلغاء</button>
+            </form>
+            {% endif %}
+        </div>
+
+        {% if active_request.status == 'pending_approval' and can_review %}
+        <div class="collapse mt-3" id="rejectBox">
+            <form method="post" action="{% url 'backups:factory_reset_reject' active_request.pk %}">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text" name="notes" class="form-control" placeholder="سبب الرفض (اختياري)">
+                    <button class="btn btn-danger">تأكيد الرفض</button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if active_request.status == 'approved' and can_execute %}
+        <hr>
+        <h6 class="text-danger"><i class="fas fa-bomb"></i> التنفيذ النهائي (مدير النظام فقط)</h6>
+        <form method="post" action="{% url 'backups:factory_reset_execute' active_request.pk %}">
+            {% csrf_token %}
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label class="form-label small">رمز التنفيذ (من المعتمِد)</label>
+                    <input type="text" name="token" class="form-control" autocomplete="off" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small">اكتب: <code>{{ confirm_phrase }}</code></label>
+                    <input type="text" name="phrase" class="form-control" autocomplete="off" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small">كلمة مرورك</label>
+                    <input type="password" name="password" class="form-control" autocomplete="off" required>
+                </div>
+            </div>
+            <button class="btn btn-danger mt-3" onclick="return confirm('تنفيذ استعادة ضبط المصنع نهائياً؟ لا يمكن التراجع.')">
+                <i class="fas fa-trash"></i> تنفيذ الاستعادة الآن
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% elif can_request %}
+<div class="card mb-4">
+    <div class="card-header"><i class="fas fa-plus-circle"></i> تقديم طلب استعادة</div>
+    <div class="card-body">
+        <form method="post" action="{% url 'backups:factory_reset_request' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">نطاق الاستعادة</label>
+                <select name="reset_scope" class="form-select">
+                    {% for val, label in scope_choices %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">مبرر الطلب (إلزامي)</label>
+                <textarea name="reason" class="form-control" rows="3" minlength="10" required></textarea>
+            </div>
+            <button class="btn btn-primary"><i class="fas fa-paper-plane"></i> تقديم الطلب للاعتماد</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header"><i class="fas fa-history"></i> سجل طلبات الاستعادة</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr><th>الوقت</th><th>النطاق</th><th>الحالة</th><th>الطالب</th><th>المعتمِد</th><th>المنفّذ</th><th>النتيجة</th></tr>
+            </thead>
+            <tbody>
+                {% for r in reset_requests %}
+                <tr>
+                    <td><small>{{ r.requested_at|date:"Y-m-d H:i" }}</small></td>
+                    <td><small>{{ r.get_reset_scope_display }}</small></td>
+                    <td><span class="badge bg-{% if r.status == 'completed' %}dark{% elif r.status == 'approved' %}success{% elif r.status == 'pending_approval' %}warning{% elif r.status == 'failed' %}danger{% else %}secondary{% endif %}">{{ r.get_status_display }}</span></td>
+                    <td><small>{{ r.requested_by|default:"—" }}</small></td>
+                    <td><small>{{ r.reviewed_by|default:"—" }}</small></td>
+                    <td><small>{{ r.executed_by|default:"—" }}</small></td>
+                    <td><small>{{ r.result_notes|truncatechars:60 }}</small></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-4">لا توجد طلبات.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

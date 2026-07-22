@@ -1,0 +1,98 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>فاتورة {{ invoice.invoice_number }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    {% load static %}
+{% load access_tags %}
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        * { font-family: 'Cairo', 'Arial', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-size: 12px; color: #333; direction: rtl; }
+        .invoice-container { max-width: 210mm; margin: 0 auto; padding: 10px; }
+        .parties { display: flex; justify-content: space-between; margin-bottom: 18px; }
+        .party-box { width: 48%; border: 1px solid #ddd; border-radius: 8px; padding: 10px; }
+        .party-box h4 { color: var(--print-primary, #1b5e20); border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 6px; font-size: 12px; }
+        .party-box p { font-size: 10px; margin: 2px 0; }
+    </style>
+</head>
+<body class="print--purchases">
+    <div class="no-print" style="text-align:center; padding:10px; background:#f0f0f0; margin-bottom:10px; border-radius:8px;">
+        <button onclick="window.print()" style="padding:8px 20px; background:#1b5e20; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px;">طباعة الفاتورة</button>
+        <button onclick="window.close()" style="padding:8px 20px; background:#dc3545; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; margin-right:10px;">إغلاق</button>
+    </div>
+
+    <div class="invoice-container">
+        {% include 'components/print_header.html' with doc_title='فاتورة مشتريات' doc_number=invoice.invoice_number doc_date=invoice.date doc_due_date=invoice.due_date color_class='print--purchases' %}
+
+        <div class="parties">
+            {% if supplier %}
+            <div class="party-box">
+                <h4>بيانات المورد</h4>
+                <p><strong>{{ supplier.name }}</strong></p>
+                {% if supplier.address %}<p>{{ supplier.address }}</p>{% endif %}
+                {% if supplier.phone %}<p>هاتف: {{ supplier.phone }}</p>{% endif %}
+                {% if supplier.tax_number %}<p>الرقم الضريبي: {{ supplier.tax_number }}</p>{% endif %}
+            </div>
+            {% endif %}
+            <div class="party-box">
+                <h4>تفاصيل الدفع</h4>
+                <p>طريقة الدفع: {{ invoice.payment_method|default:"نقداً" }}</p>
+                <p>المبلغ المدفوع: {{ invoice.paid_amount|floatformat:2|intcomma|price_mask:can_view_prices }} ج.م</p>
+                <p>المتبقي: {{ invoice.remaining_amount|floatformat:2|intcomma|price_mask:can_view_prices }} ج.م</p>
+            </div>
+        </div>
+
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>البيان</th>
+                    <th>الكمية</th>
+                    <th>سعر الوحدة</th>
+                    <th>الخصم</th>
+                    <th>المبلغ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for line in lines %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ line.product.name }}</td>
+                    <td>{{ line.quantity }}</td>
+                    <td>{{ line.unit_price|floatformat:2|intcomma|price_mask:can_view_prices }}</td>
+                    <td>{{ line.discount_percent|floatformat:2|intcomma|price_mask:can_view_prices }}%</td>
+                    <td>{{ line.total_price|floatformat:2|intcomma|price_mask:can_view_prices }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="print-totals">
+            <table>
+                <tr><td>المجموع الفرعي</td><td style="text-align:left;">{{ invoice.subtotal|floatformat:2|intcomma|price_mask:can_view_prices }} ج.م</td></tr>
+                {% if invoice.vat_amount %}<tr><td>ضريبة القيمة المضافة ({{ vat_rate|default:"14" }}%)</td><td style="text-align:left;">{{ invoice.vat_amount|floatformat:2|intcomma|price_mask:can_view_prices }} ج.م</td></tr>{% endif %}
+                {% if invoice.withholding_tax_amount %}<tr><td>الخصم والتحصيل المستحق</td><td style="text-align:left;">{{ invoice.withholding_tax_amount|floatformat:2|intcomma|price_mask:can_view_prices }} ج.م</td></tr>{% endif %}
+                <tr><td>الإجمالي</td><td style="text-align:left;">{{ invoice.total_amount|floatformat:2|intcomma|price_mask:can_view_prices }} ج.م</td></tr>
+            </table>
+        </div>
+
+        {% if invoice.notes %}
+        <div class="print-notes"><strong>ملاحظات:</strong> {{ invoice.notes }}</div>
+        {% endif %}
+
+        <div class="print-tax-info">
+            <strong>معلومات ضريبية:</strong>
+            الرقم الضريبي: {{ company.tax_number|default:"—" }} |
+            تاريخ الفاتورة: {{ invoice.date|date:"d/m/Y" }} |
+            رقم الفاتورة: {{ invoice.invoice_number }}
+        </div>
+
+        {% include 'components/print_signatures.html' with box1='توقيع المُعد' box3='توقيع المستلم' %}
+
+        {% include 'components/print_footer.html' %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+{% extends "base/base.html" %}
+
+{% block title %}تحويل طلب الشراء {{ req.number }}{% endblock %}
+{% block page_title %}تحويل طلب الشراء: {{ req.number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-exchange-alt"></i> تحويل طلب الشراء لمرحلة لاحقة</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>رقم الطلب:</th><td>{{ req.number }}</td></tr>
+                    <tr><th>الإجمالي التقديري:</th><td>{{ total|floatformat:2 }} ج.م</td></tr>
+                    <tr><th>حد طلب عروض الأسعار (RFQ):</th><td>{{ threshold|floatformat:2 }} ج.م</td></tr>
+                </table>
+
+                {% if force_rfq %}
+                <div class="alert alert-warning">
+                    قيمة الطلب تتجاوز الحد المسموح، لذا يجب المرور <strong>إلزامياً</strong> بطلب عروض أسعار (RFQ).
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    قيمة الطلب أقل من الحد، يمكن إنشاء أمر شراء مباشر أو المرور بطلب عروض أسعار.
+                </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex flex-column gap-2">
+                        <button type="submit" name="convert_action" value="rfq" class="btn btn-primary">
+                            <i class="fas fa-file-invoice-dollar"></i> إنشاء طلب عروض أسعار (RFQ)
+                        </button>
+
+                        {% if not force_rfq %}
+                        <hr>
+                        <div class="mb-2">
+                            <label class="form-label">المورد (لأمر الشراء المباشر)</label>
+                            <select name="supplier" class="form-select">
+                                <option value="">— اختر المورد —</option>
+                                {% for s in suppliers %}
+                                <option value="{{ s.id }}">{{ s.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" name="convert_action" value="po" class="btn btn-success">
+                            <i class="fas fa-shopping-cart"></i> إنشاء أمر شراء مباشر
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-info-circle"></i> تنبيه</div>
+            <div class="card-body">
+                عند التحويل يصبح طلب الشراء في حالة «تم الطلب» ولا يمكن تعديله.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

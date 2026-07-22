@@ -1,0 +1,45 @@
+{% extends "base/base.html" %}
+
+{% block title %}تفاصيل الراتب{% endblock %}
+{% block page_title %}تفاصيل الراتب{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fas fa-money-check-alt"></i> راتب {{ salary.employee.full_name }} — {{ salary.get_month_display }} {{ salary.year }}
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>البيانات الأساسية</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>الموظف</strong></td><td><a href="{% url 'hr:employee_detail' pk=salary.employee.pk %}">{{ salary.employee.full_name }}</a></td></tr>
+                    <tr><td><strong>الشهر</strong></td><td>{{ salary.get_month_display }}</td></tr>
+                    <tr><td><strong>السنة</strong></td><td>{{ salary.year }}</td></tr>
+                    <tr><td><strong>تاريخ الدفع</strong></td><td>{{ salary.payment_date|date:"d/m/Y"|default:"-" }}</td></tr>
+                    <tr><td><strong>الحالة</strong></td><td>{% if salary.is_paid %}<span class="badge bg-success">مدفوع</span>{% else %}<span class="badge bg-warning">غير مدفوع</span>{% endif %}</td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6>المالية</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>الراتب الأساسي</strong></td><td class="text-primary">{{ salary.basic_salary|floatformat:2 }}</td></tr>
+                    <tr><td><strong>البدلات</strong></td><td>{{ salary.allowances|floatformat:2 }}</td></tr>
+                    <tr><td><strong>العمل الإضافي</strong></td><td>{{ salary.overtime|floatformat:2 }}</td></tr>
+                    <tr><td><strong>المكافآت</strong></td><td>{{ salary.bonus|floatformat:2 }}</td></tr>
+                    <tr class="table-light"><td><strong>الخصومات</strong></td><td class="text-danger">-{{ salary.deductions|floatformat:2 }}</td></tr>
+                    <tr class="table-light"><td><strong>التأمين الاجتماعي</strong></td><td class="text-danger">-{{ salary.social_insurance|floatformat:2 }}</td></tr>
+                    <tr class="table-light"><td><strong>ضريبة الدخل</strong></td><td class="text-danger">-{{ salary.income_tax|floatformat:2 }}</td></tr>
+                    <tr class="table-dark text-white"><td><strong>صافي الراتب</strong></td><td><strong>{{ salary.net_salary|floatformat:2 }} ج.م</strong></td></tr>
+                </table>
+            </div>
+        </div>
+        {% if salary.journal_entry %}
+        <div class="alert alert-info"><i class="fas fa-link"></i> مرتبط بقيد محاسبي: {{ salary.journal_entry }}</div>
+        {% endif %}
+        {% if salary.notes %}
+        <p><strong>ملاحظات:</strong> {{ salary.notes }}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

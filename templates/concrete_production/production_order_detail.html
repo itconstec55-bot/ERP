@@ -1,0 +1,172 @@
+{% extends "base/base.html" %}
+{% block title %}تفاصيل أمر الإنتاج {{ order.order_number }}{% endblock %}
+{% block page_title %}<i class="fas fa-hard-hat me-2"></i>أمر الإنتاج {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between">
+                <h5 class="m-0">بيانات أمر الإنتاج</h5>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'concrete_production:production_order_schedule' pk=order.pk %}" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-calendar"></i> جدولة
+                    </a>
+                    <a href="{% url 'concrete_production:batch_create' %}?order={{ order.pk }}" class="btn btn-sm btn-success">
+                        <i class="fas fa-plus"></i> دفعة جديدة
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3"><strong>رقم الأمر:</strong> {{ order.order_number }}</div>
+                    <div class="col-md-6 mb-3"><strong>طلب العميل:</strong> {{ order.customer_request.request_number }}</div>
+                    <div class="col-md-6 mb-3"><strong>العميل:</strong> {{ order.customer_request.customer.name }}</div>
+                    <div class="col-md-6 mb-3"><strong>المشروع:</strong> {{ order.customer_request.project_name }}</div>
+                    <div class="col-md-4 mb-3"><strong>الخلطة:</strong> {{ order.mix_design.code }} ({{ order.mix_design.strength_class }})</div>
+                    <div class="col-md-4 mb-3"><strong>الكمية:</strong> {{ order.quantity_m3 }} م³</div>
+                    <div class="col-md-4 mb-3"><strong>النسبة:</strong> {{ order.completion_percentage|floatformat:0 }}%</div>
+                    <div class="col-md-4 mb-3"><strong>السعر/م³:</strong> {{ order.unit_price|floatformat:2 }} ج.م</div>
+                    <div class="col-md-4 mb-3"><strong>الإجمالي:</strong> {{ order.total_price|floatformat:2 }} ج.م</div>
+                    <div class="col-md-4 mb-3"><strong>الأولوية:</strong>
+                        {% if order.priority == 'urgent' %}<span class="badge bg-warning">عاجل</span>
+                        {% elif order.priority == 'very_urgent' %}<span class="badge bg-danger">عاجل جداً</span>
+                        {% else %}<span class="badge bg-secondary">عادي</span>{% endif %}
+                    </div>
+                    {% if order.scheduled_date %}
+                    <div class="col-md-4 mb-3"><strong>التاريخ:</strong> {{ order.scheduled_date }}</div>
+                    <div class="col-md-4 mb-3"><strong>الوقت:</strong> {{ order.scheduled_time_from|time:"H:i" }} - {{ order.scheduled_time_to|time:"H:i" }}</div>
+                    {% endif %}
+                    <div class="col-md-4 mb-3"><strong>الحالة:</strong>
+                        {% if order.status == 'draft' %}<span class="badge bg-secondary">مسودة</span>
+                        {% elif order.status == 'scheduled' %}<span class="badge bg-info">مجدول</span>
+                        {% elif order.status == 'in_progress' %}<span class="badge bg-primary">قيد التنفيذ</span>
+                        {% elif order.status == 'completed' %}<span class="badge bg-success">مكتمل</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4 border-info">
+            <div class="card-header d-flex justify-content-between">
+                <h5 class="m-0"><i class="fas fa-file-invoice me-1"></i>فاتورة المبيعات المولّدة</h5>
+                {% if order.status == 'completed' and not order.sales_invoice %}
+                <span class="badge bg-warning">بانتظار الإنشاء التلقائي</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if order.sales_invoice %}
+                    {% with inv=order.sales_invoice %}
+                    <div class="row">
+                        <div class="col-md-4 mb-2"><strong>رقم الفاتورة:</strong>
+                            <a href="{% url 'sales:invoice_detail' pk=inv.pk %}">{{ inv.invoice_number }}</a>
+                        </div>
+                        <div class="col-md-4 mb-2"><strong>التاريخ:</strong> {{ inv.date }}</div>
+                        <div class="col-md-4 mb-2"><strong>الإجمالي:</strong> {{ inv.total_amount|floatformat:2 }} ج.م</div>
+                    </div>
+                    <div class="mt-2">
+                        <a href="{% url 'sales:invoice_detail' pk=inv.pk %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-eye"></i> عرض الفاتورة
+                        </a>
+                        <a href="{% url 'sales:invoice_print' pk=inv.pk %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-print"></i> طباعة
+                        </a>
+                    </div>
+                    {% endwith %}
+                {% else %}
+                    <p class="text-muted mb-0">لم تُنشأ فاتورة بعد. تُنشأ تلقائياً عند اكتمال أمر الإنتاج.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if components %}
+        <div class="card mb-4">
+            <div class="card-header"><h5 class="m-0">مكونات الخلطة المطلوبة</h5></div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead><tr><th>المكون</th><th>النوع</th><th>الكمية/م³</th><th>الإجمالي المطلوب</th></tr></thead>
+                    <tbody>
+                        {% for comp in components %}
+                        <tr>
+                            <td>{{ comp.name }}</td>
+                            <td><span class="badge bg-secondary">{{ comp.get_component_type_display }}</span></td>
+                            <td>{{ comp.quantity_kg }} كجم</td>
+                            <td><strong>{{ comp.quantity_kg|floatformat:2|safe }}</strong> × {{ order.quantity_m3 }} = {{ comp.quantity_kg }} كجم</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if batches %}
+        <div class="card mb-4">
+            <div class="card-header"><h5 class="m-0">الدفعات الإنتاجية</h5></div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>الدفعة</th><th>الشاحنة</th><th>المطلوب</th><th>الفعلي</th><th>الحالة</th><th></th></tr></thead>
+                    <tbody>
+                        {% for batch in batches %}
+                        <tr>
+                            <td class="fw-bold">{{ batch.batch_number }}</td>
+                            <td>{{ batch.truck.plate_number|default:"-" }}</td>
+                            <td>{{ batch.quantity_m3 }} م³</td>
+                            <td>{{ batch.actual_quantity_m3 }} م³</td>
+                            <td>
+                                {% if batch.status == 'completed' %}<span class="badge bg-success">مكتمل</span>
+                                {% elif batch.status == 'in_transit' %}<span class="badge bg-info">في الطريق</span>
+                                {% elif batch.status == 'pouring' %}<span class="badge bg-primary">جاري الصب</span>
+                                {% else %}<span class="badge bg-secondary">{{ batch.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td><a href="{% url 'concrete_production:batch_detail' pk=batch.pk %}" class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header"><h5 class="m-0">التقدم</h5></div>
+            <div class="card-body text-center">
+                <div class="progress mb-3" style="height: 20px;">
+                    <div class="progress-bar bg-success" style="width: {{ order.completion_percentage }}%">{{ order.completion_percentage|floatformat:0 }}%</div>
+                </div>
+                <p><strong>{{ order.quantity_delivered }}</strong> من <strong>{{ order.quantity_m3 }}</strong> م³</p>
+                <p class="text-muted">المتبقي: {{ order.remaining_quantity }} م³</p>
+            </div>
+        </div>
+
+        {% if costs %}
+        <div class="card mb-4">
+            <div class="card-header"><h5 class="m-0">التكاليف</h5></div>
+            <div class="card-body p-0">
+                <ul class="list-unstyled mb-0">
+                    {% for cost in costs %}
+                    <li class="p-2 border-bottom d-flex justify-content-between">
+                        <span>{{ cost.get_cost_type_display }}</span>
+                        <strong>{{ cost.amount|floatformat:2 }} ج.م</strong>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-body">
+                <a href="{% url 'concrete_production:cost_create' %}?order={{ order.pk }}" class="btn btn-outline-warning w-100 mb-2">
+                    <i class="fas fa-dollar-sign me-1"></i> إضافة تكلفة
+                </a>
+                <a href="{% url 'concrete_production:production_order_list' %}" class="btn btn-outline-secondary w-100">العودة للقائمة</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

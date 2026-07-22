@@ -1,0 +1,41 @@
+{% extends 'base/base.html' %}
+
+{% block title %}إضافة موازنة{% endblock %}
+{% block page_title %}إضافة موازنة{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-plus"></i> موازنة جديدة</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-6"><label class="form-label">اسم الموازنة</label><input type="text" name="name" class="form-control" required></div>
+                        <div class="col-md-6"><label class="form-label">الحساب</label>
+                            <select name="account" class="form-select" required>{% for a in accounts %}<option value="{{ a.pk }}">{{ a.code }} - {{ a.name }}</option>{% endfor %}</select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4"><label class="form-label">مركز التكلفة</label>
+                            <select name="cost_center" class="form-select"><option value="">بدون</option>{% for c in cost_centers %}<option value="{{ c.pk }}">{{ c }}</option>{% endfor %}</select>
+                        </div>
+                        <div class="col-md-4"><label class="form-label">الفترة</label>
+                            <select name="period" class="form-select"><option value="monthly">شهري</option><option value="quarterly">ربع سنوي</option><option value="yearly">سنوي</option></select>
+                        </div>
+                        <div class="col-md-4"><label class="form-label">السنة</label><input type="number" name="year" class="form-control" value="2026" required></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6"><label class="form-label">الشهر</label><input type="number" name="month" class="form-control" min="1" max="12"></div>
+                        <div class="col-md-6"><label class="form-label">المبلغ المخطط</label><input type="number" name="budgeted_amount" class="form-control" step="0.01" required></div>
+                    </div>
+                    <div class="mb-3"><label class="form-label">ملاحظات</label><textarea name="notes" class="form-control" rows="3"></textarea></div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+                    <a href="{% url 'budget:budget_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

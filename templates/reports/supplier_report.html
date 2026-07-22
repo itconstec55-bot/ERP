@@ -1,0 +1,36 @@
+{% extends "base/base.html" %}
+
+{% block title %}تقرير الموردين{% endblock %}
+{% block page_title %}تقرير الموردين{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><i class="fas fa-truck"></i> تقرير الموردين</div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>الكود</th><th>الاسم</th><th>النوع</th><th>رقم الضريبة</th>
+                    <th>عدد الفواتير</th><th>إجمالي المشتريات</th><th>المدفوع</th><th>المتبقي</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for supplier in suppliers %}
+                <tr>
+                    <td>{{ supplier.code }}</td>
+                    <td><a href="{% url 'reports:supplier_detail_report' supplier_id=supplier.pk %}">{{ supplier.name }}</a></td>
+                    <td><span class="badge bg-info">{{ supplier.get_supplier_type_display }}</span></td>
+                    <td>{{ supplier.tax_number|default:"-" }}</td>
+                    <td><span class="badge bg-primary">{{ supplier.purchase_count|default:0 }}</span></td>
+                    <td>{{ supplier.total_purchases|default:0|floatformat:2 }}</td>
+                    <td class="text-success">{{ supplier.total_paid|default:0|floatformat:2 }}</td>
+                    <td class="text-danger">{{ supplier.current_balance|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center text-muted">لا يوجد موردين</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

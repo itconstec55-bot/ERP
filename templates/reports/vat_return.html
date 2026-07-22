@@ -1,0 +1,67 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}إقرار ضريبة القيمة المضافة{% endblock %}
+{% block page_title %}إقرار ضريبة القيمة المضافة (VAT 14%){% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/print.css' %}" rel="stylesheet">
+<style>
+    @media screen { .print-header-wrapper, .print-footer-wrapper { display: none; } }
+    @media print { .print-header-wrapper, .print-footer-wrapper { display: block !important; } }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'components/print_header.html' with doc_title='إقرار ضريبة القيمة المضافة' doc_date=date_to %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-receipt"></i> إقرار ضريبة القيمة المضافة</span>
+        <form method="get" class="d-flex gap-2">
+            <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" class="form-control form-control-sm">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <table class="table table-bordered">
+                    <thead class="table-warning">
+                        <tr><th colspan="2">إقرار ضريبة القيمة المضافة</th></tr>
+                        <tr><th colspan="2">الفترة من {{ date_from|date:"d/m/Y" }} إلى {{ date_to|date:"d/m/Y" }}</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-light"><td colspan="2"><strong>أ- الإيرادات الخاضعة للضريبة</strong></td></tr>
+                        <tr><td>إجمالي المبيعات الخاضعة للضريبة</td><td class="text-end">{{ total_taxable_sales|floatformat:2 }} ج.م</td></tr>
+                        <tr><td>ضريبة القيمة المضافة المحصلة (Output VAT)</td><td class="text-end text-success"><strong>{{ total_vat_output|floatformat:2 }} ج.م</strong></td></tr>
+
+                        <tr class="table-light"><td colspan="2"><strong>ب- المشتريات الخاضعة للضريبة</strong></td></tr>
+                        <tr><td>إجمالي المشتريات الخاضعة للضريبة</td><td class="text-end">{{ total_taxable_purchases|floatformat:2 }} ج.م</td></tr>
+                        <tr><td>ضريبة القيمة المضافة المستحقة (Input VAT)</td><td class="text-end text-primary"><strong>{{ total_vat_input|floatformat:2 }} ج.م</strong></td></tr>
+
+                        <tr class="table-light"><td colspan="2"><strong>ج- التسوية</strong></td></tr>
+                        <tr><td>ضريبة القيمة المضافة المحصلة</td><td class="text-end">{{ total_vat_output|floatformat:2 }} ج.م</td></tr>
+                        <tr><td>ضريبة القيمة المضافة المستحقة</td><td class="text-end">({{ total_vat_input|floatformat:2 }}) ج.م</td></tr>
+                        <tr class="table-dark">
+                            <td><strong>{% if vat_payable >= 0 %}المبلغ المستحق للجمارك{% else %}المبلغ المسترد من الجمارك{% endif %}</strong></td>
+                            <td class="text-end"><h4 class="{% if vat_payable >= 0 %}text-danger{% else %}text-success{% endif %}">{{ vat_payable|floatformat:2 }} ج.م</h4></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="mt-3">
+                    <strong>ملاحظات وفقاً للقانون المصري:</strong>
+                    <ul>
+                        <li>نسبة الضريبة 14% وفقاً للقانون رقم 67 لسنة 2016</li>
+                        <li>تُقدَّم الإقرار خلال 30 يوماً من نهاية كل فترة ضريبية</li>
+                        <li>الإقرار الشهري للشركات التي تجاوزت إيراداتها 500,000 ج.م</li>
+                        <li>الإقرار الربعي للشركات الأقل من ذلك</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'components/print_footer.html' %}
+{% endblock %}

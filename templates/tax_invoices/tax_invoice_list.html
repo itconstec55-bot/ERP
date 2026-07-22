@@ -1,0 +1,85 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}الفواتير الضريبية{% endblock %}
+{% block page_title %}قائمة الفواتير الضريبية{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-file-invoice"></i> الفواتير الضريبية المرسلة لمصلحة الضرائب</span>
+        <div class="d-flex gap-2">
+            <a href="{% url 'tax_invoices:dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-tachometer-alt"></i> اللوحة
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <div class="btn-group" role="group">
+                <a href="{% url 'tax_invoices:tax_invoice_list' %}" class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline-primary{% endif %}">الكل</a>
+                {% for value, label in status_choices %}
+                <a href="{% url 'tax_invoices:tax_invoice_list' %}?status={{ value }}" class="btn btn-sm {% if current_status == value %}btn-primary{% else %}btn-outline-primary{% endif %}">{{ label }}</a>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if tax_invoices %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>رقم الفاتورة الضريبية</th>
+                        <th>فاتورة المبيعات</th>
+                        <th>النوع</th>
+                        <th>الحالة</th>
+                        <th>الإجمالي</th>
+                        <th>تاريخ الإرسال</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ti in tax_invoices %}
+                    <tr>
+                        <td>{{ ti.tax_invoice_number }}</td>
+                        <td>
+                            {% if ti.sales_invoice %}
+                            <a href="{% url 'sales:invoice_detail' ti.sales_invoice.id %}">{{ ti.sales_invoice.invoice_number }}</a>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td>{{ ti.get_document_type_display }}</td>
+                        <td>
+                            {% if ti.status == 'valid' %}
+                            <span class="badge bg-success">صالحة</span>
+                            {% elif ti.status == 'submitted' %}
+                            <span class="badge bg-info">مُرسلة</span>
+                            {% elif ti.status == 'pending' %}
+                            <span class="badge bg-warning">في الانتظار</span>
+                            {% elif ti.status == 'submitting' %}
+                            <span class="badge bg-primary">جارٍ الإرسال</span>
+                            {% elif ti.status == 'invalid' %}
+                            <span class="badge bg-danger">مرفوضة</span>
+                            {% elif ti.status == 'failed' %}
+                            <span class="badge bg-danger">فشل</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ ti.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ ti.total_amount|floatformat:2 }} ج.م</td>
+                        <td>{{ ti.submitted_at|date:"d/m/Y H:i"|default:"—" }}</td>
+                        <td>
+                            <a href="{% url 'tax_invoices:tax_invoice_detail' ti.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye"></i> تفاصيل
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">لا توجد فواتير ضريبية مسجلة.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

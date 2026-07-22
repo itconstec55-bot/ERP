@@ -1,0 +1,125 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}فاتورة مشتريات جديدة{% endblock %}
+{% block page_title %}إنشاء فاتورة مشتريات جديدة{% endblock %}
+
+{% block content %}
+<form method="post" id="invoiceForm">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-header"><i class="fas fa-shopping-cart"></i> بيانات الفاتورة</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">{{ form.invoice_number|as_crispy_field }}</div>
+                <div class="col-md-3">{{ form.supplier|as_crispy_field }}</div>
+                <div class="col-md-2">{{ form.date|as_crispy_field }}</div>
+                <div class="col-md-2">{{ form.due_date|as_crispy_field }}</div>
+                <div class="col-md-2">{{ form.payment_method|as_crispy_field }}</div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">{{ form.is_tax_invoice|as_crispy_field }}</div>
+                <div class="col-md-3">{{ form.withholding_tax_type|as_crispy_field }}</div>
+                <div class="col-md-2">{{ form.discount_amount|as_crispy_field }}</div>
+                <div class="col-md-2">{{ form.paid_amount|as_crispy_field }}</div>
+                <div class="col-md-3">{{ form.notes|as_crispy_field }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-header"><i class="fas fa-list"></i> بنود الفاتورة</div>
+        <div class="card-body">
+            {{ formset.management_form }}
+            <table class="table table-bordered" id="linesTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:30%">المنتج</th>
+                        <th>الكمية</th>
+                        <th>سعر الوحدة</th>
+                        <th>خصم %</th>
+                        <th>الإجمالي</th>
+                        <th>حذف</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for form in formset %}
+                    <tr class="line-row">
+                        <td>{{ form.product }}</td>
+                        <td>{{ form.quantity }}</td>
+                        <td>{{ form.unit_price }}</td>
+                        <td>{{ form.discount_percent }}</td>
+                        <td class="line-total">0.00</td>
+                        <td>{{ form.DELETE }}</td>
+                        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="row mt-4">
+                <div class="col-md-4 offset-md-8">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <table class="table table-borderless mb-0">
+                                <tr><th>المجموع الفرعي:</th><td id="sum-subtotal" class="text-end">0.00 ج.م</td></tr>
+                                <tr><th>VAT 14%:</th><td id="sum-vat" class="text-end">0.00 ج.م</td></tr>
+                                <tr><th>الخصم على الفاتورة:</th><td id="sum-discount" class="text-end">0.00 ج.م</td></tr>
+                                <tr><th>الخصم والتحصيل:</th><td id="sum-withholding" class="text-end">0.00 ج.م</td></tr>
+                                <tr class="table-primary"><th>الإجمالي:</th><td id="sum-total" class="text-end fw-bold">0.00 ج.م</td></tr>
+                                <tr><th>المدفوع:</th><td id="sum-paid" class="text-end text-success">0.00 ج.م</td></tr>
+                                <tr class="table-danger"><th>المتبقي:</th><td id="sum-remaining" class="text-end fw-bold">0.00 ج.م</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ الفاتورة</button>
+                <a href="{% url 'purchases:invoice_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-right"></i> رجوع</a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function recalc() {
+    let subtotal = 0;
+    document.querySelectorAll('.line-row').forEach(row => {
+        if (row.querySelector('input[name$="-DELETE"]').checked) return;
+        const qty = parseFloat(row.querySelector('input[name$="-quantity"]').value) || 0;
+        const price = parseFloat(row.querySelector('input[name$="-unit_price"]').value) || 0;
+        const discPct = parseFloat(row.querySelector('input[name$="-discount_percent"]').value) || 0;
+        let lineTotal = qty * price;
+        if (discPct > 0) lineTotal -= lineTotal * (discPct / 100);
+        row.querySelector('.line-total').textContent = lineTotal.toFixed(2);
+        subtotal += lineTotal;
+    });
+    const isTax = document.querySelector('input[name="is_tax_invoice"]').checked;
+    const whtType = parseInt(document.querySelector('select[name="withholding_tax_type"]').value) || 0;
+    const discount = parseFloat(document.querySelector('input[name="discount_amount"]').value) || 0;
+    const paid = parseFloat(document.querySelector('input[name="paid_amount"]').value) || 0;
+    const vat = isTax ? subtotal * 0.14 : 0;
+    const wht = whtType > 0 ? subtotal * (whtType / 100) : 0;
+    const total = subtotal + vat - discount;
+    const remaining = total - paid - wht;
+    document.getElementById('sum-subtotal').textContent = subtotal.toFixed(2) + ' ج.م';
+    document.getElementById('sum-vat').textContent = vat.toFixed(2) + ' ج.م';
+    document.getElementById('sum-discount').textContent = discount.toFixed(2) + ' ج.م';
+    document.getElementById('sum-withholding').textContent = wht.toFixed(2) + ' ج.م';
+    document.getElementById('sum-total').textContent = total.toFixed(2) + ' ج.م';
+    document.getElementById('sum-paid').textContent = paid.toFixed(2) + ' ج.م';
+    document.getElementById('sum-remaining').textContent = remaining.toFixed(2) + ' ج.م';
+}
+document.addEventListener('input', function(e) {
+    if (e.target.closest('.line-row') || e.target.name === 'discount_amount' || e.target.name === 'paid_amount') recalc();
+});
+document.addEventListener('change', function(e) {
+    if (e.target.name === 'is_tax_invoice' || e.target.name === 'withholding_tax_type') recalc();
+});
+window.addEventListener('load', recalc);
+</script>
+{% endblock %}

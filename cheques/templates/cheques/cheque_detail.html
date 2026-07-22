@@ -1,0 +1,86 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}تفاصيل الشيك{% endblock %}
+{% block page_title %}شيك رقم: {{ cheque.cheque_number }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+    <a href="{% url 'cheques:cheque_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-right"></i> العودة</a>
+    <div>
+        {% if cheque.status == 'pending' %}
+        {% if cheque.cheque_type == 'received' %}
+        <form method="post" action="{% url 'cheques:cheque_update_status' pk=cheque.pk %}" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="deposited">
+            <button class="btn btn-info"><i class="fas fa-university"></i> إيداع في البنك</button>
+        </form>
+        {% else %}
+        <form method="post" action="{% url 'cheques:cheque_update_status' pk=cheque.pk %}" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="cleared">
+            <button class="btn btn-success"><i class="fas fa-check"></i> صرف</button>
+        </form>
+        {% endif %}
+        {% elif cheque.status == 'deposited' %}
+        <form method="post" action="{% url 'cheques:cheque_update_status' pk=cheque.pk %}" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="cleared">
+            <button class="btn btn-success"><i class="fas fa-check"></i> محصل</button>
+        </form>
+        {% endif %}
+        {% if cheque.status != 'cleared' and cheque.status != 'cancelled' %}
+        <form method="post" action="{% url 'cheques:cheque_update_status' pk=cheque.pk %}" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="cancelled">
+            <button class="btn btn-dark" onclick="return confirm('هل أنت متأكد؟')"><i class="fas fa-times"></i> إلغاء</button>
+        </form>
+        {% endif %}
+        <form method="post" action="{% url 'cheques:cheque_delete' pk=cheque.pk %}" class="d-inline">
+            {% csrf_token %}
+            <button class="btn btn-danger" onclick="return confirm('هل أنت متأكد من الحذف؟')"><i class="fas fa-trash"></i></button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white"><i class="fas fa-money-check"></i> بيانات الشيك</div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th style="width:30%">رقم الشيك:</th><td>{{ cheque.cheque_number }}</td></tr>
+                    <tr><th>البنك:</th><td>{{ cheque.bank_name }}</td></tr>
+                    {% if cheque.branch %}<tr><th>الفرع:</th><td>{{ cheque.branch }}</td></tr>{% endif %}
+                    <tr><th>المبلغ:</th><td><span class="fs-5 fw-bold text-primary">{{ cheque.amount|floatformat:2|intcomma }} {{ cheque.currency }}</span></td></tr>
+                    <tr><th>تاريخ الإصدار:</th><td>{{ cheque.issue_date|date:"d/m/Y" }}</td></tr>
+                    <tr><th>تاريخ الاستحقاق:</th><td>{{ cheque.due_date|date:"d/m/Y" }}</td></tr>
+                    {% if cheque.payee_name %}<tr><th>الدافع/المستفيد:</th><td>{{ cheque.payee_name }}</td></tr>{% endif %}
+                    {% if cheque.notes %}<tr><th>ملاحظات:</th><td>{{ cheque.notes }}</td></tr>{% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-info-circle"></i> الحالة</div>
+            <div class="card-body text-center">
+                {% if cheque.status == 'pending' %}
+                <span class="badge bg-secondary fs-6 p-2">قيد الانتظار</span>
+                {% elif cheque.status == 'deposited' %}
+                <span class="badge bg-info fs-6 p-2">ودع في البنك</span>
+                {% elif cheque.status == 'cleared' %}
+                <span class="badge bg-success fs-6 p-2">محصل / مصرف</span>
+                {% elif cheque.status == 'bounced' %}
+                <span class="badge bg-danger fs-6 p-2">مرتجع</span>
+                {% else %}
+                <span class="badge bg-dark fs-6 p-2">ملغي</span>
+                {% endif %}
+                <hr>
+                <p class="text-muted"><small>أنشئ بواسطة: {{ cheque.created_by|default:"-" }}</small></p>
+                <p class="text-muted"><small>الإنشاء: {{ cheque.created_at|date:"d/m/Y H:i" }}</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

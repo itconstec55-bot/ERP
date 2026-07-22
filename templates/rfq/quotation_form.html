@@ -1,0 +1,70 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}إضافة عرض سعر - {{ rfq.number }}{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <div>
+        <h4 class="mb-0"><i class="fas fa-file-invoice"></i> {{ title }}</h4>
+        <small class="text-muted">الطلب: {{ rfq.number }} — طالب الشراء: {{ rfq.requested_by|default:"—" }}</small>
+    </div>
+    <a href="{% url 'rfq:rfq_detail' rfq.pk %}" class="btn-back"><i class="fas fa-arrow-right"></i> رجوع</a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white"><i class="fas fa-info-circle"></i> بيانات عرض السعر</div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                {% for field in form %}
+                <div class="col-md-4">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <hr>
+            <h6 class="mt-3"><i class="fas fa-list-ul"></i> بنود عرض السعر (ترتبط ببنود الطلب)</h6>
+            {{ formset.management_form }}
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>بند الطلب</th>
+                            <th>المنتج</th>
+                            <th>الكمية</th>
+                            <th>سعر الوحدة</th>
+                            <th>الخصم</th>
+                            <th>أيام التسليم</th>
+                            <th>حذف</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in formset %}
+                        <tr>
+                            {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+                            <td>{{ f.rfq_line }}<span class="text-danger">{{ f.rfq_line.errors }}</span></td>
+                            <td>{{ f.product }}<span class="text-danger">{{ f.product.errors }}</span></td>
+                            <td>{{ f.quantity }}<span class="text-danger">{{ f.quantity.errors }}</span></td>
+                            <td>{{ f.unit_price }}</td>
+                            <td>{{ f.discount }}</td>
+                            <td>{{ f.delivery_days }}</td>
+                            <td>{% if formset.can_delete %}{{ f.DELETE }}{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> حفظ عرض السعر</button>
+                <a href="{% url 'rfq:rfq_detail' rfq.pk %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

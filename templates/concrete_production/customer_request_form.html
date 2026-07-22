@@ -1,0 +1,43 @@
+{% extends "base/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}<i class="fas fa-file-alt me-2"></i>{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">العميل</label>
+                    {{ form.customer }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">اسم المشروع</label>
+                    {{ form.project_name }}
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label fw-bold">عنوان الموقع</label>
+                    {{ form.site_address }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">جهة الاتصال</label>
+                    {{ form.contact_person }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">هاتف الاتصال</label>
+                    {{ form.contact_phone }}
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label fw-bold">ملاحظات</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save me-1"></i> حفظ</button>
+                <a href="{% url 'concrete_production:customer_request_list' %}" class="btn btn-secondary btn-lg">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

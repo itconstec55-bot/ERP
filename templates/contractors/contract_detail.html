@@ -1,0 +1,244 @@
+{% extends "base/base.html" %}
+
+{% block content_header %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>العقد — {{ contract.contract_number }}</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="{% url 'contractors:dashboard' %}">لوحة التحكم</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'contractors:contract_list' %}">العقود</a></li>
+          <li class="breadcrumb-item active">{{ contract.contract_number }}</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card card-primary card-outline">
+        <div class="card-header">
+          <h3 class="card-title">{{ contract.title }}</h3>
+          <div class="card-tools">
+            <a href="{% url 'contractors:contract_edit' pk=contract.pk %}" class="btn btn-primary btn-sm">
+              <i class="fas fa-edit"></i> تعديل
+            </a>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <ul class="list-unstyled">
+                <li><strong>رقم العقد:</strong> {{ contract.contract_number }}</li>
+                <li><strong>المقاول:</strong> <a href="{% url 'contractors:contractor_detail' pk=contract.contractor.pk %}">{{ contract.contractor.name }}</a></li>
+                <li><strong>نوع العقد:</strong> {{ contract.get_contract_type_display }}</li>
+                <li><strong>تاريخ البداية:</strong> {{ contract.start_date|date:"Y/m/d" }}</li>
+                <li><strong>تاريخ النهاية:</strong> {{ contract.end_date|date:"Y/m/d" }}</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <ul class="list-unstyled">
+                <li><strong>المبلغ:</strong> {{ contract.contract_amount|floatformat:2 }} ر.س</li>
+                <li><strong>الضريبة ({{ contract.vat_rate }}%):</strong> {{ contract.vat_amount|floatformat:2 }} ر.س</li>
+                <li><strong>الإجمالي:</strong> {{ contract.total_with_vat|floatformat:2 }} ر.س</li>
+                <li><strong>النسبة:</strong> {{ contract.completion_percentage|floatformat:1 }}%</li>
+                <li>
+                  <strong>الحالة:</strong>
+                  <span class="badge badge-{% if contract.status == 'active' %}success{% elif contract.status == 'draft' %}secondary{% elif contract.status == 'closed' %}dark{% else %}warning{% endif %}">
+                    {{ contract.get_status_display }}
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card card-info">
+        <div class="card-header">
+          <h3 class="card-title">ملخص مالي</h3>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="float-right">المستخلصات:</div>
+              <div class="float-left"><b>{{ contract.total_certified|floatformat:2 }}</b> ر.س</div>
+              <div class="clearfix"></div>
+            </li>
+            <li class="list-group-item">
+              <div class="float-right">المدفوعات:</div>
+              <div class="float-left"><b>{{ contract.total_paid|floatformat:2 }}</b> ر.س</div>
+              <div class="clearfix"></div>
+            </li>
+            <li class="list-group-item">
+              <div class="float-right">الاحتفاظات:</div>
+              <div class="float-left"><b>{{ contract.total_retained|floatformat:2 }}</b> ر.س</div>
+              <div class="clearfix"></div>
+            </li>
+            <li class="list-group-item">
+              <div class="float-right">المستحق:</div>
+              <div class="float-left text-danger"><b>{{ contract.outstanding|floatformat:2 }}</b> ر.س</div>
+              <div class="clearfix"></div>
+            </li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          {% if contract.status == 'draft' %}
+          <form method="post" action="{% url 'contractors:contract_approve' pk=contract.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-block">
+              <i class="fas fa-check"></i> تفعيل العقد
+            </button>
+          </form>
+          {% elif contract.status == 'active' %}
+          <form method="post" action="{% url 'contractors:contract_close' pk=contract.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-warning btn-block">
+              <i class="fas fa-lock"></i> إغلاق العقد
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- بنود العقد -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">بنود العقد</h3>
+        </div>
+        <div class="card-body table-responsive p-0">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>رقم البند</th>
+                <th>الوصف</th>
+                <th>الوحدة</th>
+                <th>الكمية</th>
+                <th>سعر الوحدة</th>
+                <th>الإجمالي</th>
+                <th>المنفّذ</th>
+                <th>النسبة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+              <tr>
+                <td>{{ item.item_number }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.unit }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.unit_price|floatformat:2 }}</td>
+                <td>{{ item.total_price|floatformat:2 }}</td>
+                <td>{{ item.executed_quantity }}</td>
+                <td>{{ item.execution_percentage|floatformat:1 }}%</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="8" class="text-center">لا توجد بنود</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- المستخلصات -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">المستخلصات</h3>
+          <div class="card-tools">
+            <a href="{% url 'contractors:certificate_create' %}?contract={{ contract.pk }}" class="btn btn-success btn-sm">
+              <i class="fas fa-plus"></i>
+            </a>
+          </div>
+        </div>
+        <div class="card-body table-responsive p-0">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>رقم المستخلص</th>
+                <th>الفترة</th>
+                <th>الصافي</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cert in certificates %}
+              <tr>
+                <td><a href="{% url 'contractors:certificate_detail' pk=cert.pk %}">{{ cert.certificate_number }}</a></td>
+                <td>{{ cert.period_from|date:"Y/m" }} - {{ cert.period_to|date:"Y/m" }}</td>
+                <td>{{ cert.net_amount|floatformat:2 }}</td>
+                <td>
+                  <span class="badge badge-{% if cert.status == 'approved' %}success{% elif cert.status == 'certified' %}info{% elif cert.status == 'paid' %}primary{% else %}secondary{% endif %}">
+                    {{ cert.get_status_display }}
+                  </span>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-center">لا توجد مستخلصات</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- المدفوعات -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">المدفوعات</h3>
+          <div class="card-tools">
+            <a href="{% url 'contractors:payment_create' %}?contract={{ contract.pk }}" class="btn btn-success btn-sm">
+              <i class="fas fa-plus"></i>
+            </a>
+          </div>
+        </div>
+        <div class="card-body table-responsive p-0">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>رقم الدفعة</th>
+                <th>المبلغ</th>
+                <th>التاريخ</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in payments %}
+              <tr>
+                <td><a href="{% url 'contractors:payment_detail' pk=p.pk %}">{{ p.payment_number }}</a></td>
+                <td>{{ p.amount|floatformat:2 }}</td>
+                <td>{{ p.payment_date|date:"Y/m/d" }}</td>
+                <td>
+                  <span class="badge badge-{% if p.status == 'paid' %}success{% elif p.status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                    {{ p.get_status_display }}
+                  </span>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-center">لا توجد مدفوعات</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

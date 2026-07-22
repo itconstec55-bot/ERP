@@ -1,0 +1,267 @@
+{% extends 'base/base.html' %}
+
+{% block title %}الربط والمزامنة{% endblock %}
+{% block page_title %}الربط والمزامنة{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #1565c0, #0d47a1);">
+            <i class="fas fa-server fa-2x mb-2"></i>
+            <h3>{{ machine.machine_id }}</h3>
+            <p>معرف الجهاز</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #2e7d32, #1b5e20);">
+            <i class="fas fa-check-circle fa-2x mb-2"></i>
+            <h3>{{ total_synced }}</h3>
+            <p>مزامنات ناجحة</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #e65100, #bf360c);">
+            <i class="fas fa-exchange-alt fa-2x mb-2"></i>
+            <h3>{{ other_machines|length }}</h3>
+            <p>أجهزة مرتبطة</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="background: linear-gradient(135deg, #6a1b9a, #4a148c);">
+            <i class="fas fa-shield-alt fa-2x mb-2"></i>
+            <h3>{% if machine.api_key %}مفعّل{% else %}معطّل{% endif %}</h3>
+            <p>حالة الربط</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-history"></i> آخر عمليات المزامنة</span>
+                <a href="{% url 'sync:sync_dashboard' %}" class="btn btn-sm btn-light"><i class="fas fa-sync"></i> تحديث</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_logs %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>النوع</th>
+                                <th>الحالة</th>
+                                <th>مرسل</th>
+                                <th>مستلم</th>
+                                <th>تعارضات</th>
+                                <th>التاريخ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_logs %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    {% if log.sync_type == 'push' %}
+                                        <span class="badge bg-success"><i class="fas fa-arrow-up"></i> إرسال</span>
+                                    {% elif log.sync_type == 'pull' %}
+                                        <span class="badge bg-info"><i class="fas fa-arrow-down"></i> استلام</span>
+                                    {% else %}
+                                        <span class="badge bg-primary"><i class="fas fa-sync"></i> كاملة</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if log.status == 'completed' %}
+                                        <span class="badge bg-success"><i class="fas fa-check"></i> مكتملة</span>
+                                    {% elif log.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark"><i class="fas fa-clock"></i> قيد التنفيذ</span>
+                                    {% elif log.status == 'partial' %}
+                                        <span class="badge bg-info"><i class="fas fa-exclamation-triangle"></i> جزئية</span>
+                                    {% else %}
+                                        <span class="badge bg-danger"><i class="fas fa-times"></i> فشلت</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ log.records_sent }}</td>
+                                <td>{{ log.records_received }}</td>
+                                <td>
+                                    {% if log.conflicts_found > 0 %}
+                                        <span class="badge bg-warning text-dark">{{ log.conflicts_found }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ log.started_at|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">لا توجد عمليات مزامنة بعد</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-network-wired"></i> الأجهزة المرتبطة
+            </div>
+            <div class="card-body">
+                {% if other_machines %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>المعرف</th>
+                                <th>الاسم</th>
+                                <th>النوع</th>
+                                <th>آخر مزامنة</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in other_machines %}
+                            <tr>
+                                <td><code>{{ m.machine_id }}</code></td>
+                                <td>{{ m.name }}</td>
+                                <td>
+                                    {% if m.machine_type == 'host' %}
+                                        <span class="badge bg-primary">Host</span>
+                                    {% elif m.machine_type == 'client' %}
+                                        <span class="badge bg-info">Client</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">مستقل</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ m.last_sync_at|date:"d/m/Y H:i"|default:"لم تتم بعد" }}</td>
+                                <td>
+                                    {% if m.is_active %}
+                                        <span class="badge bg-success">نشط</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">غير نشط</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">لا توجد أجهزة مرتبطة بعد</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-play-circle"></i> مزامنة سريعة
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">قم بمزامنة يدوية الآن مع الـ Host</p>
+                <form method="post" action="{% url 'sync:manual_sync' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('هل تريد بدء المزامنة الآن؟')">
+                        <i class="fas fa-sync"></i> مزامنة الآن
+                    </button>
+                </form>
+                <hr>
+                <button class="btn btn-outline-info w-100" onclick="testConnection()">
+                    <i class="fas fa-plug"></i> اختبار الاتصال
+                </button>
+                <div id="testResult" class="mt-3" style="display:none;"></div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <i class="fas fa-cog"></i> الإعدادات السريعة
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>نوع الجهاز:</span>
+                    <span class="badge bg-primary">{{ machine.get_machine_type_display }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>المزامنة التلقائية:</span>
+                    {% if sync_settings.auto_sync_enabled %}
+                        <span class="badge bg-success">مفعّلة</span>
+                    {% else %}
+                        <span class="badge bg-secondary">معطّلة</span>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span>الفترة:</span>
+                    <span>{{ sync_settings.sync_interval_minutes }} دقيقة</span>
+                </div>
+                <a href="{% url 'sync:sync_settings' %}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-cog"></i> تعديل الإعدادات
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <i class="fas fa-info-circle"></i> معلومات الربط
+            </div>
+            <div class="card-body">
+                <h6>كيف يعمل الربط؟</h6>
+                <ol class="small text-muted">
+                    <li>جهّز هذا الجهاز كـ <strong>Host</strong></li>
+                    <li>جهّز الجهاز الآخر كـ <strong>Client</strong></li>
+                    <li>ادخل عنوان الـ Host والـ Port في إعدادات الـ Client</li>
+                    <li>اضغط "اختبار الاتصال" للتأكد</li>
+                    <li>ابدأ المزامنة يدوياً أو تلقائياً</li>
+                </ol>
+                <hr>
+                <h6>مفتاح API:</h6>
+                <div class="input-group">
+                    <input type="text" class="form-control form-control-sm" id="apiKey" value="{{ machine.api_key|truncatechars:20 }}..." readonly>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="copyApiKey()" title="نسخ">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <small class="text-muted">هذا المفتاح مطلوب للاتصال بين الأجهزة</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function testConnection() {
+    const resultDiv = document.getElementById('testResult');
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> جاري اختبار الاتصال...</div>';
+
+    fetch('{% url "sync:test_connection" %}', {
+        method: 'POST',
+        headers: {'X-CSRFToken': '{{ csrf_token }}'}
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            resultDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle"></i> الاتصال ناجح!</div>';
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-times-circle"></i> ' + data.error + '</div>';
+        }
+    })
+    .catch(err => {
+        resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-times-circle"></i> خطأ في الاتصال</div>';
+    });
+}
+
+function copyApiKey() {
+    const apiKey = '{{ machine.api_key }}';
+    navigator.clipboard.writeText(apiKey).then(() => {
+        alert('تم نسخ مفتاح API');
+    });
+}
+</script>
+{% endblock %}

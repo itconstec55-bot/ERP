@@ -1,0 +1,105 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}طلبات الشراء{% endblock %}
+{% block page_title %}قائمة طلبات الشراء{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-clipboard-list"></i> طلبات الشراء (الاحتياجات)</span>
+        <a href="{% url 'requisitions:req_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> طلب شراء جديد
+        </a>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">كل الحالات</option>
+                    <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>مسودة</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>بانتظار الموافقة</option>
+                    <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>معتمد</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>مرفوض</option>
+                    <option value="ordered" {% if status_filter == 'ordered' %}selected{% endif %}>تم الطلب</option>
+                    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>ملغي</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="priority" class="form-select">
+                    <option value="">كل الأولويات</option>
+                    <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>منخفض</option>
+                    <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>متوسط</option>
+                    <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>عالي</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-secondary"><i class="fas fa-filter"></i> تصفية</button>
+                <a href="{% url 'requisitions:req_list' %}" class="btn btn-light">إعادة تعيين</a>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>الرقم</th>
+                        <th>طالب الشراء</th>
+                        <th>مركز التكلفة</th>
+                        <th>التاريخ</th>
+                        <th>الأولوية</th>
+                        <th>الحالة</th>
+                        <th>الإجمالي التقديري</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reqs %}
+                    <tr>
+                        <td>{{ r.number }}</td>
+                        <td>{{ r.requested_by|default:"-" }}</td>
+                        <td>{{ r.cost_center|default:"-" }}</td>
+                        <td>{{ r.date|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if r.priority == 'low' %}<span class="badge bg-secondary">منخفض</span>
+                            {% elif r.priority == 'medium' %}<span class="badge bg-info">متوسط</span>
+                            {% elif r.priority == 'high' %}<span class="badge bg-warning">عالي</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if r.status == 'draft' %}<span class="badge bg-secondary">مسودة</span>
+                            {% elif r.status == 'pending' %}<span class="badge bg-warning">بانتظار الموافقة</span>
+                            {% elif r.status == 'approved' %}<span class="badge bg-primary">معتمد</span>
+                            {% elif r.status == 'rejected' %}<span class="badge bg-danger">مرفوض</span>
+                            {% elif r.status == 'ordered' %}<span class="badge bg-success">تم الطلب</span>
+                            {% elif r.status == 'cancelled' %}<span class="badge bg-dark">ملغي</span>{% endif %}
+                        </td>
+                        <td>{{ r.total|floatformat:2 }} ج.م</td>
+                        <td>
+                            <a href="{% url 'requisitions:req_detail' pk=r.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center">لا توجد طلبات شراء</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if reqs.has_other_pages %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if reqs.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ reqs.previous_page_number }}">السابق</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">صفحة {{ reqs.number }} من {{ reqs.paginator.num_pages }}</span></li>
+                {% if reqs.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ reqs.next_page_number }}">التالي</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

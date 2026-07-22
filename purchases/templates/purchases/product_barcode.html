@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>باركود - {{ product.name }}</title>
+    <style>
+        * { font-family: 'Arial', sans-serif; margin: 0; padding: 0; }
+        body { font-size: 11px; }
+        .label { width: 50mm; height: 30mm; border: 1px solid #ccc; padding: 3mm; text-align: center; display: inline-block; margin: 2mm; page-break-inside: avoid; }
+        .product-name { font-size: 9px; font-weight: bold; margin-bottom: 1mm; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 44mm; }
+        .barcode-text { font-family: 'Libre Barcode 128', monospace; font-size: 24px; letter-spacing: 2px; }
+        .code { font-size: 8px; color: #666; }
+        .price { font-size: 10px; font-weight: bold; color: #1a237e; }
+        @media print { .no-print { display: none !important; } }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+128&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="no-print" style="text-align:center; padding:10px; background:#f0f0f0; margin-bottom:10px;">
+        <button onclick="window.print()" style="padding:8px 20px; background:#1a237e; color:white; border:none; border-radius:5px; cursor:pointer;">طباعة الملصق</button>
+        <button onclick="window.close()" style="padding:8px 20px; background:#dc3545; color:white; border:none; border-radius:5px; cursor:pointer; margin-right:10px;">إغلاق</button>
+    </div>
+    <div class="label">
+        <div class="product-name">{{ product.name|truncatechars:30 }}</div>
+        <div class="barcode-text">{{ barcode_value }}</div>
+        <div class="code">{{ barcode_value }}</div>
+        <div class="price">{{ product.selling_price|floatformat:2 }} ج.م</div>
+    </div>
+</body>
+</html>

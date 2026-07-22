@@ -1,0 +1,104 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}الفواتير الضريبية{% endblock %}
+{% block page_title %}الفواتير الضريبية — منظومة الفاتورة الإلكترونية{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-file-invoice"></i> لوحة الفواتير الضريبية</span>
+        <div class="d-flex gap-2">
+            <a href="{% url 'tax_invoices:connection_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-cog"></i> إعدادات الاتصال
+            </a>
+            <a href="{% url 'tax_invoices:tax_invoice_list' %}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-list"></i> كل الفواتير
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if not active_conn %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            لم يتم تفعيل إعداد اتصال بمصلحة الضرائب. يرجى
+            <a href="{% url 'tax_invoices:connection_create' %}">إضافة إعداد اتصال</a> أولاً.
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card" style="background: linear-gradient(135deg, #1a237e, #0d47a1);">
+                    <i class="fas fa-file-invoice fa-2x"></i>
+                    <h3>{{ total }}</h3>
+                    <p>إجمالي الفواتير</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card" style="background: linear-gradient(135deg, #ff8f00, #ff6f00);">
+                    <i class="fas fa-clock fa-2x"></i>
+                    <h3>{{ pending_count }}</h3>
+                    <p>في الانتظار</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card" style="background: linear-gradient(135deg, #2e7d32, #1b5e20);">
+                    <i class="fas fa-check-circle fa-2x"></i>
+                    <h3>{{ submitted_count }}</h3>
+                    <p>مُرسلة / صالحة</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card" style="background: linear-gradient(135deg, #c62828, #b71c1c);">
+                    <i class="fas fa-times-circle fa-2x"></i>
+                    <h3>{{ failed_count }}</h3>
+                    <p>فشل / مرفوضة</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-upload"></i> فواتير المبيعات غير المُرسلة لمصلحة الضرائب
+    </div>
+    <div class="card-body">
+        {% if unsent_invoices %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>رقم الفاتورة</th>
+                        <th>العميل</th>
+                        <th>التاريخ</th>
+                        <th>الإجمالي</th>
+                        <th>إجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inv in unsent_invoices %}
+                    <tr>
+                        <td>{{ inv.invoice_number }}</td>
+                        <td>{{ inv.customer.name }}</td>
+                        <td>{{ inv.date|date:"d/m/Y" }}</td>
+                        <td>{{ inv.total_amount|floatformat:2 }} ج.م</td>
+                        <td>
+                            <form method="post" action="{% url 'tax_invoices:tax_invoice_create_from_sales' inv.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-sm" title="إرسال لمصلحة الضرائب">
+                                    <i class="fas fa-paper-plane"></i> إرسال
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">لا توجد فواتير مبيعات مؤهلة للإرسال.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

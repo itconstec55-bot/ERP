@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+venv/
+.venv/
+env/
+
+# Cache directories
+.ruff_cache/
+.pytest_cache/
+
+# Monitoring runtime data
+deployment/metrics_history.json
+deployment/health_state.json
+deployment/update_state.json
+deployment/logs/alerts.json
+
+# Backup storage
+backups_storage/
+
+# Django
+*.log
+logs/
+staticfiles/
+media/
+db.sqlite3
+db.sqlite3-shm
+db.sqlite3-wal
+
+# Environment
+.env
+*.bak
+*.swp
+
+# Network config (deployment-specific)
+network.conf

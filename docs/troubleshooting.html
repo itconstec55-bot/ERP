@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل استكشاف الأخطاء وحلها - نظام المحاسبة المتكامل</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Tajawal:wght@300;400;500;700&display=swap');
+
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-card: #1c2128;
+            --bg-code: #0d1117;
+            --border-primary: #30363d;
+            --border-accent: #d4a843;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-gold: #d4a843;
+            --accent-gold-light: #e8c468;
+            --accent-gold-dark: #b8922e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-orange: #d29922;
+            --accent-purple: #bc8cff;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 20px rgba(212, 168, 67, 0.15);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans Arabic', 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.8;
+            font-size: 16px;
+            min-height: 100vh;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-primary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-gold-dark); }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-bottom: 2px solid var(--accent-gold);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(212, 168, 67, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 8px rgba(212, 168, 67, 0.2);
+            position: relative;
+        }
+
+        .header .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+            position: relative;
+        }
+
+        .header .version-badge {
+            display: inline-block;
+            background: rgba(212, 168, 67, 0.15);
+            border: 1px solid var(--accent-gold-dark);
+            color: var(--accent-gold-light);
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            position: relative;
+        }
+
+        /* Navigation */
+        .nav-container {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-primary);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0.75rem 2rem;
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .nav a:hover {
+            color: var(--accent-gold);
+            background: rgba(212, 168, 67, 0.08);
+            border-color: rgba(212, 168, 67, 0.2);
+        }
+
+        /* Main Layout */
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 2rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: sticky;
+            top: 80px;
+            height: fit-content;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            scrollbar-width: thin;
+        }
+
+        .sidebar h3 {
+            font-size: 0.8rem;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: var(--radius-sm);
+            display: block;
+            transition: all 0.2s ease;
+            border-right: 2px solid transparent;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            color: var(--accent-gold);
+            background: rgba(212, 168, 67, 0.06);
+            border-right-color: var(--accent-gold);
+        }
+
+        .sidebar .sub-item {
+            padding-right: 2rem;
+            font-size: 0.8rem;
+        }
+
+        /* Content */
+        .content {
+            min-width: 0;
+        }
+
+        /* Sections */
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+            transition: border-color 0.3s ease;
+        }
+
+        .section:hover {
+            border-color: rgba(212, 168, 67, 0.3);
+        }
+
+        .section h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section h2 .icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(212, 168, 67, 0.12);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .section h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 2rem 0 1rem 0;
+            padding-right: 0.75rem;
+            border-right: 3px solid var(--accent-gold);
+        }
+
+        .section h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent-gold-light);
+            margin: 1.5rem 0 0.75rem 0;
+        }
+
+        .section p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.9;
+        }
+
+        /* Intro Box */
+        .intro-box {
+            background: linear-gradient(135deg, rgba(212, 168, 67, 0.08) 0%, rgba(212, 168, 67, 0.02) 100%);
+            border: 1px solid rgba(212, 168, 67, 0.2);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .intro-box p {
+            color: var(--text-primary);
+            font-size: 1.05rem;
+            line-height: 2;
+        }
+
+        .intro-box ul {
+            margin-top: 1rem;
+            padding-right: 1.5rem;
+        }
+
+        .intro-box li {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Error Cards */
+        .error-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .error-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-gold);
+        }
+
+        .error-card.danger::before { background: var(--accent-red); }
+        .error-card.warning::before { background: var(--accent-orange); }
+        .error-card.info::before { background: var(--accent-blue); }
+        .error-card.success::before { background: var(--accent-green); }
+
+        .error-card h4 {
+            margin-top: 0;
+            color: var(--text-primary);
+            font-size: 1.05rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .error-card .error-name {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-code);
+            color: var(--accent-red);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(248, 81, 73, 0.2);
+        }
+
+        .error-card .cause {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            background: rgba(248, 81, 73, 0.05);
+            border-radius: var(--radius-sm);
+            border-right: 3px solid var(--accent-red);
+        }
+
+        .error-card .solution {
+            padding: 1rem;
+            background: rgba(63, 185, 80, 0.05);
+            border-radius: var(--radius-sm);
+            border-right: 3px solid var(--accent-green);
+        }
+
+        .error-card .solution-label {
+            color: var(--accent-green);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--bg-code);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            padding: 1rem 1.25rem;
+            margin: 0.75rem 0;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 0.88rem;
+            direction: ltr;
+            text-align: left;
+            color: var(--text-primary);
+            overflow-x: auto;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .code-block .prompt {
+            color: var(--accent-green);
+            user-select: none;
+        }
+
+        .code-block .cmd {
+            color: var(--accent-blue);
+        }
+
+        .code-block .flag {
+            color: var(--accent-gold);
+        }
+
+        .code-block .string {
+            color: var(--accent-orange);
+        }
+
+        .code-block .comment {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .code-inline {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-code);
+            color: var(--accent-gold-light);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.88rem;
+            border: 1px solid var(--border-primary);
+            direction: ltr;
+            display: inline-block;
+        }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1rem 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(212, 168, 67, 0.08) 100%);
+        }
+
+        thead th {
+            padding: 1rem 1.25rem;
+            text-align: right;
+            color: var(--accent-gold);
+            font-weight: 600;
+            font-size: 0.88rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--accent-gold-dark);
+            white-space: nowrap;
+        }
+
+        tbody td {
+            padding: 0.9rem 1.25rem;
+            border-bottom: 1px solid var(--border-primary);
+            color: var(--text-secondary);
+            vertical-align: top;
+        }
+
+        tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(212, 168, 67, 0.03);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody td:first-child {
+            font-family: 'Courier New', monospace;
+            color: var(--accent-red);
+            font-size: 0.84rem;
+            direction: ltr;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        /* Severity Badges */
+        .severity {
+            display: inline-block;
+            padding: 0.2rem 0.7rem;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .severity.critical {
+            background: rgba(248, 81, 73, 0.15);
+            color: var(--accent-red);
+            border: 1px solid rgba(248, 81, 73, 0.3);
+        }
+
+        .severity.high {
+            background: rgba(210, 153, 34, 0.15);
+            color: var(--accent-orange);
+            border: 1px solid rgba(210, 153, 34, 0.3);
+        }
+
+        .severity.medium {
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+        }
+
+        .severity.low {
+            background: rgba(63, 185, 80, 0.15);
+            color: var(--accent-green);
+            border: 1px solid rgba(63, 185, 80, 0.3);
+        }
+
+        /* Screenshot Placeholder */
+        .screenshot-placeholder {
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-card) 100%);
+            border: 2px dashed var(--border-primary);
+            border-radius: var(--radius-md);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            transition: border-color 0.3s ease;
+        }
+
+        .screenshot-placeholder:hover {
+            border-color: var(--accent-gold-dark);
+        }
+
+        .screenshot-placeholder .icon-camera {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+            opacity: 0.5;
+        }
+
+        .screenshot-placeholder .placeholder-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .screenshot-placeholder .placeholder-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        /* Alert Boxes */
+        .alert {
+            padding: 1.25rem 1.5rem;
+            border-radius: var(--radius-md);
+            margin: 1.25rem 0;
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .alert .alert-icon {
+            font-size: 1.2rem;
+            margin-top: 0.15rem;
+            flex-shrink: 0;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-content strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .alert.warning {
+            background: rgba(210, 153, 34, 0.08);
+            border: 1px solid rgba(210, 153, 34, 0.25);
+            color: var(--accent-orange);
+        }
+
+        .alert.danger {
+            background: rgba(248, 81, 73, 0.08);
+            border: 1px solid rgba(248, 81, 73, 0.25);
+            color: var(--accent-red);
+        }
+
+        .alert.info {
+            background: rgba(88, 166, 255, 0.08);
+            border: 1px solid rgba(88, 166, 255, 0.25);
+            color: var(--accent-blue);
+        }
+
+        .alert.success {
+            background: rgba(63, 185, 80, 0.08);
+            border: 1px solid rgba(63, 185, 80, 0.25);
+            color: var(--accent-green);
+        }
+
+        /* Steps */
+        .steps {
+            counter-reset: step-counter;
+            list-style: none;
+            padding: 0;
+        }
+
+        .steps li {
+            counter-increment: step-counter;
+            padding: 1rem 1rem 1rem 3.5rem;
+            position: relative;
+            margin-bottom: 0.75rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-primary);
+            color: var(--text-secondary);
+        }
+
+        .steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 28px;
+            height: 28px;
+            background: rgba(212, 168, 67, 0.12);
+            color: var(--accent-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.82rem;
+            border: 1px solid rgba(212, 168, 67, 0.3);
+        }
+
+        /* Quick Reference */
+        .quick-ref {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .quick-ref-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .quick-ref-item:hover {
+            border-color: rgba(212, 168, 67, 0.3);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .quick-ref-item h5 {
+            color: var(--accent-gold);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .quick-ref-item p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .quick-ref-item .code-block {
+            margin: 0;
+            font-size: 0.82rem;
+            padding: 0.6rem 0.8rem;
+        }
+
+        /* Contact Cards */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .contact-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .contact-card:hover {
+            border-color: rgba(212, 168, 67, 0.3);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .contact-card .contact-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .contact-card h5 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-card p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-primary);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .footer .footer-line {
+            width: 60px;
+            height: 2px;
+            background: var(--accent-gold-dark);
+            margin: 1rem auto;
+            border-radius: 1px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.5rem; }
+            .section { padding: 1.5rem; }
+            .container { padding: 1rem; }
+            .nav { padding: 0.5rem 1rem; }
+        }
+
+        /* Print */
+        @media print {
+            body { background: #fff; color: #000; }
+            .nav-container, .sidebar { display: none; }
+            .section { break-inside: avoid; border: 1px solid #ccc; box-shadow: none; }
+            .header { border-bottom-color: #d4a843; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <h1>دليل استكشاف الأخطاء وحلها</h1>
+        <p class="subtitle">نظام المحاسبة المتكامل - دليل تشخيص وعلاج المشكلات الشائعة</p>
+        <span class="version-badge">الإصدار 2.0 | آخر تحديث: يوليو 2026</span>
+    </header>
+
+    <!-- ===== NAVIGATION ===== -->
+    <nav class="nav-container">
+        <div class="nav">
+            <a href="#intro">المقدمة</a>
+            <a href="#section-1">التثبيت والإعداد</a>
+            <a href="#section-2">مشاكل التشغيل</a>
+            <a href="#section-3">قاعدة البيانات</a>
+            <a href="#section-4">المستخدمين والصلاحيات</a>
+            <a href="#section-5">Docker</a>
+            <a href="#section-6">الأداء</a>
+            <a href="#section-7">الباك أب</a>
+            <a href="#section-8">الدعم الفني</a>
+        </div>
+    </nav>
+
+    <!-- ===== MAIN CONTAINER ===== -->
+    <div class="container">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h3>فهرس المحتويات</h3>
+            <ul>
+                <li><a href="#intro">المقدمة</a></li>
+                <li><a href="#section-1">1. التثبيت والإعداد</a></li>
+                <li><a href="#s1-1" class="sub-item">1.1 خطأ المفتاح السري</a></li>
+                <li><a href="#s1-2" class="sub-item">1.2 اتصال قاعدة البيانات</a></li>
+                <li><a href="#s1-3" class="sub-item">1.3 ModuleNotFoundError</a></li>
+                <li><a href="#section-2">2. مشاكل التشغيل</a></li>
+                <li><a href="#s2-1" class="sub-item">2.1 السيرفر لا يستجيب</a></li>
+                <li><a href="#s2-2" class="sub-item">2.2 صفحة 500</a></li>
+                <li><a href="#s2-3" class="sub-item">2.3 صفحة 404</a></li>
+                <li><a href="#section-3">3. قاعدة البيانات</a></li>
+                <li><a href="#s3-1" class="sub-item">3.1 جدول مفقود</a></li>
+                <li><a href="#s3-2" class="sub-item">3.2 no such column</a></li>
+                <li><a href="#s3-3" class="sub-item">3.3 database is locked</a></li>
+                <li><a href="#section-4">4. المستخدمين والصلاحيات</a></li>
+                <li><a href="#section-5">5. Docker</a></li>
+                <li><a href="#section-6">6. الأداء</a></li>
+                <li><a href="#section-7">7. الباك أب</a></li>
+                <li><a href="#section-8">8. الدعم الفني</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+
+            <!-- ===== INTRODUCTION ===== -->
+            <section id="intro" class="section">
+                <h2><span class="icon">&#128214;</span> مقدمة</h2>
+                <div class="intro-box">
+                    <p>
+                        يهدف هذا الدليل إلى مساعدة المسؤولين والمستخدمين في تشخيص وحل المشكلات الشائعة التي قد تواجههم أثناء تثبيت أو تشغيل أو استخدام نظام المحاسبة المتكامل. يغطي الدليل الأخطاء الأكثر تكراراً مع الحلول المقترحة وأوامر الإصلاح اللازمة.
+                    </p>
+                    <ul>
+                        <li>شرح تفصيلي لأسباب كل خطأ وأعراضه</li>
+                        <li>حلول سريعة مع أوامر جاهزة للنسخ واللصق</li>
+                        <li>جداول مرجعية سريعة لتشخيص الأخطاء الشائعة</li>
+                        <li>نصائح لتجنب المشاكل قبل حدوثها</li>
+                    </ul>
+                </div>
+
+                <div class="alert info">
+                    <span class="alert-icon">&#9432;</span>
+                    <div class="alert-content">
+                        <strong>ملاحظة مهمة</strong>
+                        قبل تطبيق أي حل، تأكد من عمل نسخة احتياطية من قاعدة البيانات والملفات الإعدادية. بعض الحلول قد تتطلب تدخلاً يدوياً في قاعدة البيانات.
+                    </div>
+                </div>
+
+                <div class="screenshot-placeholder">
+                    <div class="icon-camera">&#128247;</div>
+                    <div class="placeholder-text">صورة توضيحية</div>
+                    <div class="placeholder-label">واجهة النظام الرئيسية - أضف لقطة شاشة هنا</div>
+                </div>
+            </section>
+
+            <!-- ===== SECTION 1: INSTALLATION ===== -->
+            <section id="section-1" class="section">
+                <h2><span class="icon">&#9881;</span> 1. مشاكل التثبيت والإعداد</h2>
+                <p>تظهر هذه المشاكل عادةً أثناء التثبيت الأولي للنظام أو عند تغيير بيئة التشغيل. تأكد من اتباع خطوات التثبيت بدقة قبل البحث عن حلول أخرى.</p>
+
+                <!-- 1.1 -->
+                <div id="s1-1" class="error-card danger">
+                    <h4>1.1 خطأ DJANGO_SECRET_KEY is required</h4>
+                    <div class="error-name">ImproperlyConfigured: DJANGO_SECRET_KEY is required</div>
+
+                    <div class="cause">
+                        <strong>السبب:</strong> لم يتم تعريف متغير البيئة <span class="code-inline">DJANGO_SECRET_KEY</span> في ملف البيئة أو في نظام التشغيل. هذا المفتاح ضروري لعمليات التشفير وحماية الجلسات.
+                    </div>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; الحل:</span>
+                        <ol class="steps">
+                            <li>افتح ملف <span class="code-inline">.env</span> في جذر المشروع</li>
+                            <li>أضف المفتاح التالي بقيمة قوية عشوائية:</li>
+                        </ol>
+                        <div class="code-block">
+<span class="prompt">$ </span><span class="cmd">python</span> <span class="flag">-c</span> <span class="string">"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"</span>
+</div>
+                        <div class="code-block">
+<span class="comment"># أضف النتيجة في ملف .env</span>
+DJANGO_SECRET_KEY=<span class="string">your-generated-secret-key-here</span>
+</div>
+                    </div>
+                </div>
+
+                <!-- 1.2 -->
+                <div id="s1-2" class="error-card danger">
+                    <h4>1.2 خطأ اتصال قاعدة البيانات</h4>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>رسالة الخطأ</th>
+                                    <th>السبب</th>
+                                    <th>الحل</th>
+                                    <th>الخطورة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>connection refused</td>
+                                    <td>PostgreSQL غير قيد التشغيل أو المنفذ خاطئ</td>
+                                    <td>تشغيل خدمة PostgreSQL والتحقق من المنفذ (5432 افتراضياً)</td>
+                                    <td><span class="severity critical">حرج</span></td>
+                                </tr>
+                                <tr>
+                                    <td>database does not exist</td>
+                                    <td>قاعدة البيانات لم يتم إنشاؤها بعد</td>
+                                    <td>إنشاء قاعدة البيانات يدوياً أو تشغيل المهاجرات</td>
+                                    <td><span class="severity high">عالي</span></td>
+                                </tr>
+                                <tr>
+                                    <td>authentication failed</td>
+                                    <td>اسم المستخدم أو كلمة المرور غير صحيحة</td>
+                                    <td>التحقق من إعدادات DATABASES في settings.py</td>
+                                    <td><span class="severity high">عالي</span></td>
+                                </tr>
+                                <tr>
+                                    <td>password authentication failed</td>
+                                    <td>كلمة مرور المستخدم خاطئة في pg_hba.conf</td>
+                                    <td>تحديث إعدادات المصادقة في PostgreSQL</td>
+                                    <td><span class="severity medium">متوسط</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; خطوات الحل:</span>
+                        <div class="code-block">
+<span class="comment"># 1. التحقق من تشغيل PostgreSQL</span>
+<span class="prompt">$ </span><span class="cmd">pg_isready</span> <span class="flag">-h</span> localhost <span class="flag">-p</span> 5432
+
+<span class="comment"># 2. إنشاء قاعدة البيانات</span>
+<span class="prompt">$ </span><span class="cmd">createdb</span> accounting_system
+
+<span class="comment"># 3. تشغيل المهاجرات</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">migrate</span>
+</div>
+                    </div>
+
+                    <div class="screenshot-placeholder">
+                        <div class="icon-camera">&#128247;</div>
+                        <div class="placeholder-text">صورة توضيحية</div>
+                        <div class="placeholder-label">إعدادات اتصال قاعدة البيانات في settings.py</div>
+                    </div>
+                </div>
+
+                <!-- 1.3 -->
+                <div id="s1-3" class="error-card warning">
+                    <h4>1.3 خطأ ModuleNotFoundError</h4>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>الوحدة المفقودة</th>
+                                    <th>السبب</th>
+                                    <th>الحل</th>
+                                    <th>الخطورة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>django / rest_framework / وحدات أخرى</td>
+                                    <td>المكتبة غير مثبتة في البيئة الافتراضية</td>
+                                    <td><span class="code-inline">pip install -r requirements.txt</span></td>
+                                    <td><span class="severity high">عالي</span></td>
+                                </tr>
+                                <tr>
+                                    <td>psycopg2</td>
+                                    <td>مكتبة libpq-dev غير مثبتة (Linux)</td>
+                                    <td><span class="code-inline">sudo apt install libpq-dev python3-dev</span></td>
+                                    <td><span class="severity high">عالي</span></td>
+                                </tr>
+                                <tr>
+                                    <td>psycopg2-binary</td>
+                                    <td>بديل لـ psycopg2 بدون اعتمادات نظام</td>
+                                    <td><span class="code-inline">pip install psycopg2-binary</span></td>
+                                    <td><span class="severity medium">متوسط</span></td>
+                                </tr>
+                                <tr>
+                                    <td>django_filters</td>
+                                    <td>مكتبة تصفية غير مثبتة</td>
+                                    <td><span class="code-inline">pip install django-filter</span></td>
+                                    <td><span class="severity medium">متوسط</span></td>
+                                </tr>
+                                <tr>
+                                    <td>celery / redis</td>
+                                    <td>مكتبات معالجة المهام الخلفية</td>
+                                    <td><span class="code-inline">pip install celery redis</span></td>
+                                    <td><span class="severity low">منخفض</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="alert warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <div class="alert-content">
+                            <strong>نصيحة</strong>
+                            يُفضل دائماً تثبيت المكتبات داخل بيئة افتراضية (virtual environment) لتجنب تضارب الإصدارات مع حزم النظام.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== SECTION 2: RUNTIME ISSUES ===== -->
+            <section id="section-2" class="section">
+                <h2><span class="icon">&#9889;</span> 2. مشاكل التشغيل</h2>
+                <p>تشمل المشاكل التي تظهر أثناء تشغيل النظام وydao السيرفر، مثل عدم استجابة السيرفر أو ظهور صفحات خطأ.</p>
+
+                <!-- 2.1 -->
+                <div id="s2-1" class="error-card danger">
+                    <h4>2.1 السيرفر لا يستجيب</h4>
+
+                    <div class="cause">
+                        <strong>الأعراض:</strong> المتصفح يعرض "This site can't be reached" أو ينتظر طويلاً بدون استجابة.
+                    </div>
+
+                    <ol class="steps">
+                        <li>التحقق من أن السيرفر قيد التشغيل:</li>
+                    </ol>
+                    <div class="code-block">
+<span class="comment"># فحص المنفذ 8012</span>
+<span class="prompt">$ </span><span class="cmd">netstat</span> <span class="flag">-ano</span> | <span class="cmd">findstr</span> :8012
+
+<span class="comment"># أو على Linux/Mac</span>
+<span class="prompt">$ </span><span class="cmd">ss</span> <span class="flag">-tlnp</span> | <span class="cmd">grep</span> 8012
+</div>
+
+                    <ol class="steps" start="2">
+                        <li>فحص ملفات السجلات:</li>
+                    </ol>
+                    <div class="code-block">
+<span class="comment"># مراجعة السجلات</span>
+<span class="prompt">$ </span><span class="cmd">tail</span> <span class="flag">-f</span> logs/accounting.log
+
+<span class="comment"># على Windows</span>
+<span class="prompt">$ </span><span class="cmd">Get-Content</span> logs/accounting.log <span class="flag">-Wait</span>
+</div>
+
+                    <ol class="steps" start="3">
+                        <li>إعادة تشغيل السيرفر:</li>
+                    </ol>
+                    <div class="code-block">
+<span class="comment"># إيقاف العمليات القديمة ثم إعادة التشغيل</span>
+<span class="prompt">$ </span><span class="cmd">taskkill</span> /F /IM python.exe 2>nul
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">runserver</span> 0.0.0.0:8012
+</div>
+                </div>
+
+                <!-- 2.2 -->
+                <div id="s2-2" class="error-card danger">
+                    <h4>2.2 صفحة 500 - خطأ داخلي في السيرفر</h4>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>السبب المحتمل</th>
+                                    <th>السبب</th>
+                                    <th>الحل</th>
+                                    <th>الخطورة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>قاعدة البيانات غير مهاجرة</td>
+                                    <td>الجداول الجديدة لم يتم إنشاؤها</td>
+                                    <td><span class="code-inline">python manage.py migrate</span></td>
+                                    <td><span class="severity critical">حرج</span></td>
+                                </tr>
+                                <tr>
+                                    <td>ملف ثابت مفقود</td>
+                                    <td>ملفات CSS/JS غير موجودة</td>
+                                    <td><span class="code-inline">python manage.py collectstatic</span></td>
+                                    <td><span class="severity high">عالي</span></td>
+                                </tr>
+                                <tr>
+                                    <td>خطأ في الكود</td>
+                                    <td>استثناء غير معالج في الكود</td>
+                                    <td>فحص السجلات وتصحيح الكود</td>
+                                    <td><span class="severity critical">حرج</span></td>
+                                </tr>
+                                <tr>
+                                    <td>DEBUG = False بدون ALLOWED_HOSTS</td>
+                                    <td>السيرفر في وضع الإنتاج بدون إعدادات</td>
+                                    <td>إضافة اسم المضيف في ALLOWED_HOSTS</td>
+                                    <td><span class="severity high">عالي</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; خطوات التشخيص:</span>
+                        <div class="code-block">
+<span class="comment"># 1. فحص شامل للإعدادات</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">check</span>
+
+<span class="comment"># 2. عرض أخطاء المهاجرة</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">showmigrations</span>
+
+<span class="comment"># 3. تطبيق المهاجرات المعلقة</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">migrate</span>
+
+<span class="comment"># 4. جمع الملفات الثابتة</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">collectstatic</span> <span class="flag">--noinput</span>
+</div>
+                    </div>
+                </div>
+
+                <!-- 2.3 -->
+                <div id="s2-3" class="error-card warning">
+                    <h4>2.3 صفحة 404 - الصفحة غير موجودة</h4>
+
+                    <div class="cause">
+                        <strong>الأعراض:</strong> يعرض المتصفح "Page not found" عند محاولة الوصول لصفحة محددة.
+                    </div>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; الحلول المحتملة:</span>
+                        <ol class="steps">
+                            <li>التحقق من صحة المسار في عنوان URL والتأكد من عدم وجود أخطاء إملائية</li>
+                            <li>التأكد من أن الوحدة (app) مثبتة في <span class="code-inline">INSTALLED_APPS</span> في ملف settings.py</li>
+                            <li>التحقق من تعريف المسارات في ملف <span class="code-inline">urls.py</span> الرئيسي وملفات urls.py الخاصة بكل وحدة</li>
+                            <li>تشغيل الأمر التالي لعرض جميع المسارات المسجلة:</li>
+                        </ol>
+                        <div class="code-block">
+<span class="comment"># عرض جميع المسارات المسجلة</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">show_urls</span>
+</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== SECTION 3: DATABASE ===== -->
+            <section id="section-3" class="section">
+                <h2><span class="icon">&#128451;</span> 3. مشاكل قاعدة البيانات</h2>
+                <p>تشمل مشاكل المهاجرات والجداول والأعمدة و CoreData المفقودة. هذه المشاكل شائعة خاصة أثناء التحديثات.</p>
+
+                <!-- 3.1 -->
+                <div id="s3-1" class="error-card warning">
+                    <h4>3.1 جدول مفقود (relation does not exist)</h4>
+                    <div class="error-name">django.db.utils.OperationalError: relation "appname_tablename" does not exist</div>
+
+                    <div class="cause">
+                        <strong>السبب:</strong> جدول لم يتم إنشاؤه بسبب فشل في المهاجرة أو تخطي خطوة من خطوات المهاجرة.
+                    </div>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; الحلول:</span>
+                        <div class="code-block">
+<span class="comment"># الحل 1: تطبيق جميع المهاجرات المعلقة</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">migrate</span>
+
+<span class="comment"># الحل 2: إذا كان الملف المهاجر موجود لكن الجدول لم يتم إنشاؤه</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">migrate</span> <span class="flag">--fake</span>
+
+<span class="comment"># الحل 3: إعادة تطبيق مهاجرات وحدة محددة</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">migrate</span> <span class="string">app_name</span>
+</div>
+                    </div>
+                </div>
+
+                <!-- 3.2 -->
+                <div id="s3-2" class="error-card danger">
+                    <h4>3.2 خطأ no such column</h4>
+                    <div class="error-name">OperationalError: no such column: appname.fieldname</div>
+
+                    <div class="cause">
+                        <strong>السبب:</strong> لم يتم تطبيق الـ migration الذي يضيف العمود الجديد، أو تم تثبيت قاعدة بيانات قديمة.
+                    </div>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; الحل:</span>
+                        <div class="code-block">
+<span class="comment"># تطبيق مهاجرات وحدة محددة</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">migrate</span> <span class="string">app_name</span>
+
+<span class="comment"># أو تطبيق جميع المهاجرات</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">migrate</span>
+
+<span class="comment"># عرض حالة المهاجرات للتشخيص</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">showmigrations</span>
+</div>
+                    </div>
+
+                    <div class="alert danger">
+                        <span class="alert-icon">&#10071;</span>
+                        <div class="alert-content">
+                            <strong>تحذير خطير</strong>
+                            لا تستخدم <span class="code-inline">--fake</span> إلا إذا كنت متأكداً من أن الجدول أو العمود موجود فعلاً في قاعدة البيانات. استخدامه بشكل خاطئ قد يؤدي لفقدان بيانات.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3.3 -->
+                <div id="s3-3" class="error-card warning">
+                    <h4>3.3 قاعدة البيانات مقفلة (database is locked)</h4>
+                    <div class="error-name">django.db.utils.OperationalError: database is locked</div>
+
+                    <div class="cause">
+                        <strong>السبب:</strong> SQLite لا يدعم الوصول المتزامن بشكل جيد، أو هناك عملية طويلة تشغل القاعدة.
+                    </div>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; الحلول:</span>
+                        <ol class="steps">
+                            <li>في SQLite، زيادة مهلة الانتظار:</li>
+                        </ol>
+                        <div class="code-block">
+<span class="comment"># في settings.py، أضف OPTIONS</span>
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            'timeout': 30,
+        }
+    }
+}
+
+<span class="comment"># أو عبر SQL مباشر:</span>
+<span class="cmd">PRAGMA</span> busy_timeout=30000;
+</div>
+                        <ol class="steps" start="2">
+                            <li>التأكد من عدم تشغيل عدة نسخ من السيرفر في نفس الوقت</li>
+                            <li>انتظار اكتمال العمليات الطويلة ثم إعادة المحاولة</li>
+                            <li>الانتقال إلى PostgreSQL للإنتاج (يوصى به بشدة)</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Summary Table -->
+                <h3>جدول مرجعي سريع - أخطاء قاعدة البيانات</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>رسالة الخطأ</th>
+                                <th>النوع</th>
+                                <th>الأولوية</th>
+                                <th>الحل السريع</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>relation "..." does not exist</td>
+                                <td>جدول مفقود</td>
+                                <td><span class="severity critical">حرج</span></td>
+                                <td><span class="code-inline">python manage.py migrate</span></td>
+                            </tr>
+                            <tr>
+                                <td>no such column: ...</td>
+                                <td>عمود مفقود</td>
+                                <td><span class="severity high">عالي</span></td>
+                                <td><span class="code-inline">python manage.py migrate app_name</span></td>
+                            </tr>
+                            <tr>
+                                <td>database is locked</td>
+                                <td>قفل الوصول</td>
+                                <td><span class="severity medium">متوسط</span></td>
+                                <td>زيادة timeout / التحقق من العمليات النشطة</td>
+                            </tr>
+                            <tr>
+                                <td>column "..." of relation "..." already exists</td>
+                                <td>عمود مكرر</td>
+                                <td><span class="severity high">عالي</span></td>
+                                <td><span class="code-inline">python manage.py migrate app_name 000X --fake</span></td>
+                            </tr>
+                            <tr>
+                                <td>duplicate key value violates unique constraint</td>
+                                <td>قيمة مكررة</td>
+                                <td><span class="severity medium">متوسط</span></td>
+                                <td>تنظيف البيانات المكررة يدوياً</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ===== SECTION 4: USERS & PERMISSIONS ===== -->
+            <section id="section-4" class="section">
+                <h2><span class="icon">&#128100;</span> 4. مشاكل المستخدمين والصلاحيات</h2>
+
+                <!-- 4.1 -->
+                <div id="s4-1" class="error-card warning">
+                    <h4>4.1 تسجيل الدخول لا يعمل</h4>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>المشكلة</th>
+                                    <th>السبب</th>
+                                    <th>الحل</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>نسيت كلمة المرور</td>
+                                    <td>المستخدم لا يتذكر كلمة المرور</td>
+                                    <td><span class="code-inline">python manage.py changepassword username</span></td>
+                                </tr>
+                                <tr>
+                                    <td>الحساب غير نشط</td>
+                                    <td>isActive = False</td>
+                                    <td>تفعيل الحساب من لوحة الإدارة أو الأمر</td>
+                                </tr>
+                                <tr>
+                                    <td>حساب غير موجود</td>
+                                    <td>المستخدم لم يتم إنشاؤه</td>
+                                    <td><span class="code-inline">python manage.py createsuperuser</span></td>
+                                </tr>
+                                <tr>
+                                    <td>خطأ في المصادقة</td>
+                                    <td>إعدادات AUTH غير صحيحة</td>
+                                    <td>التحقق من AUTH_USER_MODEL في settings.py</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; أوامر مساعدة:</span>
+                        <div class="code-block">
+<span class="comment"># إعادة تعيين كلمة المرور</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">changepassword</span> <span class="string">admin</span>
+
+<span class="comment"># تفعيل حساب مستخدم</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">shell</span>
+>>> from django.contrib.auth.models import User
+>>> u = User.objects.get(username=<span class="string">'admin'</span>)
+>>> u.is_active = True
+>>> u.save()
+
+<span class="comment"># إنشاء مستخدم جديد (Superuser)</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">createsuperuser</span>
+</div>
+                    </div>
+                </div>
+
+                <!-- 4.2 -->
+                <div id="s4-2" class="error-card info">
+                    <h4>4.2 صلاحية غير كافية (Permission Denied)</h4>
+
+                    <div class="cause">
+                        <strong>الأعراض:</strong> يعرض النظام صفحة "403 Forbidden" أو رسالة "You don't have permission to perform this action".
+                    </div>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; الحلول:</span>
+                        <ol class="steps">
+                            <li>تواصل مع مسؤول النظام لمنح الصلاحية المطلوبة</li>
+                            <li>أضف الصلاحية من لوحة الإدارة Django Admin في مسار <span class="code-inline">/admin/</span></li>
+                            <li>تأكد من أن المجموعة (Group) للمستخدم تحتوي على الصلاحيات الصحيحة</li>
+                            <li>للإضافة السريعة لصلاحية عبر الأمر:</li>
+                        </ol>
+                        <div class="code-block">
+<span class="comment"># منح صلاحية لمستخدم</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">shell</span>
+>>> from django.contrib.auth.models import User, Permission
+>>> user = User.objects.get(username=<span class="string">'username'</span>)
+>>> perm = Permission.objects.get(codename=<span class="string">'add_account'</span>)
+>>> user.user_permissions.add(perm)
+>>> user.save()
+</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== SECTION 5: DOCKER ===== -->
+            <section id="section-5" class="section">
+                <h2><span class="icon">&#128203;</span> 5. مشاكل Docker</h2>
+
+                <!-- 5.1 -->
+                <div id="s5-1" class="error-card warning">
+                    <h4>5.1 خطأ port already in use</h4>
+                    <div class="error-name">Bind for 0.0.0.0:8012 failed: port is already allocated</div>
+
+                    <div class="cause">
+                        <strong>السبب:</strong> المنفذ المطلوب مستخدم من قبل خدمة أخرى أو حاوية Docker قديمة.
+                    </div>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; الحلول:</span>
+                        <ol class="steps">
+                            <li>تغيير المنفذ في ملف <span class="code-inline">.env</span>:</li>
+                        </ol>
+                        <div class="code-block">
+<span class="comment"># في ملف .env</span>
+PORT=8013  <span class="comment"># غيّر من 8012 إلى 8013</span>
+</div>
+                        <ol class="steps" start="2">
+                            <li>إيقاف الحاوية القديمة:</li>
+                        </ol>
+                        <div class="code-block">
+<span class="comment"># إيقاف وحذف الحاويات</span>
+<span class="prompt">$ </span><span class="cmd">docker compose</span> <span class="cmd">down</span>
+
+<span class="comment"># أو حذف الحاوية يدوياً</span>
+<span class="prompt">$ </span><span class="cmd">docker</span> stop <span class="string">container_name</span>
+<span class="prompt">$ </span><span class="cmd">docker</span> rm <span class="string">container_name</span>
+</div>
+                        <ol class="steps" start="3">
+                            <li>إيقاف الخدمة المستخدمة على المنفذ (Windows):</li>
+                        </ol>
+                        <div class="code-block">
+<span class="prompt">$ </span><span class="cmd">netstat</span> <span class="flag">-ano</span> | <span class="cmd">findstr</span> :8012
+<span class="prompt">$ </span><span class="cmd">taskkill</span> /PID <span class="string">&lt;PID&gt;</span> /F
+</div>
+                    </div>
+                </div>
+
+                <!-- 5.2 -->
+                <div id="s5-2" class="error-card danger">
+                    <h4>5.2 خطأ container exited with code 1</h4>
+
+                    <div class="cause">
+                        <strong>السبب:</strong> الحاوية توقفت بسبب خطأ في التهيئة، عادةً بسبب متغيرات بيئة غير صحيحة أو ملفات مفقودة.
+                    </div>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; خطوات التشخيص:</span>
+                        <div class="code-block">
+<span class="comment"># عرض سجلات الحاوية</span>
+<span class="prompt">$ </span><span class="cmd">docker compose</span> logs web
+
+<span class="comment"># عرض السجلات بشكل مستمر</span>
+<span class="prompt">$ </span><span class="cmd">docker compose</span> logs <span class="flag">-f</span> web
+
+<span class="comment"># عرض الحاويات المتوقفة</span>
+<span class="prompt">$ </span><span class="cmd">docker</span> ps <span class="flag">-a</span> | <span class="cmd">findstr</span> Exited
+</div>
+                    </div>
+
+                    <div class="alert info">
+                        <span class="alert-icon">&#9432;</span>
+                        <div class="alert-content">
+                            <strong>الأسباب الأكثر شيوعاً:</strong>
+                            تحقق أولاً من ملف <span class="code-inline">.env</span>تأكد من صحة جميع المتغيرات尤其是 <span class="code-inline">DJANGO_SECRET_KEY</span> و <span class="code-inline">DATABASE_URL</span> و <span class="code-inline">POSTGRES_PASSWORD</span>.
+                        </div>
+                    </div>
+                </div>
+
+                <h3>جدول مرجعي - أخطاء Docker الشائعة</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>رسالة الخطأ</th>
+                                <th>السبب</th>
+                                <th>الحل</th>
+                                <th>الخطورة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>port is already allocated</td>
+                                <td>المنفذ مستخدم</td>
+                                <td>تغيير المنفذ أو إيقاف الخدمة القديمة</td>
+                                <td><span class="severity medium">متوسط</span></td>
+                            </tr>
+                            <tr>
+                                <td>container exited with code 1</td>
+                                <td>خطأ في التهيئة</td>
+                                <td>فحص logs و متغيرات البيئة</td>
+                                <td><span class="severity high">عالي</span></td>
+                            </tr>
+                            <tr>
+                                <td>no space left on device</td>
+                                <td>مساحة القرص ممتلئة</td>
+                                <td><span class="code-inline">docker system prune -a</span></td>
+                                <td><span class="severity high">عالي</span></td>
+                            </tr>
+                            <tr>
+                                <td>cannot connect to the Docker daemon</td>
+                                <td>Docker Desktop غير قيد التشغيل</td>
+                                <td>تشغيل Docker Desktop</td>
+                                <td><span class="severity critical">حرج</span></td>
+                            </tr>
+                            <tr>
+                                <td>network ... not found</td>
+                                <td>شبكة Docker غير موجودة</td>
+                                <td><span class="code-inline">docker compose up --build</span></td>
+                                <td><span class="severity medium">متوسط</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ===== SECTION 6: PERFORMANCE ===== -->
+            <section id="section-6" class="section">
+                <h2><span class="icon">&#128640;</span> 6. مشاكل الأداء</h2>
+
+                <!-- 6.1 -->
+                <div id="s6-1" class="error-card info">
+                    <h4>6.1 بطء في تحميل الصفحات</h4>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; حلول تحسين الأداء:</span>
+                        <ol class="steps">
+                            <li>تفعيل التخزين المؤقت (Redis Cache):</li>
+                        </ol>
+                        <div class="code-block">
+<span class="comment"># في settings.py</span>
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+    }
+}
+</div>
+                        <ol class="steps" start="2">
+                            <li>زيادة عدد عمليات Gunicorn:</li>
+                        </ol>
+                        <div class="code-block">
+<span class="comment"># زيادة عدد workers (القاعدة: 2 × عدد الأنوية + 1)</span>
+<span class="prompt">$ </span><span class="cmd">gunicorn</span> <span class="flag">--workers</span> <span class="string">4</span> <span class="flag">--bind</span> 0.0.0.0:8012 config.wsgi:application
+</div>
+                        <ol class="steps" start="3">
+                            <li>إضافة فهارس (indexes) لقاعدة البيانات:</li>
+                        </ol>
+                        <div class="code-block">
+<span class="comment"># في models.py، أضف db_index=True للأعمدة المُستخدمة في البحث</span>
+class Account(models.Model):
+    code = models.CharField(max_length=50, db_index=True)
+    name = models.CharField(max_length=200, db_index=True)
+</div>
+                        <ol class="steps" start="4">
+                            <li>استخدام select_related و prefetch_related لتحسين استعلامات ORM:</li>
+                        </ol>
+                        <div class="code-block">
+<span class="comment"># بدلاً من:</span>
+entries = JournalEntry.objects.all()
+for entry in entries:
+    print(entry.account.name)  <span class="comment"># N+1 query</span>
+
+<span class="comment"># استخدم:</span>
+entries = JournalEntry.objects.select_related(<span class="string">'account'</span>).all()
+</div>
+                    </div>
+                </div>
+
+                <!-- 6.2 -->
+                <div id="s6-2" class="error-card warning">
+                    <h4>6.2 استهلاك عالي للذاكرة</h4>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; الحلول:</span>
+                        <ol class="steps">
+                            <li>تقليل عدد Gunicorn workers إذا كانت الذاكرة محدودة</li>
+                            <li>تفعيل Pagination في جميع القوائم:</li>
+                        </ol>
+                        <div class="code-block">
+<span class="comment"># في settings.py</span>
+DEFAULT_PAGINATION = 25
+
+<span class="comment"># في views.py</span>
+from django.core.paginator import Paginator
+paginator = Paginator(queryset, 25)
+</div>
+                        <ol class="steps" start="3">
+                            <li>استخدام <span class="code-inline">iterator()</span> للبيانات الكبيرة:</li>
+                        </ol>
+                        <div class="code-block">
+<span class="comment"># بدلاً من تحويل كل البيانات للذاكرة</span>
+for entry in JournalEntry.objects.iterator(chunk_size=1000):
+    process(entry)
+</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== SECTION 7: BACKUP ===== -->
+            <section id="section-7" class="section">
+                <h2><span class="icon">&#128190;</span> 7. مشاكل الباك أب</h2>
+
+                <div id="s7-1" class="error-card warning">
+                    <h4>7.1 فشل عملية الباك أب</h4>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>المشكلة</th>
+                                    <th>السبب</th>
+                                    <th>الحل</th>
+                                    <th>الخطورة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>No space left on device</td>
+                                    <td>مساحة القرص غير كافية</td>
+                                    <td>التحقق من المساحة المتاحة وحذف الباك أبات القديمة</td>
+                                    <td><span class="severity critical">حرج</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Permission denied</td>
+                                    <td>عدم صلاحيات الكتابة</td>
+                                    <td>تعديل صلاحيات مجلد الباك أب</td>
+                                    <td><span class="severity high">عالي</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Database connection failed</td>
+                                    <td>انقطاع الاتصال أثناء الباك أب</td>
+                                    <td>التأكد من استقرار اتصال قاعدة البيانات</td>
+                                    <td><span class="severity high">عالي</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Backup file corrupted</td>
+                                    <td>توقف العملية في منتصفها</td>
+                                    <td>إعادة تشغيل الباك أب والتحقق من سلامة الملف</td>
+                                    <td><span class="severity critical">حرج</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="solution">
+                        <span class="solution-label">&#10003; أوامر الباك أب الصحيحة:</span>
+                        <div class="code-block">
+<span class="comment"># PostgreSQL</span>
+<span class="prompt">$ </span><span class="cmd">pg_dump</span> <span class="flag">-U</span> <span class="string">username</span> <span class="flag">-h</span> localhost <span class="string">accounting_db</span> > backup_$(date +%Y%m%d).sql
+
+<span class="comment"># SQLite</span>
+<span class="prompt">$ </span><span class="cmd">cp</span> db.sqlite3 backup_$(date +%Y%m%d).sqlite3
+
+<span class="comment"># استعادة PostgreSQL</span>
+<span class="prompt">$ </span><span class="cmd">psql</span> <span class="flag">-U</span> <span class="string">username</span> <span class="string">accounting_db</span> < backup_file.sql
+
+<span class="comment"># استعادة SQLite</span>
+<span class="prompt">$ </span><span class="cmd">cp</span> backup_file.sqlite3 db.sqlite3
+</div>
+                    </div>
+
+                    <div class="alert warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <div class="alert-content">
+                            <strong>توصية أمنية</strong>
+                            لا ت تخزّن ملفات الباك أب على نفس السيرفر. انسخها إلى موقع خارجي آمن بشكل دوري.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== SECTION 8: SUPPORT ===== -->
+            <section id="section-8" class="section">
+                <h2><span class="icon">&#128222;</span> 8. أرقام الدعم الفني وحالات التصعيد</h2>
+
+                <p>إذا لم تتمكن من حل المشكلة باستخدام الحلول المذكورة أعلاه، اتبع خطوات التصعيد التالية:</p>
+
+                <h3>خطوات التشخيص الأولية</h3>
+                <div class="code-block">
+<span class="comment"># 1. جمع معلومات النظام</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">check</span> <span class="flag">--deploy</span>
+
+<span class="comment"># 2. عرض إصدارات المكتبات</span>
+<span class="prompt">$ </span><span class="cmd">pip</span> freeze > requirements_snapshot.txt
+
+<span class="comment"># 3. فحص حالة السيرفر</span>
+<span class="prompt">$ </span><span class="cmd">python</span> manage.py <span class="cmd">showmigrations</span>
+
+<span class="comment"># 4. تصدير السجلات</span>
+<span class="prompt">$ </span><span class="cmd">cp</span> logs/accounting.log logs/error_$(date +%Y%m%d_%H%M%S).log
+</div>
+
+                <h3>مراحل التصعيد</h3>
+                <div class="quick-ref">
+                    <div class="quick-ref-item">
+                        <h5>المستوى الأول - ذاتي</h5>
+                        <p>مراجعة هذا الدليل وتطبيق الحلول المقترحة</p>
+                    </div>
+                    <div class="quick-ref-item">
+                        <h5>المستوى الثاني - الفريق</h5>
+                        <p>التواصل مع فريق التطوير عبر قنوات التواصل الداخلية</p>
+                    </div>
+                    <div class="quick-ref-item">
+                        <h5>المستوى الثالث - التذاكر</h5>
+                        <p>إنشاء تذكرة (issue) على GitHub مع كامل التفاصيل</p>
+                    </div>
+                </div>
+
+                <h3>كيفية إنشاء تذكرة دعم فعّالة</h3>
+                <ol class="steps">
+                    <li>اجمع معلومات الخطأ كاملة: الرسالة الكاملة، تتبع الخطأ (stack trace)، وملف السجلات</li>
+                    <li>حدد خطوات إعادة إنتاج المشكلة بوضوح</li>
+                    <li>أرفق لقطات شاشة إن أمكن</li>
+                    <li>اذكر إعدادات البيئة: نظام التشغيل، إصدار Python، إصدار Django</li>
+                    <li>اذكر ما حاولت فعله بالفعل من حلول</li>
+                </ol>
+
+                <div class="screenshot-placeholder">
+                    <div class="icon-camera">&#128247;</div>
+                    <div class="placeholder-text">صورة توضيحية</div>
+                    <div class="placeholder-label">نموذج تذكرة GitHub Issue جاهز</div>
+                </div>
+
+                <div class="alert info">
+                    <span class="alert-icon">&#9432;</span>
+                    <div class="alert-content">
+                        <strong>ملف السجلات للتشخيص</strong>
+                        تأكد من إرفاق محتوى ملف <span class="code-inline">logs/accounting.log</span> و <span class="code-inline">logs/error.log</span> عند إنشاء التذكرة. هذه الملفات تحتوي على معلومات حاسوية لتشخيص المشكلة بسرعة.
+                    </div>
+                </div>
+
+                <h3>جدول مرجعي سريع - أوامر الإصلاح الشائعة</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>المشكلة</th>
+                                <th>الأمر</th>
+                                <th>ملاحظات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>فحص الإعدادات</td>
+                                <td><span class="code-inline">python manage.py check</span></td>
+                                <td>أول أمر يجب تشغيله عند أي مشكلة</td>
+                            </tr>
+                            <tr>
+                                <td>تطبيق المهاجرات</td>
+                                <td><span class="code-inline">python manage.py migrate</span></td>
+                                <td>يحل مشاكل الجداول والأعمدة المفقودة</td>
+                            </tr>
+                            <tr>
+                                <td>جمع الملفات الثابتة</td>
+                                <td><span class="code-inline">python manage.py collectstatic --noinput</span></td>
+                                <td>يحل مشاكل تحميل CSS و JS</td>
+                            </tr>
+                            <tr>
+                                <td>إعادة تعيين كلمة المرور</td>
+                                <td><span class="code-inline">python manage.py changepassword &lt;username&gt;</span></td>
+                                <td>للمستخدمين الذين نسوا كلمات المرور</td>
+                            </tr>
+                            <tr>
+                                <td>إنشاء مستخدم جديد</td>
+                                <td><span class="code-inline">python manage.py createsuperuser</span></td>
+                                <td>لإنشاء حساب مسؤول جديد</td>
+                            </tr>
+                            <tr>
+                                <td>عرض المهاجرات</td>
+                                <td><span class="code-inline">python manage.py showmigrations</span></span></td>
+                                <td>لتشخيص مشاكل المهاجرة</td>
+                            </tr>
+                            <tr>
+                                <td>إعادة تعيين المهاجرات</td>
+                                <td><span class="code-inline">python manage.py migrate app_name zero</span></td>
+                                <td>⚠️ استخدم بحذر شديد</td>
+                            </tr>
+                            <tr>
+                                <td>تنظيف Docker</td>
+                                <td><span class="code-inline">docker system prune -a</span></td>
+                                <td>يحذف الحاويات والصور غير المستخدمة</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="footer-line"></div>
+        <p>دليل استكشاف الأخطاء وحلها - نظام المحاسبة المتكامل</p>
+        <p>آخر تحديث: يوليو 2026 | الإصدار 2.0</p>
+        <div class="footer-line"></div>
+    </footer>
+
+</body>
+</html>

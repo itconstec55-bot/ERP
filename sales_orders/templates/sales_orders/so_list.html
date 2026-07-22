@@ -1,0 +1,95 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}أوامر البيع{% endblock %}
+{% block page_title %}قائمة أوامر البيع{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-clipboard-list"></i> أوامر البيع</span>
+        <a href="{% url 'sales_orders:so_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> أمر بيع جديد
+        </a>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">كل الحالات</option>
+                    <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>مسودة</option>
+                    <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>مؤكد</option>
+                    <option value="invoiced" {% if status_filter == 'invoiced' %}selected{% endif %}>مفوتر</option>
+                    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>ملغي</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="customer" class="form-select">
+                    <option value="">كل العملاء</option>
+                    {% for c in customers %}
+                    <option value="{{ c.id }}" {% if customer_id == c.id|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-secondary"><i class="fas fa-filter"></i> تصفية</button>
+                <a href="{% url 'sales_orders:so_list' %}" class="btn btn-light">إعادة تعيين</a>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>رقم الأمر</th>
+                        <th>العميل</th>
+                        <th>التاريخ</th>
+                        <th>تاريخ التسليم</th>
+                        <th>الحالة</th>
+                        <th>الإجمالي</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in orders %}
+                    <tr>
+                        <td>{{ o.order_number }}</td>
+                        <td>{{ o.customer.name }}</td>
+                        <td>{{ o.date|date:"d/m/Y" }}</td>
+                        <td>{% if o.expected_date %}{{ o.expected_date|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+                        <td>
+                            {% if o.status == 'draft' %}<span class="badge bg-secondary">مسودة</span>
+                            {% elif o.status == 'confirmed' %}<span class="badge bg-primary">مؤكد</span>
+                            {% elif o.status == 'invoiced' %}<span class="badge bg-success">مفوتر</span>
+                            {% elif o.status == 'cancelled' %}<span class="badge bg-danger">ملغي</span>{% endif %}
+                        </td>
+                        <td>{{ o.subtotal|floatformat:2 }} ج.م</td>
+                        <td>
+                            <a href="{% url 'sales_orders:so_detail' pk=o.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center">لا توجد أوامر بيع</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if orders.has_other_pages %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if orders.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ orders.previous_page_number }}">السابق</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">صفحة {{ orders.number }} من {{ orders.paginator.num_pages }}</span></li>
+                {% if orders.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ orders.next_page_number }}">التالي</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

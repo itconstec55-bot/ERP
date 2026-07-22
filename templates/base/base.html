@@ -1,0 +1,1067 @@
+{% load static %}
+{% load access_tags %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ company.name|default:"نظام المحاسبة" }}{% endblock %}</title>
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/cairo.css' %}" rel="stylesheet">
+    <style>
+        * { font-family: 'Cairo', sans-serif; }
+        :root {
+            --sidebar-width: 280px;
+            --primary-color: #1a237e;
+            --secondary-color: #0d47a1;
+            --accent-color: #ff6f00;
+            --group-active-bg: rgba(255,255,255,0.15);
+        }
+        body { background-color: #f5f6fa; direction: rtl; }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            position: fixed; top: 0; right: 0; width: var(--sidebar-width);
+            height: 100vh; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white; overflow-y: auto; overflow-x: hidden; z-index: 1000; transition: all 0.3s;
+            scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;
+        }
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        /* ── Header ── */
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-header h4 { margin: 0; font-weight: 700; }
+        .sidebar-header small { opacity: 0.6; font-size: 0.75rem; }
+
+        /* ── Quick Actions ── */
+        .quick-actions {
+            display: flex; gap: 6px; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .quick-actions a {
+            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+            padding: 8px 4px; border-radius: 8px; font-size: 0.7rem; color: rgba(255,255,255,0.7);
+            text-decoration: none; transition: all 0.2s; background: rgba(255,255,255,0.05);
+        }
+        .quick-actions a:hover { background: rgba(255,255,255,0.15); color: white; }
+        .quick-actions a i { font-size: 1rem; }
+
+        /* ── Menu ── */
+        .sidebar-menu { padding: 6px 0; }
+
+        /* ── Workflow Group ── */
+        .workflow-group { border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .workflow-header {
+            display: flex; align-items: center; gap: 10px; padding: 11px 16px;
+            color: rgba(255,255,255,0.5); font-size: 0.72rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;
+            transition: all 0.2s; user-select: none; border: none; background: none; width: 100%;
+        }
+        .workflow-header:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.04); }
+        .workflow-header .step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; border-radius: 50%; font-size: 0.65rem;
+            background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.6); flex-shrink: 0;
+        }
+        .workflow-header .chevron {
+            margin-right: auto; font-size: 0.6rem; transition: transform 0.2s;
+        }
+        .workflow-header[aria-expanded="true"] .chevron { transform: rotate(-90deg); }
+
+        /* ── Sub-section (expandable) ── */
+        .sub-section { }
+        .sub-header {
+            display: flex; align-items: center; gap: 8px; padding: 9px 16px 9px 24px;
+            color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.85rem;
+            font-weight: 600; transition: all 0.2s; border-right: 3px solid transparent;
+            cursor: pointer; width: 100%; border: none; background: none; text-align: right;
+        }
+        .sub-header:hover { background: rgba(255,255,255,0.08); color: white; }
+        .sub-header i { width: 20px; text-align: center; font-size: 0.85rem; }
+        .sub-header .badge-count {
+            margin-right: auto; background: var(--accent-color); color: white;
+            font-size: 0.65rem; padding: 2px 7px; border-radius: 10px; font-weight: 700;
+        }
+        .sub-header .sub-chevron {
+            font-size: 0.55rem; transition: transform 0.2s; opacity: 0.5;
+        }
+        .sub-header[aria-expanded="true"] .sub-chevron { transform: rotate(-90deg); }
+
+        /* ── Leaf Link ── */
+        .leaf-link {
+            display: flex; align-items: center; gap: 8px; padding: 8px 16px 8px 36px;
+            color: rgba(255,255,255,0.65); text-decoration: none; font-size: 0.82rem;
+            transition: all 0.2s; border-right: 3px solid transparent;
+        }
+        .leaf-link:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.9); }
+        .leaf-link i { width: 18px; text-align: center; font-size: 0.8rem; opacity: 0.7; }
+        .leaf-link.active {
+            background: rgba(255,255,255,0.1); color: white;
+            border-right-color: var(--accent-color); font-weight: 600;
+        }
+        .leaf-link.active i { opacity: 1; }
+
+        /* ── Highlighted quick link ── */
+        .leaf-link.highlight { color: var(--accent-color); }
+        .leaf-link.highlight i { opacity: 1; color: var(--accent-color); }
+
+        /* ── Separator ── */
+        .menu-sep { height: 1px; background: rgba(255,255,255,0.06); margin: 4px 16px; }
+
+        /* ── Main Content ── */
+        .main-content { margin-right: var(--sidebar-width); padding: 20px; min-height: 100vh; }
+        .top-bar {
+            background: white; padding: 15px 25px; margin: -20px -20px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .sidebar-toggle { display: none; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .card-header { border-radius: 12px 12px 0 0 !important; font-weight: 600; }
+        .stat-card { padding: 25px; text-align: center; border-radius: 12px; color: white; }
+        .stat-card h3 { font-size: 2rem; font-weight: 700; margin: 10px 0; }
+        .stat-card p { margin: 0; opacity: 0.9; }
+        .btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
+        .btn-primary:hover { background-color: var(--secondary-color); border-color: var(--secondary-color); }
+        .table th { background-color: var(--primary-color); color: white; font-weight: 600; }
+        .table td { vertical-align: middle; }
+        .badge-success { background-color: #28a745; }
+        .badge-warning { background-color: #ffc107; color: #333; }
+        .badge-danger { background-color: #dc3545; }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 8px; font-size: 0.9rem;
+            color: var(--primary-color); background: #e8eaf6;
+            text-decoration: none; transition: all 0.2s; border: 1px solid #c5cae9;
+        }
+        .btn-back:hover { background: #c5cae9; color: var(--secondary-color); }
+        .btn-print {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 8px; font-size: 0.9rem;
+            color: #1b5e20; background: #e8f5e9;
+            text-decoration: none; transition: all 0.2s; border: 1px solid #a5d6a7; cursor: pointer;
+        }
+        .btn-print:hover { background: #a5d6a7; color: #1b5e20; }
+        @media print {
+            .sidebar, .top-bar, .btn-back, .btn-print, .btn-close, .alert { display: none !important; }
+            .main-content { margin: 0 !important; padding: 10px !important; }
+            .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+            body { background: white !important; }
+        }
+
+        /* ── Responsive: كل الجداول تُغلّف تلقائياً بـ .table-responsive عبر JS (انظر أسفل السكربت) ── */
+        .table-responsive { -webkit-overflow-scrolling: touch; }
+
+        /* ── Responsive: off-canvas sidebar for mobile/tablet ── */
+        .sidebar-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45); z-index: 999;
+        }
+        @media (max-width: 991.98px) {
+            body { overflow-x: hidden; }
+            .sidebar {
+                width: min(85vw, 300px);
+                transform: translateX(100%);
+                box-shadow: -4px 0 20px rgba(0,0,0,0.3);
+            }
+            body.sidebar-open .sidebar { transform: translateX(0); }
+            body.sidebar-open .sidebar-overlay { display: block; }
+            .main-content { margin-right: 0; }
+            .sidebar-toggle {
+                display: inline-flex; align-items: center; justify-content: center;
+                width: 40px; height: 40px; border-radius: 8px; font-size: 1.1rem;
+                color: var(--primary-color); background: #e8eaf6;
+                border: 1px solid #c5cae9; cursor: pointer; text-decoration: none;
+            }
+            .sidebar-toggle:hover { background: #c5cae9; }
+        }
+
+        /* ── تحسينات الموبايل (≤767px): أهداف لمس + تباعد ── */
+        @media (max-width: 767.98px) {
+            .stat-card h3 { font-size: 1.5rem; }
+            .leaf-link, .sub-header, .workflow-header,
+            .btn-back, .btn-print, .quick-actions a { min-height: 44px; }
+            .top-bar { padding: 10px 12px; }
+            .main-content { padding: 12px; }
+            .card { margin-bottom: 14px; }
+            /* فرض العمود الكامل على الموبايل (P0-3): أي col-* تتمدّد لعرض الصفحة */
+            .row > [class*="col-"] { flex: 0 0 100%; max-width: 100%; width: 100%; }
+            /* إبطال أعمدة الجداول الثابتة على الموبايل (P1-6/7) */
+            table th[style*="width"] { width: auto !important; white-space: normal; }
+            /* الرسوم البيانية لا تتجاوز عرض الحاوية */
+            .card-body > canvas { max-width: 100% !important; }
+        }
+
+        /* ── ضبط دقيق للهواتف الصغيرة (≤575px) ── */
+        @media (max-width: 575.98px) {
+            #globalSearch { width: 100% !important; max-width: 100% !important; }
+            .quick-actions { flex-wrap: wrap; }
+            .stat-card { padding: 16px; }
+            .stat-card h3 { font-size: 1.25rem; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+    {% block extra_head %}{% endblock %}
+    <!-- HTMX + Alpine.js -->
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-6F2H5JjH0LLMSpQ4Lp0FgxR0Z4fMNq5fH1lXPR5hsRzC3q1I2JhSGBK7V3yH3sf" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js" integrity="sha384-1gE1N5kF0Jj1s9u2/4Rf3kQvz7G7VnPJhWThF9UOg9u/1I1rGnhBmB5P/Gg4Ds" crossorigin="anonymous"></script>
+    <script>document.body?.setAttribute('hx-headers', JSON.stringify({'X-CSRFToken': '{{ csrf_token }}'}));</script>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            {% if company.logo %}
+            <img src="{{ company.logo.url }}" alt="شعار الشركة" style="max-height: 50px; margin-bottom: 8px;">
+            {% endif %}
+            <h4><i class="fas fa-calculator"></i> {{ company.name|default:"تواريدات" }}</h4>
+            <small>نظام المحاسبة المتكامل</small>
+        </div>
+
+        {# ── وصول سريع ── #}
+        <div class="quick-actions">
+            {% if "all" in user_perms or "sales.add_salesinvoice" in user_perms %}
+            <a href="{% url 'sales:invoice_create' %}" title="فاتورة مبيعات">
+                <i class="fas fa-cash-register"></i> فاتورة بيع
+            </a>
+            {% endif %}
+            {% if "all" in user_perms or "payment_receipts.add_paymentreceipt" in user_perms %}
+            <a href="{% url 'payment_receipts:create' %}?type=receipt" title="سند قبض">
+                <i class="fas fa-file-invoice-dollar"></i> سند قبض
+            </a>
+            {% endif %}
+            {% if "all" in user_perms or "accounts.add_journalentry" in user_perms %}
+            <a href="{% url 'accounts:journal_create' %}" title="قيد يومي">
+                <i class="fas fa-journal-whills"></i> قيد يومي
+            </a>
+            {% endif %}
+            {% if "all" in user_perms or "purchases.add_purchaseinvoice" in user_perms %}
+            <a href="{% url 'purchases:invoice_create' %}" title="فاتورة مشتريات">
+                <i class="fas fa-shopping-cart"></i> فاتورة شراء
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="sidebar-menu">
+            {# ════════════════════════════════════════════ #}
+            {# الرئيسية #}
+            {# ════════════════════════════════════════════ #}
+            <a href="{% url 'dashboard' %}" class="leaf-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-home"></i> لوحة التحكم
+            </a>
+
+            {# ════════════════════════════════════════════ #}
+            {# ① إنتاج الخرسانة #}
+            {# ════════════════════════════════════════════ #}
+            {% if "all" in user_perms or "concrete_production.view_concretemixdesign" in user_perms %}
+            <div class="workflow-group" data-group="concrete">
+                <button class="workflow-header" data-toggle="wf-concrete" aria-expanded="false">
+                    <span class="step-num">1</span>
+                    إنتاج الخرسانة
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div id="wf-concrete" class="collapse">
+                    <a href="{% url 'concrete_production:dashboard' %}" class="leaf-link {% if request.path == '/concrete/' %}active{% endif %}">
+                        <i class="fas fa-hard-hat"></i> لوحة التحكم
+                    </a>
+                    <a href="{% url 'concrete_production:mix_design_list' %}" class="leaf-link {% if 'mix' in request.path %}active{% endif %}">
+                        <i class="fas fa-flask"></i> خلطات الخرسانة
+                    </a>
+                    <a href="{% url 'concrete_production:customer_request_list' %}" class="leaf-link {% if 'requests' in request.path %}active{% endif %}">
+                        <i class="fas fa-file-alt"></i> طلبات العملاء
+                    </a>
+                    <a href="{% url 'concrete_production:production_order_list' %}" class="leaf-link {% if 'orders' in request.path %}active{% endif %}">
+                        <i class="fas fa-clipboard-list"></i> أوامر الإنتاج
+                    </a>
+                    <a href="{% url 'concrete_production:production_daily' %}" class="leaf-link {% if 'daily' in request.path %}active{% endif %}">
+                        <i class="fas fa-calendar-day"></i> المتابعة اليومية
+                    </a>
+                    <a href="{% url 'concrete_production:production_cost_per_m3' %}" class="leaf-link {% if 'cost-per-m3' in request.path %}active{% endif %}">
+                        <i class="fas fa-calculator"></i> تكلفة المتر المكعب
+                    </a>
+                    <a href="{% url 'concrete_production:batch_list' %}" class="leaf-link {% if 'batches' in request.path %}active{% endif %}">
+                        <i class="fas fa-industry"></i> الدفعات الإنتاجية
+                    </a>
+                    <a href="{% url 'concrete_production:truck_list' %}" class="leaf-link {% if 'trucks' in request.path %}active{% endif %}">
+                        <i class="fas fa-truck"></i> الشاحنات
+                    </a>
+                    <a href="{% url 'concrete_production:delivery_list' %}" class="leaf-link {% if 'deliveries' in request.path %}active{% endif %}">
+                        <i class="fas fa-calendar-check"></i> جداول التسليم
+                    </a>
+                    <a href="{% url 'concrete_production:cost_list' %}" class="leaf-link {% if 'costs' in request.path %}active{% endif %}">
+                        <i class="fas fa-dollar-sign"></i> تكاليف الإنتاج
+                    </a>
+                    <a href="{% url 'concrete_production:silo_dashboard' %}" class="leaf-link {% if 'silo' in request.path %}active{% endif %}">
+                        <i class="fas fa-cubes"></i> سيلو
+                    </a>
+                    <a href="{% url 'concrete_production:cement_daily_inventory' %}" class="leaf-link {% if 'silos/daily' in request.path %}active{% endif %}">
+                        <i class="fas fa-clipboard-check"></i> جرد الأسمنت اليومي
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            {# ════════════════════════════════════════════ #}
+            {# ② إدارة المشاريع #}
+            {# ════════════════════════════════════════════ #}
+            {% if "all" in user_perms or "contractors.view_contractor" in user_perms %}
+            <div class="workflow-group" data-group="contractors">
+                <button class="workflow-header" data-toggle="wf-contractors" aria-expanded="false">
+                    <span class="step-num">2</span>
+                    إدارة المشاريع
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div id="wf-contractors" class="collapse">
+                    <a href="{% url 'contractors:dashboard' %}" class="leaf-link {% if 'contractors' in request.path and 'dashboard' in request.path %}active{% endif %}">
+                        <i class="fas fa-hard-hat"></i> لوحة التحكم
+                    </a>
+                    <a href="{% url 'contractors:contractor_list' %}" class="leaf-link {% if 'contractors' in request.path and 'contractor' in request.path %}active{% endif %}">
+                        <i class="fas fa-users"></i> المقاولون
+                    </a>
+                    <a href="{% url 'contractors:contract_list' %}" class="leaf-link {% if 'contract' in request.path and 'contractors' in request.path and 'contractor' not in request.path %}active{% endif %}">
+                        <i class="fas fa-file-contract"></i> العقود
+                    </a>
+                    <a href="{% url 'contractors:certificate_list' %}" class="leaf-link {% if 'certificate' in request.path %}active{% endif %}">
+                        <i class="fas fa-file-alt"></i> المستخلصات
+                    </a>
+                    <a href="{% url 'contractors:payment_list' %}" class="leaf-link {% if 'payment' in request.path %}active{% endif %}">
+                        <i class="fas fa-money-bill"></i> المدفوعات
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            {# ════════════════════════════════════════════ #}
+            {# ③ العمليات اليومية #}
+            {# ════════════════════════════════════════════ #}
+            {% if "all" in user_perms or "sales.view_customer" in user_perms or "sales.view_salesinvoice" in user_perms or "purchases.view_supplier" in user_perms or "purchases.view_purchaseinvoice" in user_perms or "treasury.view_bank" in user_perms or "treasury.view_safe" in user_perms or "warehouses.view_warehouse" in user_perms or "stock_adjustments.view_stockadjustment" in user_perms %}
+            <div class="workflow-group" data-group="daily">
+                <button class="workflow-header" data-toggle="wf-daily" aria-expanded="true">
+                    <span class="step-num">3</span>
+                    العمليات اليومية
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div id="wf-daily" class="collapse show">
+
+                    {# ── المبيعات ── #}
+                    {% if "all" in user_perms or "sales.view_customer" in user_perms or "sales.view_salesinvoice" in user_perms %}
+                    <div class="sub-section">
+                        <button class="sub-header" data-toggle="sub-sales" aria-expanded="false">
+                            <i class="fas fa-chart-line"></i> المبيعات
+                            <i class="fas fa-chevron-down sub-chevron"></i>
+                        </button>
+                        <div id="sub-sales" class="collapse">
+                            <a href="{% url 'sales:customer_list' %}" class="leaf-link {% if 'customer' in request.path %}active{% endif %}">
+                                <i class="fas fa-users"></i> العملاء
+                            </a>
+                            <a href="{% url 'sales:invoice_list' %}" class="leaf-link {% if 'sales' in request.path and 'invoice' in request.path %}active{% endif %}">
+                                <i class="fas fa-cash-register"></i> فواتير المبيعات
+                            </a>
+                            <a href="{% url 'sales_returns:list' %}" class="leaf-link {% if 'sales_returns' in request.path %}active{% endif %}">
+                                <i class="fas fa-undo"></i> مرتجعات المبيعات
+                            </a>
+                            <a href="{% url 'credit_notes:credit_note_list' %}?type=credit_note" class="leaf-link {% if 'credit_notes' in request.path %}active{% endif %}">
+                                <i class="fas fa-file-invoice"></i> إشعارات الدائن
+                            </a>
+                            {% if "all" in user_perms or "sales_orders.view_salesorder" in user_perms %}
+                            <a href="{% url 'sales_orders:so_list' %}" class="leaf-link {% if 'sales-orders' in request.path %}active{% endif %}">
+                                <i class="fas fa-clipboard-check"></i> أوامر البيع
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# ── المشتريات ── #}
+                    {% if "all" in user_perms or "purchases.view_supplier" in user_perms or "purchases.view_purchaseinvoice" in user_perms %}
+                    <div class="sub-section">
+                        <button class="sub-header" data-toggle="sub-purchases" aria-expanded="false">
+                            <i class="fas fa-shopping-cart"></i> المشتريات
+                            <i class="fas fa-chevron-down sub-chevron"></i>
+                        </button>
+                        <div id="sub-purchases" class="collapse">
+                            {# ── دورة الشراء (طلب ← عرض سعر ← أمر شراء) ── #}
+                            {% if "all" in user_perms or "requisitions.view_requisition" in user_perms %}
+                            <a href="{% url 'requisitions:req_list' %}" class="leaf-link {% if 'requisitions' in request.path %}active{% endif %}">
+                                <i class="fas fa-clipboard-list"></i> طلبات الشراء
+                            </a>
+                            {% endif %}
+                            {% if "all" in user_perms or "rfq.view_rfq" in user_perms %}
+                            <a href="{% url 'rfq:rfq_list' %}" class="leaf-link {% if 'rfq' in request.path %}active{% endif %}">
+                                <i class="fas fa-file-invoice-dollar"></i> عروض الأسعار
+                            </a>
+                            {% endif %}
+                            {% if "all" in user_perms or "requisitions.view_requisition" in user_perms %}
+                            <a href="{% url 'requisitions:pending_approvals' %}" class="leaf-link {% if 'pending' in request.path %}active{% endif %}">
+                                <i class="fas fa-user-check"></i> الموافقات المعلقة
+                            </a>
+                            <a href="{% url 'requisitions:workflow_dashboard' %}" class="leaf-link {% if 'workflow' in request.path %}active{% endif %}">
+                                <i class="fas fa-bell"></i> لوحة التنبيهات والتصعيد
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'purchases:supplier_list' %}" class="leaf-link {% if 'supplier' in request.path %}active{% endif %}">
+                                <i class="fas fa-truck"></i> الموردين
+                            </a>
+                            <a href="{% url 'purchases:invoice_list' %}" class="leaf-link {% if 'purchases' in request.path and 'invoice' in request.path %}active{% endif %}">
+                                <i class="fas fa-file-invoice"></i> فواتير المشتريات
+                            </a>
+                            <a href="{% url 'purchase_returns:list' %}" class="leaf-link {% if 'purchase_returns' in request.path %}active{% endif %}">
+                                <i class="fas fa-undo"></i> مرتجعات المشتريات
+                            </a>
+                            <a href="{% url 'credit_notes:credit_note_list' %}?type=debit_note" class="leaf-link">
+                                <i class="fas fa-file-invoice"></i> إشعارات المدين
+                            </a>
+                            {% if "all" in user_perms or "purchase_orders.view_purchaseorder" in user_perms %}
+                            <a href="{% url 'purchase_orders:po_list' %}" class="leaf-link {% if 'purchase-orders' in request.path %}active{% endif %}">
+                                <i class="fas fa-clipboard-list"></i> أوامر الشراء
+                            </a>
+                            {% endif %}
+                            {% if "all" in user_perms or "goods_received.view_goodsreceivednote" in user_perms %}
+                            <a href="{% url 'goods_received:grn_list' %}" class="leaf-link {% if 'goods-received' in request.path %}active{% endif %}">
+                                <i class="fas fa-truck-loading"></i> إذون الاستلام
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# ── الخزينة ── #}
+                    {% if "all" in user_perms or "treasury.view_bank" in user_perms or "treasury.view_safe" in user_perms %}
+                    <div class="sub-section">
+                        <button class="sub-header" data-toggle="sub-treasury" aria-expanded="false">
+                            <i class="fas fa-lock"></i> الخزينة
+                            <i class="fas fa-chevron-down sub-chevron"></i>
+                        </button>
+                        <div id="sub-treasury" class="collapse">
+                            <a href="{% url 'treasury:bank_list' %}" class="leaf-link {% if 'bank' in request.path and 'treasury' in request.path %}active{% endif %}">
+                                <i class="fas fa-university"></i> البنوك
+                            </a>
+                            <a href="{% url 'treasury:safe_list' %}" class="leaf-link {% if 'safe' in request.path and 'treasury' in request.path %}active{% endif %}">
+                                <i class="fas fa-lock"></i> الخزائن
+                            </a>
+                            <a href="{% url 'payment_receipts:list' %}" class="leaf-link {% if 'payment_receipts' in request.path %}active{% endif %}">
+                                <i class="fas fa-file-invoice-dollar"></i> سندات القبض والصرف
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# ── الشيكات ── #}
+                    {% if "all" in user_perms or "cheques.view_cheque" in user_perms %}
+                    <div class="sub-section">
+                        <button class="sub-header" data-toggle="sub-cheques" aria-expanded="false">
+                            <i class="fas fa-money-check-alt"></i> الشيكات
+                            <i class="fas fa-chevron-down sub-chevron"></i>
+                        </button>
+                        <div id="sub-cheques" class="collapse">
+                            <a href="{% url 'cheques:cheque_dashboard' %}" class="leaf-link {% if 'cheques' in request.path %}active{% endif %}">
+                                <i class="fas fa-tachometer-alt"></i> لوحة الشيكات
+                            </a>
+                            <a href="{% url 'cheques:cheque_list' %}" class="leaf-link">
+                                <i class="fas fa-list"></i> قائمة الشيكات
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# ── المستودعات ── #}
+                    {% if "all" in user_perms or "warehouses.view_warehouse" in user_perms or "stock_adjustments.view_stockadjustment" in user_perms %}
+                    <div class="sub-section">
+                        <button class="sub-header" data-toggle="sub-warehouses" aria-expanded="false">
+                            <i class="fas fa-warehouse"></i> المستودعات
+                            <i class="fas fa-chevron-down sub-chevron"></i>
+                        </button>
+                        <div id="sub-warehouses" class="collapse">
+                            <a href="{% url 'warehouses:warehouse_list' %}" class="leaf-link {% if 'warehouses' in request.path and 'warehouse' in request.path %}active{% endif %}">
+                                <i class="fas fa-warehouse"></i> المخازن
+                            </a>
+                            <a href="{% url 'warehouses:movement_list' %}" class="leaf-link {% if 'movement' in request.path %}active{% endif %}">
+                                <i class="fas fa-exchange-alt"></i> حركات التوريد
+                            </a>
+                            <a href="{% url 'stock_adjustments:list' %}" class="leaf-link {% if 'stock_adjustments' in request.path %}active{% endif %}">
+                                <i class="fas fa-clipboard-check"></i> تسويات المخزون
+                            </a>
+                            {% if "all" in user_perms or "purchases.view_product" in user_perms %}
+                            <a href="{% url 'warehouses:product_list' %}" class="leaf-link {% if 'warehouses' in request.path and 'product' in request.path %}active{% endif %}">
+                                <i class="fas fa-boxes"></i> المنتجات
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+            {% endif %}
+
+            {# ════════════════════════════════════════════ #}
+            {# ④ المعالجة المالية #}
+            {# ════════════════════════════════════════════ #}
+            {% if "all" in user_perms or "accounts.view_account" in user_perms or "accounts.view_journalentry" in user_perms or "bank_reconciliation.view_bankstatementitem" in user_perms or "documents.view_document" in user_perms %}
+            <div class="workflow-group" data-group="finance">
+                <button class="workflow-header" data-toggle="wf-finance" aria-expanded="true">
+                    <span class="step-num">4</span>
+                    المعالجة المالية
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div id="wf-finance" class="collapse show">
+
+                    {# ── الحسابات ── #}
+                    {% if "all" in user_perms or "accounts.view_account" in user_perms or "accounts.view_journalentry" in user_perms %}
+                    <div class="sub-section">
+                        <button class="sub-header" data-toggle="sub-accounts" aria-expanded="false">
+                            <i class="fas fa-book"></i> الحسابات
+                            <i class="fas fa-chevron-down sub-chevron"></i>
+                        </button>
+                        <div id="sub-accounts" class="collapse">
+                            <a href="{% url 'accounts:chart_of_accounts' %}" class="leaf-link {% if 'chart' in request.path %}active{% endif %}">
+                                <i class="fas fa-sitemap"></i> شجرة الحسابات
+                            </a>
+                            <a href="{% url 'accounts:account_list' %}" class="leaf-link {% if 'accounts' in request.path and 'account_list' in request.path %}active{% endif %}">
+                                <i class="fas fa-book"></i> دليل الحسابات
+                            </a>
+                            <a href="{% url 'accounts:journal_list' %}" class="leaf-link {% if 'journal' in request.path and 'list' in request.path %}active{% endif %}">
+                                <i class="fas fa-journal-whills"></i> القيود اليومية
+                            </a>
+                            <a href="{% url 'recurring:recurring_list' %}" class="leaf-link {% if 'recurring' in request.path %}active{% endif %}">
+                                <i class="fas fa-sync-alt"></i> القيود الدورية
+                            </a>
+                            <a href="{% url 'reports:trial_balance_report' %}" class="leaf-link {% if 'trial_balance' in request.path %}active{% endif %}">
+                                <i class="fas fa-balance-scale"></i> ميزان المراجعة
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# ── التسوية البنكية ── #}
+                    {% if "all" in user_perms or "bank_reconciliation.view_bankstatementitem" in user_perms %}
+                    <a href="{% url 'bank_reconciliation:dashboard' %}" class="leaf-link {% if 'bank_reconciliation' in request.path %}active{% endif %}">
+                        <i class="fas fa-university"></i> التوافق البنكي
+                    </a>
+                    {% endif %}
+
+                    {# ── المستندات ── #}
+                    {% if "all" in user_perms or "documents.view_document" in user_perms or "documents.view_documenttype" in user_perms %}
+                    <div class="sub-section">
+                        <button class="sub-header" data-toggle="sub-docs" aria-expanded="false">
+                            <i class="fas fa-folder-open"></i> المستندات
+                            <i class="fas fa-chevron-down sub-chevron"></i>
+                        </button>
+                        <div id="sub-docs" class="collapse">
+                            <a href="{% url 'documents:document_list' %}" class="leaf-link {% if 'documents' in request.path and 'document_list' in request.path %}active{% endif %}">
+                                <i class="fas fa-folder-open"></i> المستندات
+                            </a>
+                            <a href="{% url 'documents:document_type_list' %}" class="leaf-link">
+                                <i class="fas fa-tags"></i> الأنواع
+                            </a>
+                            <a href="{% url 'documents:document_template_list' %}" class="leaf-link">
+                                <i class="fas fa-file-alt"></i> القوالب
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+            {% endif %}
+
+            {# ════════════════════════════════════════════ #}
+            {# ⑤ التقارير والتحليل #}
+            {# ════════════════════════════════════════════ #}
+            {% if "all" in user_perms or "reports.view_reporttemplate" in user_perms %}
+            <div class="workflow-group" data-group="reports">
+                <button class="workflow-header" data-toggle="wf-reports" aria-expanded="false">
+                    <span class="step-num">5</span>
+                    التقارير والتحليل
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div id="wf-reports" class="collapse">
+                    <a href="{% url 'reports:financial_dashboard' %}" class="leaf-link {% if 'financial' in request.path %}active{% endif %}">
+                        <i class="fas fa-chart-pie"></i> اللوحة المالية الموحدة
+                    </a>
+                    <a href="{% url 'reports:workflow_tracker' %}" class="leaf-link {% if 'workflow' in request.path %}active{% endif %}">
+                        <i class="fas fa-project-diagram"></i> متتبع سير العمل
+                    </a>
+
+                    {# ── مالية ── #}
+                    <div class="sub-section">
+                        <button class="sub-header" data-toggle="sub-fin-reports" aria-expanded="false">
+                            <i class="fas fa-file-invoice-dollar"></i> تقارير مالية
+                            <i class="fas fa-chevron-down sub-chevron"></i>
+                        </button>
+                        <div id="sub-fin-reports" class="collapse">
+                            <a href="{% url 'reports:income_statement' %}" class="leaf-link">
+                                <i class="fas fa-file-invoice-dollar"></i> قائمة الدخل
+                            </a>
+                            <a href="{% url 'reports:balance_sheet' %}" class="leaf-link">
+                                <i class="fas fa-file-alt"></i> الميزانية العمومية
+                            </a>
+                            <a href="{% url 'reports:cash_flow_report' %}" class="leaf-link">
+                                <i class="fas fa-exchange-alt"></i> التدفق النقدي
+                            </a>
+                            <a href="{% url 'reports:general_ledger' %}" class="leaf-link">
+                                <i class="fas fa-book"></i> دفتر الأستاذ العام
+                            </a>
+                            <a href="{% url 'reports:budget_vs_actual' %}" class="leaf-link">
+                                <i class="fas fa-balance-scale"></i> الموازنة مقابل الفعلي
+                            </a>
+                            <a href="{% url 'reports:bank_reconciliation_statement' %}" class="leaf-link">
+                                <i class="fas fa-university"></i> بيان التسوية البنكية
+                            </a>
+                        </div>
+                    </div>
+
+                    {# ── ضريبية ── #}
+                    <div class="sub-section">
+                        <button class="sub-header" data-toggle="sub-tax-reports" aria-expanded="false">
+                            <i class="fas fa-receipt"></i> تقارير ضريبية
+                            <i class="fas fa-chevron-down sub-chevron"></i>
+                        </button>
+                        <div id="sub-tax-reports" class="collapse">
+                            <a href="{% url 'reports:vat_return' %}" class="leaf-link">
+                                <i class="fas fa-receipt"></i> إقرار VAT
+                            </a>
+                            <a href="{% url 'reports:withholding_tax_report' %}" class="leaf-link">
+                                <i class="fas fa-percentage"></i> ضريبة الخصم والتحصيل
+                            </a>
+                            <a href="{% url 'reports:tax_summary' %}" class="leaf-link">
+                                <i class="fas fa-file-invoice"></i> الملخص الضريبي الشامل
+                            </a>
+                        </div>
+                    </div>
+
+                    {# ── تشغيلية ── #}
+                    <div class="sub-section">
+                        <button class="sub-header" data-toggle="sub-ops-reports" aria-expanded="false">
+                            <i class="fas fa-chart-line"></i> تقارير تشغيلية
+                            <i class="fas fa-chevron-down sub-chevron"></i>
+                        </button>
+                        <div id="sub-ops-reports" class="collapse">
+                            <a href="{% url 'reports:daily_sales_report' %}" class="leaf-link">
+                                <i class="fas fa-calendar-day"></i> يومية المبيعات
+                            </a>
+                            <a href="{% url 'reports:daily_purchases_report' %}" class="leaf-link">
+                                <i class="fas fa-shopping-cart"></i> يومية المشتريات
+                            </a>
+                            <a href="{% url 'reports:ar_aging_report' %}" class="leaf-link">
+                                <i class="fas fa-user-clock"></i> أعمار الذمم المدينة
+                            </a>
+                            <a href="{% url 'reports:ap_aging_report' %}" class="leaf-link">
+                                <i class="fas fa-truck"></i> أعمار الذمم الدائنة
+                            </a>
+                            <a href="{% url 'reports:customer_statement' %}" class="leaf-link">
+                                <i class="fas fa-user"></i> كشف حساب العميل
+                            </a>
+                            <a href="{% url 'reports:supplier_statement' %}" class="leaf-link">
+                                <i class="fas fa-clipboard-list"></i> كشف حساب المورد
+                            </a>
+                            <a href="{% url 'reports:profit_margin_report' %}" class="leaf-link">
+                                <i class="fas fa-chart-line"></i> نسب الربح
+                            </a>
+                            <a href="{% url 'reports:supplier_report' %}" class="leaf-link">
+                                <i class="fas fa-truck-loading"></i> تقرير الموردين
+                            </a>
+                            <a href="{% url 'reports:customer_report' %}" class="leaf-link">
+                                <i class="fas fa-user-tie"></i> تقرير العملاء
+                            </a>
+                            <a href="{% url 'reports:inventory_report' %}" class="leaf-link">
+                                <i class="fas fa-warehouse"></i> تقرير المخزون
+                            </a>
+                            <a href="{% url 'reports:stock_valuation_report' %}" class="leaf-link">
+                                <i class="fas fa-layer-group"></i> تقييم المخزون (FIFO)
+                            </a>
+                        </div>
+                    </div>
+
+                    {# ── بشرية ── #}
+                    <div class="sub-section">
+                        <button class="sub-header" data-toggle="sub-hr-reports" aria-expanded="false">
+                            <i class="fas fa-users"></i> الموارد البشرية
+                            <i class="fas fa-chevron-down sub-chevron"></i>
+                        </button>
+                        <div id="sub-hr-reports" class="collapse">
+                            <a href="{% url 'reports:payroll_report' %}" class="leaf-link">
+                                <i class="fas fa-money-bill-wave"></i> تقرير الرواتب
+                            </a>
+                            <a href="{% url 'reports:asset_schedule' %}" class="leaf-link">
+                                <i class="fas fa-chart-bar"></i> جدول الأصول والإهلاك
+                            </a>
+                            <a href="{% url 'reports:payroll_detail' %}" class="leaf-link">
+                                <i class="fas fa-file-invoice-dollar"></i> تفصيل الرواتب
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            {% endif %}
+
+            {# ════════════════════════════════════════════ #}
+            {# ⑥ الدورات الدورية #}
+            {# ════════════════════════════════════════════ #}
+            {% if "all" in user_perms or "hr.view_employee" in user_perms or "hr.view_salary" in user_perms or "assets.view_asset" in user_perms or "budget.view_budget" in user_perms or "currency.view_currency" in user_perms %}
+            <div class="workflow-group" data-group="periodic">
+                <button class="workflow-header" data-toggle="wf-periodic" aria-expanded="true">
+                    <span class="step-num">6</span>
+                    الدورات الدورية
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div id="wf-periodic" class="collapse show">
+
+                    {# ── الموارد البشرية ── #}
+                    {% if "all" in user_perms or "hr.view_employee" in user_perms or "hr.view_salary" in user_perms %}
+                    <div class="sub-section">
+                        <button class="sub-header" data-toggle="sub-hr" aria-expanded="false">
+                            <i class="fas fa-users"></i> الموارد البشرية
+                            <i class="fas fa-chevron-down sub-chevron"></i>
+                        </button>
+                        <div id="sub-hr" class="collapse">
+                            <a href="{% url 'hr:employee_list' %}" class="leaf-link {% if 'employee' in request.path %}active{% endif %}">
+                                <i class="fas fa-id-badge"></i> الموظفون
+                            </a>
+                            <a href="{% url 'hr:attendance_list' %}" class="leaf-link {% if 'attendance' in request.path %}active{% endif %}">
+                                <i class="fas fa-calendar-check"></i> الحضور والانصراف
+                            </a>
+                            <a href="{% url 'hr:salary_list' %}" class="leaf-link {% if 'salary' in request.path %}active{% endif %}">
+                                <i class="fas fa-money-check-alt"></i> الرواتب
+                            </a>
+                            <a href="{% url 'hr:department_list' %}" class="leaf-link">
+                                <i class="fas fa-sitemap"></i> الأقسام
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# ── الأصول ── #}
+                    {% if "all" in user_perms or "assets.view_asset" in user_perms %}
+                    <div class="sub-section">
+                        <button class="sub-header" data-toggle="sub-assets" aria-expanded="false">
+                            <i class="fas fa-building"></i> الأصول الثابتة
+                            <i class="fas fa-chevron-down sub-chevron"></i>
+                        </button>
+                        <div id="sub-assets" class="collapse">
+                            <a href="{% url 'assets:asset_list' %}" class="leaf-link {% if 'assets' in request.path and 'asset_list' in request.path %}active{% endif %}">
+                                <i class="fas fa-building"></i> سجل الأصول
+                            </a>
+                            <a href="{% url 'assets:category_list' %}" class="leaf-link">
+                                <i class="fas fa-tags"></i> التصنيفات
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# ── الموازنة ── #}
+                    {% if "all" in user_perms or "budget.view_budget" in user_perms or "budget.view_costcenter" in user_perms %}
+                    <a href="{% url 'budget:budget_list' %}" class="leaf-link {% if 'budget' in request.path %}active{% endif %}">
+                        <i class="fas fa-chart-bar"></i> الميزانية
+                    </a>
+                    {% endif %}
+
+                    {# ── العملات ── #}
+                    {% if "all" in user_perms or "currency.view_currency" in user_perms %}
+                    <a href="{% url 'currency:currency_list' %}" class="leaf-link {% if 'currency' in request.path %}active{% endif %}">
+                        <i class="fas fa-coins"></i> العملات
+                    </a>
+                    {% endif %}
+
+                    <div class="menu-sep"></div>
+
+                    {# ── إغلاق السنة المالية ── #}
+                    {% if "all" in user_perms or "accounts.view_account" in user_perms %}
+                    <a href="{% url 'accounts:fiscal_year_close' %}" class="leaf-link {% if 'fiscal_year' in request.path %}active{% endif %}">
+                        <i class="fas fa-calendar-check"></i> إغلاق السنة المالية
+                    </a>
+                    {% endif %}
+
+                </div>
+            </div>
+            {% endif %}
+
+            {# ════════════════════════════════════════════ #}
+            {# ════════════════════════════════════════════ #}
+            {# ⑦ الإدارة #}
+            {# ════════════════════════════════════════════ #}
+            {% if "all" in user_perms or "auth.view_user" in user_perms %}
+            <div class="workflow-group" data-group="admin">
+                <button class="workflow-header" data-toggle="wf-admin" aria-expanded="false">
+                    <span class="step-num">7</span>
+                    الإدارة
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div id="wf-admin" class="collapse">
+
+                    <a href="{% url 'users:user_list' %}" class="leaf-link {% if 'users' in request.path %}active{% endif %}">
+                        <i class="fas fa-users-cog"></i> المستخدمون والصلاحيات
+                    </a>
+
+                    <a href="{% url 'access_control:dashboard' %}" class="leaf-link {% if 'access-control' in request.path %}active{% endif %}">
+                        <i class="fas fa-user-shield"></i> لوحة الصلاحيات الموحّدة
+                    </a>
+
+                    <a href="{% url 'company:company_settings' %}" class="leaf-link {% if 'company' in request.path and 'settings' in request.path %}active{% endif %}">
+                        <i class="fas fa-building"></i> إعدادات الشركة
+                    </a>
+
+                    <a href="{% url 'company:admin_settings' %}" class="leaf-link">
+                        <i class="fas fa-cogs"></i> إعدادات النظام
+                    </a>
+
+                    <a href="{% url 'audit:audit_log_list' %}" class="leaf-link {% if 'audit' in request.path %}active{% endif %}">
+                        <i class="fas fa-history"></i> سجل المراجعة
+                    </a>
+
+                    <a href="{% url 'notifications:dashboard' %}" class="leaf-link {% if 'notifications' in request.path %}active{% endif %}">
+                        <i class="fas fa-bell"></i> الإشعارات
+                    </a>
+
+                    <div class="menu-sep"></div>
+
+                    <a href="{% url 'backups:backup_dashboard' %}" class="leaf-link {% if 'backups' in request.path %}active{% endif %}">
+                        <i class="fas fa-cloud-upload-alt"></i> النسخ الاحتياطي
+                    </a>
+
+                    <a href="{% url 'monitoring_dashboard' %}" class="leaf-link {% if 'monitoring' in request.path %}active{% endif %}">
+                        <i class="fas fa-heartbeat"></i> لوحة المراقبة
+                    </a>
+
+                    {% can_screen 'system.factory_reset' 'view' as can_factory_reset %}
+                    {% if can_factory_reset %}
+                    <a href="{% url 'backups:factory_reset_home' %}" class="leaf-link {% if 'factory-reset' in request.path %}active{% endif %}" style="color: #c62828;">
+                        <i class="fas fa-radiation"></i> استعادة ضبط المصنع
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'sync:sync_dashboard' %}" class="leaf-link {% if 'sync' in request.path %}active{% endif %}">
+                        <i class="fas fa-network-wired"></i> الربط والمزامنة
+                    </a>
+
+                </div>
+            </div>
+            {% endif %}
+
+            {# ════════════════════════════════════════════ #}
+            {# ⑧ الفواتير الضريبية (ETA) #}
+            {# ════════════════════════════════════════════ #}
+            {% if "all" in user_perms or "tax_invoices.view_taxinvoice" in user_perms %}
+            <div class="workflow-group" data-group="tax">
+                <button class="workflow-header" data-toggle="wf-tax" aria-expanded="false" style="color: #ff6f00;">
+                    <span class="step-num" style="background: #ff6f00; color: #fff;">8</span>
+                    الفواتير الضريبية (ETA)
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div id="wf-tax" class="collapse">
+                    <a href="{% url 'tax_invoices:dashboard' %}" class="leaf-link highlight {% if 'tax-invoices' in request.path %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt"></i> لوحة الفواتير الضريبية
+                    </a>
+                    <a href="{% url 'tax_invoices:tax_invoice_list' %}" class="leaf-link {% if 'tax-invoices/invoices' in request.path %}active{% endif %}">
+                        <i class="fas fa-file-invoice"></i> الفواتير المرسلة
+                    </a>
+                    <a href="{% url 'tax_invoices:connection_list' %}" class="leaf-link {% if 'tax-invoices/connections' in request.path %}active{% endif %}">
+                        <i class="fas fa-cog"></i> إعدادات اتصال الضرائب
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            {# ════════════════════════════════════════════ #}
+            {# ⑨ الذكاء الاصطناعي #}
+            {# ════════════════════════════════════════════ #}
+            {% if "all" in user_perms or "ai_analysis.view_errorlog" in user_perms %}
+            <div class="workflow-group" data-group="ai">
+                <button class="workflow-header" data-toggle="wf-ai" aria-expanded="false" style="color: #ff8c00;">
+                    <span class="step-num" style="background: #ff8c00; color: #fff;">9</span>
+                    الذكاء الاصطناعي
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div id="wf-ai" class="collapse">
+                    <a href="{% url 'ai_analysis:dashboard' %}" class="leaf-link {% if 'ai' in request.path %}active{% endif %}">
+                        <i class="fas fa-robot"></i> لوحة التحكم
+                    </a>
+                    <a href="{% url 'ai_analysis:auto_detect' %}" class="leaf-link {% if 'detect' in request.path %}active{% endif %}">
+                        <i class="fas fa-search"></i> كشف الأخطاء
+                    </a>
+                    <a href="{% url 'ai_analysis:analyze_error' %}" class="leaf-link {% if 'analyze' in request.path %}active{% endif %}">
+                        <i class="fas fa-brain"></i> تحليل خطأ
+                    </a>
+                    <a href="{% url 'ai_analysis:error_history' %}" class="leaf-link {% if 'history' in request.path %}active{% endif %}">
+                        <i class="fas fa-history"></i> سجل الأخطاء
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <div class="sidebar-overlay" onclick="document.body.classList.remove('sidebar-open')"></div>
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="d-flex align-items-center gap-3">
+                <a href="javascript:void(0)" class="sidebar-toggle" onclick="document.body.classList.toggle('sidebar-open')" title="القائمة">
+                    <i class="fas fa-bars"></i>
+                </a>
+                <a href="javascript:history.back()" class="btn-back" title="العودة للصفحة السابقة">
+                    <i class="fas fa-arrow-right"></i> العودة
+                </a>
+                <h5 style="margin:0;">{% block page_title %}{% endblock %}</h5>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="position-relative">
+                    <input type="text" id="globalSearch" class="form-control form-control-sm" placeholder="بحث شامل..." style="width: 250px; max-width: 70vw; padding-right: 30px;">
+                    <i class="fas fa-search position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+                    <div id="searchResults" class="position-absolute bg-white shadow rounded" style="display:none; top: 100%; right: 0; width: min(350px, 90vw); max-height: 400px; overflow-y: auto; z-index: 9999;"></div>
+                </div>
+                <span class="text-muted">
+                    <i class="fas fa-calendar"></i> {% now "d/m/Y" %}
+                </span>
+                <span class="text-muted">
+                    <i class="fas fa-user"></i> {{ request.user.get_full_name|default:request.user.username }}
+                </span>
+                <form method="post" action="{% url 'logout' %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm" title="خروج">
+                        <i class="fas fa-sign-out-alt"></i> خروج
+                    </button>
+                </form>
+                <a href="javascript:window.print()" class="btn-print" title="طباعة الصفحة">
+                    <i class="fas fa-print"></i> طباعة
+                </a>
+            </div>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/form-validation.js' %}"></script>
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script>
+    (function(){
+        /* ── Toggle collapse for workflow groups & sub-sections ── */
+        document.querySelectorAll('[data-toggle]').forEach(function(btn){
+            btn.addEventListener('click', function(){
+                var targetId = this.getAttribute('data-toggle');
+                var target = document.getElementById(targetId);
+                if (!target) return;
+                var bsCollapse = bootstrap.Collapse.getOrCreateInstance(target, {toggle: false});
+                var expanded = this.getAttribute('aria-expanded') === 'true';
+                if (expanded) {
+                    bsCollapse.hide();
+                    this.setAttribute('aria-expanded', 'false');
+                } else {
+                    bsCollapse.show();
+                    this.setAttribute('aria-expanded', 'true');
+                }
+            });
+        });
+        /* sync aria-expanded with Bootstrap collapse events */
+        document.querySelectorAll('.collapse').forEach(function(el){
+            el.addEventListener('show.bs.collapse', function(){
+                var btn = document.querySelector('[data-toggle="' + this.id + '"]');
+                if (btn) btn.setAttribute('aria-expanded', 'true');
+            });
+            el.addEventListener('hide.bs.collapse', function(){
+                var btn = document.querySelector('[data-toggle="' + this.id + '"]');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        /* ── Auto-expand parent groups for active links ── */
+        document.querySelectorAll('.leaf-link.active').forEach(function(link){
+            var parent = link.closest('.collapse');
+            while (parent) {
+                bootstrap.Collapse.getOrCreateInstance(parent, {toggle: false}).show();
+                var toggleBtn = document.querySelector('[data-toggle="' + parent.id + '"]');
+                if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+                parent = parent.parentElement ? parent.parentElement.closest('.collapse') : null;
+            }
+        });
+
+        /* ── Global Search ── */
+        var searchInput = document.getElementById('globalSearch');
+        var resultsDiv = document.getElementById('searchResults');
+        if (!searchInput || !resultsDiv) return;
+        var timer;
+        searchInput.addEventListener('input', function(){
+            clearTimeout(timer);
+            var q = this.value.trim();
+            if (q.length < 2) { resultsDiv.style.display='none'; return; }
+            timer = setTimeout(function(){
+                fetch('/common/search/?q=' + encodeURIComponent(q))
+                    .then(function(r){ return r.json(); })
+                    .then(function(data){
+                        if (!data.results || data.results.length === 0) {
+                            resultsDiv.innerHTML = '<div class="p-3 text-muted">لا توجد نتائج</div>';
+                        } else {
+                            var html = '';
+                            data.results.forEach(function(r){
+                                var a = document.createElement('a');
+                                a.href = r.url;
+                                a.className = 'd-block p-2 border-bottom text-decoration-none text-dark';
+                                a.style.fontSize = '0.85rem';
+                                var badge = document.createElement('span');
+                                badge.className = 'badge bg-secondary me-1';
+                                badge.textContent = r.type;
+                                a.appendChild(badge);
+                                a.appendChild(document.createTextNode(' '));
+                                var strong = document.createElement('strong');
+                                strong.textContent = r.name;
+                                a.appendChild(strong);
+                                if (r.code) {
+                                    var small = document.createElement('small');
+                                    small.className = 'text-muted';
+                                    small.textContent = ' (' + r.code + ')';
+                                    a.appendChild(small);
+                                }
+                                html += a.outerHTML;
+                            });
+                            resultsDiv.innerHTML = html;
+                        }
+                        resultsDiv.style.display='block';
+                    });
+            }, 300);
+        });
+        document.addEventListener('click', function(e){
+            if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target))
+                resultsDiv.style.display='none';
+        });
+
+        /* إغلاق السايدبار عند اختيار رابط على الشاشات الصغيرة */
+        document.querySelectorAll('.leaf-link, .sub-header').forEach(function(link){
+            link.addEventListener('click', function(){
+                if (window.innerWidth <= 991) document.body.classList.remove('sidebar-open');
+            });
+        });
+
+        /* إغلاق السايدبار بزر Escape */
+        document.addEventListener('keydown', function(e){
+            if (e.key === 'Escape') document.body.classList.remove('sidebar-open');
+        });
+
+        /* ── P0-2: تغليف كل الجداول بـ .table-responsive تلقائياً (موبايل/تابلت) ── */
+        document.querySelectorAll('table.table').forEach(function(tbl){
+            if (tbl.closest('.table-responsive')) return;
+            var wrap = document.createElement('div');
+            wrap.className = 'table-responsive';
+            tbl.parentNode.insertBefore(wrap, tbl);
+            wrap.appendChild(tbl);
+        });
+    })();
+    </script>
+    {% block extra_js %}{% endblock %}
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register("{% static 'sw.js' %}", { scope: '/' });
+        }
+    </script>
+</body>
+</html>
